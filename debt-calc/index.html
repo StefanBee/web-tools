@@ -41,7 +41,7 @@ body {
 
 .header {
     display: grid;
-    grid-template-columns: 86px 1fr;
+    grid-template-columns: 86px 1fr 22px;
     border-bottom: 1px solid #504945;
     background: #3c3836;
     color: #d5c4a1;
@@ -56,7 +56,7 @@ body {
 
 .row {
     display: grid;
-    grid-template-columns: 86px 1fr;
+    grid-template-columns: 86px minmax(0, 1fr) 22px;
     min-height: 32px;
     border-bottom: 1px solid #3c3836;
 }
@@ -134,7 +134,7 @@ button:active {
     @media (max-width: 374px) {
         .header,
         .row {
-            grid-template-columns: 78px 1fr;
+            grid-template-columns: 78px minmax(0, 1fr) 22px;
         }
 
         .amount,
@@ -142,6 +142,23 @@ button:active {
             font-size: 15px;
         }
     }
+
+.clear-row {
+    width: 22px;
+    height: 32px;
+    padding: 0;
+    color: #665c54;
+    font-size: 14px;
+    line-height: 32px;
+    text-align: center;
+    opacity: 0.45;
+}
+
+.clear-row:active {
+    color: #fb4934;
+    opacity: 1;
+}
+
 </style>
 </head>
 
@@ -266,9 +283,24 @@ button:active {
                 }
             });
 
-            rowElement.appendChild(amount);
-            rowElement.appendChild(context);
-            rowsContainer.appendChild(rowElement);
+		const clearRow = document.createElement("button");
+		clearRow.className = "clear-row";
+		clearRow.type = "button";
+		clearRow.textContent = "×";
+		clearRow.setAttribute("aria-label", `Clear row ${index + 1}`);
+
+		clearRow.addEventListener("click", () => {
+    			rows[index].amount = "";
+    			rows[index].context = "";
+
+    			save();
+    			render();
+});
+
+		rowElement.appendChild(amount);
+		rowElement.appendChild(context);
+		rowElement.appendChild(clearRow);
+		rowsContainer.appendChild(rowElement);
         });
 
         updateTotal();
