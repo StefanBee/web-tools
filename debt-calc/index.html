@@ -158,7 +158,7 @@ button:active {
         <div class="total">
             <span>Total</span>
             <span id="totalValue">0</span>
-	    <button id=addEntryButton" type="button">add entry</button>
+	    <button id="addEntryButton" type="button">add entry</button>
         </div>
     </div>
 
@@ -166,15 +166,15 @@ button:active {
         <button id="clearButton" type="button">Clear</button>
     </div>
 </div>
-
 <script>
-(() => {
+	(() => {
     const STORAGE_KEY = "two-column-receipt";
     const INITIAL_ROWS = 12;
 
     const rowsContainer = document.getElementById("rows");
     const totalValue = document.getElementById("totalValue");
     const clearButton = document.getElementById("clearButton");
+    const addEntryButton = document.getElementById("addEntryButton");
 
     let rows = load();
 
@@ -297,7 +297,6 @@ button:active {
             }
         }
 
-        // Avoid floating-point display errors such as 21.369999999
         total = Math.round(total * 100) / 100;
 
         totalValue.textContent = formatNumber(total);
@@ -327,27 +326,32 @@ button:active {
         return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
     }
 
-	clearButton.addEventListener("click", () => {
-	document.getElementById("addEntryButton").addEventListener("click", () => {
-    		let targetIndex = rows.findIndex(row =>
-        	row.amount.trim() === "" &&
-        	row.context.trim() === ""
-    );
+    addEntryButton.addEventListener("click", () => {
+        let targetIndex = rows.findIndex(row =>
+            row.amount.trim() === "" &&
+            row.context.trim() === ""
+        );
 
-    if (targetIndex === -1) {
-        rows.push({
-            amount: "",
-            context: ""
-        });
+        if (targetIndex === -1) {
+            rows.push({
+                amount: "",
+                context: ""
+            });
 
-        targetIndex = rows.length - 1;
-        save();
-        render();
-    }
+            targetIndex = rows.length - 1;
 
-    const amountInputs = rowsContainer.querySelectorAll(".amount");
-    amountInputs[targetIndex].focus();
-});
+            save();
+            render();
+        }
+
+        const amountInputs = rowsContainer.querySelectorAll(".amount");
+
+        if (amountInputs[targetIndex]) {
+            amountInputs[targetIndex].focus();
+        }
+    });
+
+    clearButton.addEventListener("click", () => {
         const hasData = rows.some(
             row => row.amount.trim() !== "" || row.context.trim() !== ""
         );
@@ -361,6 +365,7 @@ button:active {
         }
 
         rows = createEmptyRows(INITIAL_ROWS);
+
         save();
         render();
 
