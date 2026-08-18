@@ -327,7 +327,27 @@ button:active {
         return number.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
     }
 
-    clearButton.addEventListener("click", () => {
+	clearButton.addEventListener("click", () => {
+	document.getElementById("addEntryButton").addEventListener("click", () => {
+    		let targetIndex = rows.findIndex(row =>
+        	row.amount.trim() === "" &&
+        	row.context.trim() === ""
+    );
+
+    if (targetIndex === -1) {
+        rows.push({
+            amount: "",
+            context: ""
+        });
+
+        targetIndex = rows.length - 1;
+        save();
+        render();
+    }
+
+    const amountInputs = rowsContainer.querySelectorAll(".amount");
+    amountInputs[targetIndex].focus();
+});
         const hasData = rows.some(
             row => row.amount.trim() !== "" || row.context.trim() !== ""
         );
