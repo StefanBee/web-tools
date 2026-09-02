@@ -30,10 +30,26 @@
     color: #ffffff;
     font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 700;
-    /* scales huge across landscape width, clamps for portrait/other sizes */
-    font-size: min(33vw, 78vh);
     letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* landscape: width is the generous dimension, so scale off vw (capped by vh) */
+  @media (orientation: landscape) {
+    #timer {
+      font-size: min(33vw, 78vh);
+    }
+  }
+
+  /* portrait: width is the tight dimension, so scale off vw (capped by vh) */
+  @media (orientation: portrait) {
+    #timer {
+      font-size: min(28vw, 32vh);
+    }
   }
 
   #hint {
