@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Timer</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
+  }
+
+  #timer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    /* scales huge across landscape width, clamps for portrait/other sizes */
+    font-size: min(38vw, 90vh);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #hint {
+    position: fixed;
+    bottom: 4vh;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #444;
+    font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+  <div id="timer">00:00</div>
+  <div id="hint">tap: start / reset &nbsp;&middot;&nbsp; double-tap: pause</div>
+
+  <script>
+    const timerEl = document.getElementById('timer');
+
+    // states: 'idle', 'running', 'paused'
+    let state = 'idle';
+    let startTime = 0;
+    let elapsedAtPause = 0;
+    let rafId = null;
+
+    let lastTapTime = 0;
+    let singleTapTimeout = null;
+    const DOUBLE_TAP_MS = 300;
+
+    function format(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    function tick() {
+      const elapsed = Date.now() - startTime;
+      timerEl.textContent = format(elapsed);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function startFromZero() {
+      state = 'running';
+      startTime = Date.now();
+      timerEl.textContent = '00:00';
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function pause() {
+      state = 'paused';
+      elapsedAtPause = Date.now() - startTime;
+      if (rafId) cancelAnimationFrame(rafId);
+      timerEl.textContent = format(elapsedAtPause);
+    }
+
+    function handleSingleTap() {
+      // idle -> start; paused -> start fresh; running -> reset to 0 and keep running
+      startFromZero();
+    }
+
+    function handleDoubleTap() {
+      if (state === 'running') {
+        pause();
+      }
+      // if idle or already paused, double tap does nothing extra
+    }
+
+    function handleTap() {
+      const now = Date.now();
+      const diff = now - lastTapTime;
+
+      if (diff > 0 && diff < DOUBLE_TAP_MS) {
+        // it's a double tap
+        clearTimeout(singleTapTimeout);
+        lastTapTime = 0;
+        handleDoubleTap();
+      } else {
+        lastTapTime = now;
+        singleTapTimeout = setTimeout(() => {
+          handleSingleTap();
+        }, DOUBLE_TAP_MS);
+      }
+    }
+
+    document.body.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      handleTap();
+    }, { passive: false });
+
+    // fallback for desktop testing (mouse click)
+    document.body.addEventListener('click', handleTap);
+  </script>
+</body>
+</html>
