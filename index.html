@@ -57,12 +57,6 @@ h1 {
     color: #a89984;
     font-size: 1.05rem;
 }
-.status {
-    text-align: center;
-    color: #a89984;
-    font-size: 0.95rem;
-    padding: 20px 0;
-}
 @media (max-width: 600px) {
     h1 {
         font-size: 2rem;
@@ -85,89 +79,30 @@ h1 {
 <p class="subtitle">
 Small tools that make everyday life easier.
 </p>
-<div id="tools">
-    <div class="status">Loading tools…</div>
+<a class="tool" href="salary-calculator/">
+    <div class="tool-title">💰 Salary Calculator</div>
+    <div class="tool-desc">
+        Calculate worked hours and gross pay.
+    </div>
+</a>
+<a class="tool" href="debt-calc/">
+    <div class="tool-title">💰 Debt Calculator</div>
+    <div class="tool-desc">
+        Calculate how much you owe each other.
+    </div>
+</a>
+<a class="tool" href="quick-tap-timer/">
+    <div class="tool-title">⏱️ Quick Tap Timer</div>
+    <div class="tool-desc">
+        Timer that starts over after 1 tap.
+    </div>
+</a>
+<a class="tool" href="shopping-list/">
+    <div class="tool-title">🛒 Shopping List</div>
+    <div class="tool-desc">
+        One time use shopping list.
+    </div>
+</a>
 </div>
-</div>
-
-<script>
-// ---- Config ----
-const GITHUB_OWNER = "StefanBee";
-const GITHUB_REPO = "web-tools";
-const GITHUB_BRANCH = "main"; // change to "master" if that's your default branch
-
-// Folders to never show as tools (repo plumbing, not actual tools)
-const EXCLUDE = new Set([
-    ".github", ".git", "assets", "img", "images", "css", "js",
-    "node_modules", "shared", "common"
-]);
-
-// Default emoji if a tool has no meta.json
-const DEFAULT_EMOJI = "🔧";
-
-async function loadTools() {
-    const container = document.getElementById("tools");
-
-    let entries;
-    try {
-        const res = await fetch(
-            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`
-        );
-        if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-        entries = await res.json();
-    } catch (err) {
-        container.innerHTML = `<div class="status">Couldn't load tools (${err.message}). Check back later.</div>`;
-        return;
-    }
-
-    const folders = entries.filter(
-        (e) => e.type === "dir" && !EXCLUDE.has(e.name) && !e.name.startsWith(".")
-    );
-
-    if (folders.length === 0) {
-        container.innerHTML = `<div class="status">No tools found yet.</div>`;
-        return;
-    }
-
-    // Fetch optional meta.json for each folder in parallel
-    const tools = await Promise.all(
-        folders.map(async (folder) => {
-            let meta = {};
-            try {
-                const metaRes = await fetch(
-                    `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${folder.name}/meta.json`
-                );
-                if (metaRes.ok) {
-                    meta = await metaRes.json();
-                }
-            } catch (err) {
-                // no meta.json, or bad JSON — fall back silently
-            }
-
-            return {
-                href: `${folder.name}/`,
-                title: meta.title || folder.name,
-                desc: meta.desc || "",
-                emoji: meta.emoji || DEFAULT_EMOJI,
-            };
-        })
-    );
-
-    // Sort alphabetically by title for a stable order
-    tools.sort((a, b) => a.title.localeCompare(b.title));
-
-    container.innerHTML = tools
-        .map(
-            (tool) => `
-        <a class="tool" href="${tool.href}">
-            <div class="tool-title">${tool.emoji} ${tool.title}</div>
-            ${tool.desc ? `<div class="tool-desc">${tool.desc}</div>` : ""}
-        </a>`
-        )
-        .join("");
-}
-
-loadTools();
-</script>
 </body>
 </html>
