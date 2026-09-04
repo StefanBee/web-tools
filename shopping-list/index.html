@@ -267,6 +267,12 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     <button id="editBtn" class="active">edit</button>
     <button id="listBtn">list</button>
   </div>
+  <button class="clear-btn" id="pasteBtn" title="paste from clipboard" aria-label="paste from clipboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+    </svg>
+  </button>
   <button class="clear-btn" id="clearBtn" title="delete everything" aria-label="delete everything">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="3 6 5 6 21 6"></polyline>
@@ -283,6 +289,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
   const editBtn = document.getElementById('editBtn');
   const listBtn = document.getElementById('listBtn');
   const clearBtn = document.getElementById('clearBtn');
+  const pasteBtn = document.getElementById('pasteBtn');
   const confirmBar = document.getElementById('confirmBar');
   const confirmYes = document.getElementById('confirmYes');
   const confirmNo = document.getElementById('confirmNo');
@@ -356,6 +363,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     listView.classList.add('hidden');
     editBtn.classList.add('active');
     listBtn.classList.remove('active');
+    pasteBtn.style.display = 'flex';
     editor.focus();
   }
 
@@ -365,6 +373,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     listView.classList.remove('hidden');
     listBtn.classList.add('active');
     editBtn.classList.remove('active');
+    pasteBtn.style.display = 'none';
   }
 
   editBtn.addEventListener('click', showEdit);
@@ -375,6 +384,28 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
   });
   confirmNo.addEventListener('click', () => {
     confirmBar.classList.remove('show');
+  });
+
+  pasteBtn.addEventListener('click', async () => {
+    let text = '';
+    try{
+      text = await navigator.clipboard.readText();
+    }catch(err){
+      alert('couldn\'t read clipboard — check that this site has clipboard access in Settings, or paste manually with a long-press in the text box.');
+      return;
+    }
+    if(!text) return;
+
+    const start = editor.selectionStart;
+    const end = editor.selectionEnd;
+    const before = editor.value.slice(0, start);
+    const after = editor.value.slice(end);
+    const insertion = (before.length > 0 ? '\n\n' : '\n') + text;
+
+    editor.value = before + insertion + after;
+    const cursorPos = (before + insertion).length;
+    editor.focus();
+    editor.setSelectionRange(cursorPos, cursorPos);
   });
   confirmYes.addEventListener('click', () => {
     editor.value = '';
