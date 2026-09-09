@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1d2021">
+<title>Clock</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #1d2021;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(3vmin, env(safe-area-inset-top))
+             max(6vmin, env(safe-area-inset-right))
+             max(3vmin, env(safe-area-inset-bottom))
+             max(6vmin, env(safe-area-inset-left));
+  }
+
+  #time {
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #fabd2f;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    /* sized as a fraction of the SMALLER of width/height-derived limits,
+       so it's mathematically bounded by available width in both
+       orientations rather than relying on runtime measurement */
+    font-size: clamp(2.25rem, min(14vw, 26vh), 8.5rem);
+  }
+</style>
+</head>
+<body>
+
+  <div id="time">--:--:--</div>
+
+<script>
+  var el = document.getElementById("time");
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+  function tick() {
+    var now = new Date();
+    el.textContent = pad(now.getHours()) + ":" + pad(now.getMinutes()) + ":" + pad(now.getSeconds());
+    setTimeout(tick, 1000 - now.getMilliseconds()); // lands exactly on each second, no drift
+  }
+  tick();
+
+  document.addEventListener("gesturestart", function (e) { e.preventDefault(); });
+  document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
+</script>
+
+</body>
+</html>
