@@ -13,12 +13,13 @@
 <style>
   :root {
     --bg: #14171a;
+    --panel: #1c2024;
     --ink: #f2ede4;
     --muted: #8b9299;
     --accent: #e8a33d;
     --stop: #d1574a;
   }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
   html, body {
     position: fixed;
     inset: 0;
@@ -34,18 +35,18 @@
   }
   body {
     display: flex;
-    padding: 24px;
-    padding-bottom: env(safe-area-inset-bottom, 24px);
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
   }
-  .main-content {
-    flex: 1;
+
+  /* ---- Header: timer ---- */
+  .header {
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    margin-right: 88px; /* reserves space for the fixed vertical slider (84px wide) + small gap */
-    max-width: calc(100vw - 88px);
-    overflow: hidden;
+    padding-top: 6vh;
   }
   .label {
     color: var(--muted);
@@ -55,50 +56,121 @@
   }
   .time {
     font-variant-numeric: tabular-nums;
-    font-size: clamp(3rem, 16vw, 5.5rem);
+    font-size: clamp(2.8rem, 15vw, 4.6rem);
     font-weight: 600;
     line-height: 1;
     margin-bottom: 4px;
   }
   .time .ms { font-size: 0.4em; color: var(--muted); }
   .countdown-num {
-    font-size: clamp(4rem, 22vw, 7rem);
+    font-size: clamp(3.6rem, 20vw, 6rem);
     font-weight: 700;
     color: var(--accent);
     line-height: 1;
-    margin-bottom: 4px;
   }
   .status {
     color: var(--muted);
     font-size: 0.95rem;
-    margin-bottom: 36px;
     min-height: 1.2em;
   }
   .status.running { color: var(--accent); }
   .status.countdown { color: var(--accent); }
-  .controls { display: flex; gap: 16px; }
+
+  /* ---- Middle: controls row (Start/Reset stack + Voice rocker) ---- */
+  .control-row {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    width: 100%;
+  }
+  .action-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
   button {
     border: none;
-    border-radius: 999px;
-    padding: 18px 30px;
-    font-size: 1.05rem;
-    font-weight: 600;
+    border-radius: 22px;
+    font-weight: 700;
     cursor: pointer;
     transition: transform 0.08s ease;
   }
   button:active { transform: scale(0.96); }
-  #toggleBtn { background: var(--accent); color: #201802; min-width: 140px; }
+  #toggleBtn {
+    background: var(--accent);
+    color: #201802;
+    width: 168px;
+    height: 92px;
+    font-size: 1.3rem;
+  }
   #toggleBtn.running, #toggleBtn.countdown { background: var(--stop); color: #2a0e0a; }
-  #resetBtn { background: transparent; color: var(--muted); border: 1px solid #33383d; }
+  #resetBtn {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid #33383d;
+    width: 168px;
+    height: 64px;
+    font-size: 1.05rem;
+  }
   #resetBtn:disabled { opacity: 0.3; }
 
-  .settings {
-    margin-top: 28px;
-    width: 100%;
-    max-width: 260px;
+  .voice-block {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
+    gap: 8px;
+  }
+  .voice-label {
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+  .rocker {
+    width: 92px;
+    height: 172px;
+    border-radius: 26px;
+    background: var(--panel);
+    border: 1px solid #33383d;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .rocker button {
+    flex: 1;
+    border-radius: 0;
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .rocker button:active { background: #262b30; transform: none; }
+  #volPlus { border-bottom: none; }
+  #volMinus { border-top: none; }
+  .rocker-readout {
+    flex: 0 0 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: #14171a;
+    border-top: 1px solid #33383d;
+    border-bottom: 1px solid #33383d;
+  }
+
+  /* ---- Bottom: get-ready + earbud settings ---- */
+  .settings {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 2vh;
   }
   .settings-row {
     display: flex;
@@ -110,7 +182,7 @@
   }
   .settings-row input[type="number"] {
     width: 56px;
-    background: #1c2024;
+    background: var(--panel);
     border: 1px solid #33383d;
     color: var(--ink);
     border-radius: 8px;
@@ -118,126 +190,57 @@
     font-size: 0.95rem;
     text-align: center;
   }
-  input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+  input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
 
   .diag {
-    margin-top: 16px;
     color: var(--muted);
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     text-align: center;
-    max-width: 300px;
-    min-height: 1.2em;
+    min-height: 1.1em;
   }
   .hint {
-    margin-top: 24px;
     color: #565c62;
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     text-align: center;
-    max-width: 280px;
-    line-height: 1.4;
-  }
-
-  /* Vertical volume slider, fixed to the right edge, big touch target */
-  .vslider-wrap {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 84px;
-    height: 280px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: var(--bg);
-    z-index: 10;
-  }
-  .vslider-label {
-    color: var(--muted);
-    font-size: 0.65rem;
-    letter-spacing: 0.05em;
-  }
-  .vslider-rotator {
-    width: 56px;
-    height: 220px;
-    position: relative;
-  }
-  input[type="range"]#volSlider {
-    -webkit-appearance: none;
-    appearance: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 220px;
-    height: 56px;
-    background: transparent;
-    margin: 0;
-    touch-action: none;
-    transform: translate(-50%, -50%) rotate(-90deg);
-    transform-origin: center center;
-  }
-  input[type="range"]#volSlider::-webkit-slider-runnable-track {
-    height: 22px;
-    border-radius: 999px;
-    background: #2a2e33;
-  }
-  input[type="range"]#volSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--accent);
-    margin-top: -13px;
-    box-shadow: 0 0 0 6px rgba(232,163,61,0.15);
-  }
-  input[type="range"]#volSlider::-moz-range-track {
-    height: 22px;
-    border-radius: 999px;
-    background: #2a2e33;
-  }
-  input[type="range"]#volSlider::-moz-range-thumb {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: none;
+    line-height: 1.35;
   }
 </style>
 </head>
 <body>
 
-  <div class="main-content">
+  <div class="header">
     <div class="label" id="labelEl">Hold time</div>
     <div class="time" id="display">00:00<span class="ms">.00</span></div>
     <div class="status" id="status">Ready</div>
+  </div>
 
-    <div class="controls">
+  <div class="control-row">
+    <div class="action-stack">
       <button id="toggleBtn">Start</button>
       <button id="resetBtn" disabled>Reset</button>
     </div>
 
-    <div class="settings">
-      <div class="settings-row">
-        <span>Get-ready countdown (sec)</span>
-        <input type="number" id="prepInput" min="0" max="60" value="10">
-      </div>
-      <div class="settings-row">
-        <span>Earbud button stops timer</span>
-        <input type="checkbox" id="earbudToggle" checked>
+    <div class="voice-block">
+      <span class="voice-label">VOICE</span>
+      <div class="rocker">
+        <button id="volPlus">+</button>
+        <div class="rocker-readout" id="volReadout">5</div>
+        <button id="volMinus">−</button>
       </div>
     </div>
-
-    <div class="diag" id="diag"></div>
-
-    <div class="hint">Add this page to your Home Screen for the most reliable background counting.</div>
   </div>
 
-  <div class="vslider-wrap">
-    <span class="vslider-label">VOICE</span>
-    <div class="vslider-rotator">
-      <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.45">
+  <div class="settings">
+    <div class="settings-row">
+      <span>Get-ready countdown (sec)</span>
+      <input type="number" id="prepInput" min="0" max="60" value="10">
     </div>
+    <div class="settings-row">
+      <span>Earbud button stops timer</span>
+      <input type="checkbox" id="earbudToggle" checked>
+    </div>
+    <div class="diag" id="diag"></div>
+    <div class="hint">Add this page to your Home Screen for the most reliable background counting.</div>
   </div>
 
   <audio id="keepAlive" loop playsinline style="display:none" src="data:audio/wav;base64,UklGRmQfAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YUAfAACAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgoGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIB/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f35/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f4CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGCgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgH9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fn9/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYKBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39+f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f3+AgICAgICAgICAgICAgICAgICAgICAgICAgA=="></audio>
@@ -249,6 +252,7 @@
   let intervalId = null;
   let countdownIntervalId = null;
   let voiceOn = true;
+  let voiceLevel = 5; // 1-10
   let lastSpokenSecond = -1;
   let speechWarmed = false;
   let audioCtx = null;
@@ -258,7 +262,9 @@
   const status = document.getElementById('status');
   const toggleBtn = document.getElementById('toggleBtn');
   const resetBtn = document.getElementById('resetBtn');
-  const volSlider = document.getElementById('volSlider');
+  const volPlus = document.getElementById('volPlus');
+  const volMinus = document.getElementById('volMinus');
+  const volReadout = document.getElementById('volReadout');
   const prepInput = document.getElementById('prepInput');
   const earbudToggle = document.getElementById('earbudToggle');
   const diag = document.getElementById('diag');
@@ -308,7 +314,7 @@
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.rate = 1.05;
-      utter.volume = parseFloat(volSlider.value);
+      utter.volume = voiceLevel / 10;
       window.speechSynthesis.speak(utter);
     } catch (e) { /* ignore */ }
   }
@@ -351,7 +357,7 @@
 
   function setupMediaSession() {
     if (!('mediaSession' in navigator)) {
-      showDiag('No MediaSession support here \u2014 earbud button won\u2019t reach the timer, but the on-screen Stop button always works.');
+      showDiag('No MediaSession support here \u2014 earbud button won\u2019t reach the timer, but on-screen Stop always works.');
       return;
     }
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -376,7 +382,7 @@
 
   function ensureBackgroundAudio() {
     keepAlive.play().catch(() => {
-      showDiag('Background audio didn\u2019t start \u2014 tap Start again. It\u2019s needed to keep counting with the screen locked.');
+      showDiag('Background audio didn\u2019t start \u2014 tap Start again.');
     });
     if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
   }
@@ -480,9 +486,16 @@
 
   resetBtn.addEventListener('click', reset);
 
-  // Warm the speech engine up as early as any interaction happens, in case
-  // the user drags the volume slider before pressing Start.
-  volSlider.addEventListener('pointerdown', warmUpSpeech, { once: true });
+  volPlus.addEventListener('click', () => {
+    warmUpSpeech();
+    voiceLevel = Math.min(10, voiceLevel + 1);
+    volReadout.textContent = voiceLevel;
+  });
+  volMinus.addEventListener('click', () => {
+    warmUpSpeech();
+    voiceLevel = Math.max(1, voiceLevel - 1);
+    volReadout.textContent = voiceLevel;
+  });
 
   setupMediaSession();
   renderTime();
