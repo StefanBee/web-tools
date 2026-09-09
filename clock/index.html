@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1d2021">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
 <title>Clock</title>
 <style>
   html, body {
@@ -26,16 +29,19 @@
   }
 
   #time {
-    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0;
     color: #fabd2f;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    /* sized as a fraction of the SMALLER of width/height-derived limits,
-       so it's mathematically bounded by available width in both
-       orientations rather than relying on runtime measurement */
-    font-size: clamp(2.25rem, min(14vw, 26vh), 8.5rem);
+    /* JetBrains Mono digits run ~0.6em wide each; "12:34:56" is 8 characters,
+       so text width ≈ 4.8em. 17vw keeps that snug against the available
+       width in portrait; the 40vh ceiling is just a safety cap for extreme
+       aspect ratios — width, not height, is the real limit in landscape too,
+       so this now actually fills out the wider screen instead of staying
+       capped small. */
+    font-size: clamp(2.5rem, min(17vw, 40vh), 9rem);
   }
 </style>
 </head>
