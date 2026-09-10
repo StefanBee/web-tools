@@ -185,6 +185,55 @@
     font-size: 0.95rem;
     text-align: center;
   }
+  .prep-block {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 18px;
+    margin-bottom: 10px;
+  }
+  .prep-label {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+  .prep-rocker-h {
+    display: flex;
+    align-items: stretch;
+    width: 200px;
+    height: 50px; /* thin */
+    border-radius: 16px;
+    background: var(--panel);
+    border: 1px solid #33383d;
+    overflow: hidden;
+  }
+  .prep-rocker-h button {
+    flex: 1;
+    border-radius: 0;
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 1.4rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .prep-rocker-h button:active { background: #262b30; transform: none; }
+  .rocker-readout-h {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: #14171a;
+    border-left: 1px solid #33383d;
+    border-right: 1px solid #33383d;
+  }
   input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent); }
 
   .diag {
@@ -224,11 +273,16 @@
     </div>
   </div>
 
-  <div class="settings">
-    <div class="settings-row">
-      <span>Get-ready countdown (sec)</span>
-      <input type="number" id="prepInput" min="0" max="60" value="10">
+  <div class="prep-block">
+    <span class="prep-label">GET-READY (SEC)</span>
+    <div class="prep-rocker-h">
+      <button id="prepMinus">−</button>
+      <div class="rocker-readout-h" id="prepReadout">10</div>
+      <button id="prepPlus">+</button>
     </div>
+  </div>
+
+  <div class="settings">
     <div class="settings-row">
       <span>Earbud button stops timer</span>
       <input type="checkbox" id="earbudToggle" checked>
@@ -247,6 +301,7 @@
   let countdownIntervalId = null;
   let voiceOn = true;
   let voiceLevel = 5; // 1-10
+  let prepSeconds = 10; // 0-20
   let lastSpokenSecond = -1;
   let speechWarmed = false;
   let audioCtx = null;
@@ -258,7 +313,9 @@
   const volPlus = document.getElementById('volPlus');
   const volMinus = document.getElementById('volMinus');
   const volReadout = document.getElementById('volReadout');
-  const prepInput = document.getElementById('prepInput');
+  const prepPlus = document.getElementById('prepPlus');
+  const prepMinus = document.getElementById('prepMinus');
+  const prepReadout = document.getElementById('prepReadout');
   const earbudToggle = document.getElementById('earbudToggle');
   const diag = document.getElementById('diag');
   const keepAlive = document.getElementById('keepAlive');
@@ -374,6 +431,10 @@
   }
 
   function ensureBackgroundAudio() {
+    // Re-register the media session fresh every rep, not just once at page
+    // load \u2014 relying on a single initial registration was likely why the
+    // earbud/fast-handback stopped working after the first stop.
+    setupMediaSession();
     keepAlive.play().catch(() => {
       showDiag('Background audio didn\u2019t start \u2014 tap Start again.');
     });
@@ -387,7 +448,7 @@
     getAudioCtx();
     ensureBackgroundAudio();
 
-    const prep = Math.max(0, parseInt(prepInput.value, 10) || 0);
+    const prep = prepSeconds;
     if (prep <= 0) { start(); return; }
 
     phase = 'countdown';
@@ -461,7 +522,7 @@
     // playback control back to whatever else was playing, right away
     // rather than lingering as the "paused" now-playing app.
     setTimeout(() => {
-      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
       if (audioCtx && audioCtx.state === 'running') audioCtx.suspend();
     }, 160);
   }
@@ -476,13 +537,49 @@
     warmUpSpeech();
     voiceLevel = Math.min(10, voiceLevel + 1);
     volReadout.textContent = voiceLevel;
+    saveSetting('holdtimer_voiceLevel', voiceLevel);
   });
   volMinus.addEventListener('click', () => {
     warmUpSpeech();
     voiceLevel = Math.max(1, voiceLevel - 1);
     volReadout.textContent = voiceLevel;
+    saveSetting('holdtimer_voiceLevel', voiceLevel);
+  });
+  prepPlus.addEventListener('click', () => {
+    warmUpSpeech();
+    prepSeconds = Math.min(20, prepSeconds + 1);
+    prepReadout.textContent = prepSeconds;
+    saveSetting('holdtimer_prep', prepSeconds);
+  });
+  prepMinus.addEventListener('click', () => {
+    warmUpSpeech();
+    prepSeconds = Math.max(0, prepSeconds - 1);
+    prepReadout.textContent = prepSeconds;
+    saveSetting('holdtimer_prep', prepSeconds);
+  });
+  earbudToggle.addEventListener('change', () => {
+    saveSetting('holdtimer_earbud', earbudToggle.checked ? '1' : '0');
   });
 
+  function saveSetting(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+  }
+
+  function loadSettings() {
+    try {
+      const savedVol = localStorage.getItem('holdtimer_voiceLevel');
+      if (savedVol !== null) voiceLevel = parseInt(savedVol, 10) || voiceLevel;
+      const savedPrep = localStorage.getItem('holdtimer_prep');
+      if (savedPrep !== null) prepSeconds = parseInt(savedPrep, 10);
+      if (isNaN(prepSeconds)) prepSeconds = 10;
+      const savedEarbud = localStorage.getItem('holdtimer_earbud');
+      if (savedEarbud !== null) earbudToggle.checked = savedEarbud === '1';
+    } catch (e) { /* ignore */ }
+    volReadout.textContent = voiceLevel;
+    prepReadout.textContent = prepSeconds;
+  }
+
+  loadSettings();
   setupMediaSession();
   renderTime();
 </script>
