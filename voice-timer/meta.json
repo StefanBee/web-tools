@@ -1,6 +1,6 @@
 {
-  "title": "Hold Timer",
-  "description": "Voice-activated hold timer.",
-  "emoji": "🎙️",
+  "title": "Voice Timer",
+  "description": "Counting outloud timer.",
+  "emoji": "⏲️",
   "order": 6
 }
