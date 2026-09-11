@@ -57,6 +57,11 @@ h1 {
     color: #a89984;
     font-size: 1.05rem;
 }
+.status {
+    text-align: center;
+    color: #a89984;
+    padding: 20px;
+}
 @media (max-width: 600px) {
     h1 {
         font-size: 2rem;
@@ -79,36 +84,64 @@ h1 {
 <p class="subtitle">
 Small tools that make everyday life easier.
 </p>
-<a class="tool" href="salary-calculator/">
-    <div class="tool-title">💰 Salary Calculator</div>
-    <div class="tool-desc">
-        Calculate worked hours and gross pay.
-    </div>
-</a>
-<a class="tool" href="debt-calc/">
-    <div class="tool-title">💰 Debt Calculator</div>
-    <div class="tool-desc">
-        Calculate how much you owe each other.
-    </div>
-</a>
-<a class="tool" href="quick-tap-timer/">
-    <div class="tool-title">⏱️ Quick Tap Timer</div>
-    <div class="tool-desc">
-        Timer that starts over after 1 tap.
-    </div>
-</a>
-<a class="tool" href="shopping-list/">
-    <div class="tool-title">🛒 Shopping List</div>
-    <div class="tool-desc">
-        One time use shopping list.
-    </div>
-</a>
-<a class="tool" href="clock/">
-    <div class="tool-title">⏰ Clock</div>
-    <div class="tool-desc">
-        Full-screen digital clock.
-    </div>
-</a>
+<div id="tools">
+    <p class="status">Loading tools&hellip;</p>
 </div>
+</div>
+<script>
+const OWNER = "StefanBee";
+const REPO = "web-tools";
+
+async function loadTools() {
+    const container = document.getElementById("tools");
+    try {
+        const res = await fetch(
+            `https://api.github.com/repos/${OWNER}/${REPO}/contents/`
+        );
+        if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+        const entries = await res.json();
+        const dirs = entries.filter(e => e.type === "dir");
+
+        const tools = [];
+        await Promise.all(dirs.map(async (dir) => {
+            try {
+                const metaRes = await fetch(
+                    `https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${dir.name}/meta.json`
+                );
+                if (!metaRes.ok) return; // no meta.json, skip this folder
+                const meta = await metaRes.json();
+                tools.push({
+                    path: dir.name,
+                    title: meta.title || dir.name,
+                    description: meta.description || "",
+                    emoji: meta.emoji || "🔧",
+                    order: typeof meta.order === "number" ? meta.order : Infinity,
+                });
+            } catch (e) {
+                // folder has no valid meta.json, skip it
+            }
+        }));
+
+        tools.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+
+        if (tools.length === 0) {
+            container.innerHTML = '<p class="status">No tools found.</p>';
+            return;
+        }
+
+        container.innerHTML = tools.map(t => `
+            <a class="tool" href="${t.path}/">
+                <div class="tool-title">${t.emoji} ${t.title}</div>
+                <div class="tool-desc">${t.description}</div>
+            </a>
+        `).join("");
+    } catch (err) {
+        container.innerHTML = '<p class="status">Could not load tools list.</p>';
+        console.error(err);
+    }
+}
+
+loadTools();
+</script>
 </body>
 </html>
