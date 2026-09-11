@@ -20,6 +20,7 @@
     inset: 0;
     touch-action: none;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: max(3vmin, env(safe-area-inset-top))
@@ -43,14 +44,46 @@
        capped small. */
     font-size: clamp(2.5rem, min(17vw, 40vh), 9rem);
   }
+
+  #pin-btn {
+    margin-top: 2vh;
+    background: none;
+    border: 1px solid #504945;
+    color: #665c54;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(0.7rem, 1.6vmin, 0.9rem);
+    letter-spacing: 0.04em;
+    padding: 0.5em 1.1em;
+    border-radius: 999px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  #pin-btn:active {
+    border-color: #665c54;
+    color: #928374;
+  }
+
+  #pinned {
+    margin-top: 1.4vh;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    color: #665c54;
+    font-size: clamp(0.75rem, 1.8vmin, 1rem);
+    letter-spacing: 0.03em;
+    visibility: hidden;
+  }
 </style>
 </head>
 <body>
 
   <div id="time">--:--:--</div>
+  <button id="pin-btn" type="button">mark time</button>
+  <div id="pinned"></div>
 
 <script>
   var el = document.getElementById("time");
+  var pinBtn = document.getElementById("pin-btn");
+  var pinned = document.getElementById("pinned");
   function pad(n) { return n < 10 ? "0" + n : "" + n; }
 
   function tick() {
@@ -59,6 +92,12 @@
     setTimeout(tick, 1000 - now.getMilliseconds()); // lands exactly on each second, no drift
   }
   tick();
+
+  // In-memory only: nothing written to storage, so it's gone on refresh.
+  pinBtn.addEventListener("click", function () {
+    pinned.textContent = "marked " + el.textContent;
+    pinned.style.visibility = "visible";
+  });
 
   document.addEventListener("gesturestart", function (e) { e.preventDefault(); });
   document.addEventListener("touchmove", function (e) { e.preventDefault(); }, { passive: false });
