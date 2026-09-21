@@ -151,6 +151,28 @@
   }
   .heading .box{ visibility:hidden; }
 
+  .label{ flex: 1; min-width: 0; }
+
+  .del-line{
+    flex-shrink: 0;
+    margin-left: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.55;
+  }
+  .del-line:active{
+    opacity: 1;
+    color: var(--red);
+    background: rgba(251,73,52,0.12);
+  }
+  .del-line svg{ width: 13px; height: 13px; }
+
   .empty{
     padding: 44px 20px;
     text-align:center;
@@ -295,16 +317,23 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
   const confirmNo = document.getElementById('confirmNo');
   const countEl = document.getElementById('count');
 
-  // in-memory only: line text -> checked state, keyed by line index+text
+  // in-memory only: keyed by item text (stable across edits, unlike line index)
   let checkedState = {};
 
-  function lineKey(idx, text){ return idx + '::' + text; }
+  function lineKey(text){ return text; }
+
+  function deleteLine(idx){
+    const lines = editor.value.split('\n');
+    lines.splice(idx, 1);
+    editor.value = lines.join('\n');
+    renderList();
+  }
 
   function renderList(){
     const lines = editor.value.split('\n');
     listView.innerHTML = '';
-    let total = 0, done = 0;
     let hasAny = false;
+    const activeKeys = new Set();
 
     lines.forEach((raw, idx) => {
       const text = raw.trim();
@@ -312,7 +341,6 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
       hasAny = true;
 
       const isHeading = text.endsWith(':');
-      const key = lineKey(idx, text);
 
       const row = document.createElement('div');
       row.className = 'row' + (isHeading ? ' heading' : '');
@@ -325,21 +353,39 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
       label.className = 'label';
       label.textContent = isHeading ? text.slice(0, -1) : text;
 
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'del-line';
+      delBtn.setAttribute('aria-label', 'delete line');
+      delBtn.title = 'delete line';
+      delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteLine(idx);
+      });
+
       row.appendChild(box);
       row.appendChild(label);
+      row.appendChild(delBtn);
 
       if(!isHeading){
-        total++;
-        if(checkedState[key]){ row.classList.add('checked'); done++; }
+        const key = lineKey(text);
+        activeKeys.add(key);
+        if(checkedState[key]){ row.classList.add('checked'); }
         row.addEventListener('click', () => {
           checkedState[key] = !checkedState[key];
           row.classList.toggle('checked');
-          updateCount(total, Object.keys(checkedState).filter(k => checkedState[k] && lines.some((l,i)=>lineKey(i,l.trim())===k)).length);
           recount();
         });
       }
 
       listView.appendChild(row);
+    });
+
+    // drop checked-state for items that no longer exist, so stale checks
+    // don't silently reappear if the same text is typed again later
+    Object.keys(checkedState).forEach(k => {
+      if(!activeKeys.has(k)) delete checkedState[k];
     });
 
     if(!hasAny){
@@ -355,8 +401,6 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     if(boxes.length === 0){ countEl.textContent = ''; return; }
     countEl.textContent = checked.length + ' / ' + boxes.length;
   }
-
-  function updateCount(){ /* handled by recount via DOM */ }
 
   function showEdit(){
     editor.classList.remove('hidden');
