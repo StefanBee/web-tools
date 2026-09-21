@@ -317,8 +317,29 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
   const confirmNo = document.getElementById('confirmNo');
   const countEl = document.getElementById('count');
 
-  // in-memory only: keyed by item text (stable across edits, unlike line index)
+  // persisted to localStorage; keyed by item text (stable across edits, unlike line index)
   let checkedState = {};
+
+  const STORAGE_KEY = 'shopping-list-state';
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      text: editor.value,
+      checked: checkedState
+    }));
+  }
+
+  function load(){
+    try{
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if(!saved) return;
+      const parsed = JSON.parse(saved);
+      if(typeof parsed.text === 'string') editor.value = parsed.text;
+      if(parsed.checked && typeof parsed.checked === 'object') checkedState = parsed.checked;
+    }catch{
+      // corrupt or inaccessible storage -- just start fresh
+    }
+  }
 
   function lineKey(text){ return text; }
 
@@ -326,6 +347,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     const lines = editor.value.split('\n');
     lines.splice(idx, 1);
     editor.value = lines.join('\n');
+    save();
     renderList();
   }
 
@@ -375,6 +397,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
         row.addEventListener('click', () => {
           checkedState[key] = !checkedState[key];
           row.classList.toggle('checked');
+          save();
           recount();
         });
       }
@@ -422,6 +445,7 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
 
   editBtn.addEventListener('click', showEdit);
   listBtn.addEventListener('click', showList);
+  editor.addEventListener('input', save);
 
   clearBtn.addEventListener('click', () => {
     confirmBar.classList.add('show');
@@ -450,17 +474,24 @@ lines ending in : become a heading" spellcheck="false" autocapitalize="off" auto
     const cursorPos = (before + insertion).length;
     editor.focus();
     editor.setSelectionRange(cursorPos, cursorPos);
+    save();
   });
   confirmYes.addEventListener('click', () => {
     editor.value = '';
     checkedState = {};
+    localStorage.removeItem(STORAGE_KEY);
     confirmBar.classList.remove('show');
     listView.innerHTML = '';
     countEl.textContent = '';
     showEdit();
   });
 
-  showEdit();
+  load();
+  if(editor.value.trim() !== ''){
+    showList();
+  }else{
+    showEdit();
+  }
 </script>
 
 </body>
