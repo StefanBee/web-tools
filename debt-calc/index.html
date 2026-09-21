@@ -251,6 +251,10 @@ button:active {
             context.setAttribute("aria-label", `Context ${index + 1}`);
 
             amount.addEventListener("input", () => {
+                if (applyHalfShorthand(amount)) {
+                    amount.setSelectionRange(amount.value.length, amount.value.length);
+                }
+
                 rows[index].amount = amount.value;
                 save();
                 updateTotal();
@@ -348,6 +352,34 @@ button:active {
         const number = Number(cleaned);
 
         return Number.isFinite(number) ? number : null;
+    }
+
+    const HALF_PATTERN = /^(-?\d+(?:[.,]\d+)?)\s*\/\s*2$/;
+
+    function roundAwayFromZero(value, decimals) {
+        const factor = Math.pow(10, decimals);
+        const sign = value < 0 ? -1 : 1;
+        return sign * Math.round(Math.abs(value) * factor + 1e-9) / factor;
+    }
+
+    // If the field currently reads exactly "<number>/2", replace it in place
+    // with the halved, rounded-away-from-zero result -- plain text after
+    // that, so it can still be edited/deleted like anything else.
+    function applyHalfShorthand(input) {
+        const match = input.value.match(HALF_PATTERN);
+
+        if (!match) {
+            return false;
+        }
+
+        const number = Number(match[1].replace(",", "."));
+
+        if (!Number.isFinite(number)) {
+            return false;
+        }
+
+        input.value = formatNumber(roundAwayFromZero(number / 2, 2));
+        return true;
     }
 
     function formatNumber(number) {
