@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#282828">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Work Pay">
+  <meta name="description" content="A tiny Gruvbox shift and payday tracker. No account, no server.">
+  <title>Work Pay</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #282828; --panel: #32302f; --line: #504945;
+      --text: #ebdbb2; --muted: #a89984; --dim: #928374;
+      --yellow: #fabd2f; --yellow-deep: #d79921;
+      --red: #fb4934; --green: #b8bb26;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); }
+    body { overscroll-behavior: none; }
+    button, input { font: inherit; }
+    button { cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    button:focus-visible, input:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+    button:disabled { opacity: .35; cursor: default; }
+    .shell {
+      width: 100%; max-width: 460px; height: 100vh; height: 100dvh; margin: auto;
+      padding: max(15px, env(safe-area-inset-top)) 20px max(10px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; gap: 15px; overflow: hidden;
+    }
+    .top { display: flex; align-items: center; justify-content: space-between; flex: 0 0 43px; }
+    .wordmark { color: var(--yellow); font-size: 20px; font-weight: 800; letter-spacing: -.9px; }
+    .nav { border: 0; background: none; color: var(--muted); font-size: 12px; padding: 10px 0 10px 16px; }
+    .nav:hover { color: var(--yellow); }
+    .eyebrow { display: block; color: var(--muted); text-transform: lowercase; font-size: 11px; letter-spacing: .45px; }
+    .hero { display: flex; flex-direction: column; justify-content: center; min-height: 94px; gap: 9px; }
+    .hero .number { font-size: clamp(37px, 10vw, 48px); line-height: 1; font-weight: 700; letter-spacing: -2.6px; color: var(--yellow); font-variant-numeric: tabular-nums; }
+    .hero .number small { font-size: 13px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+    .weeks { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: flex; flex-direction: column; flex: 0 0 auto; }
+    .week { border: 0; text-align: left; color: var(--text); background: transparent; min-height: 63px; padding: 11px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+    .week + .week { border-top: 1px solid #3c3836; }
+    .week .name { display: block; font-size: 13px; font-weight: 600; line-height: 20px; }
+    .week .date { display: block; font-size: 10px; color: var(--dim); line-height: 15px; }
+    .week .value { flex-shrink: 0; font-size: 20px; font-weight: 600; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
+    .week.primary .value { color: var(--yellow); }
+    .week:active { opacity: .7; }
+    .paycheck { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 12px 13px; flex: 0 0 auto; }
+    .paycheck .prompt-line { font-size: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
+    .paycheck .prompt-line strong { font-weight: 600; }
+    .paycheck .muted { color: var(--dim); font-size: 10px; }
+    .pay-actions { display: flex; gap: 9px; }
+    .btn { border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 10px 12px; background: transparent; min-height: 40px; font-size: 12px; font-weight: 700; }
+    .btn:active { transform: translateY(1px); }
+    .btn-yellow { background: var(--yellow); color: #282828; border-color: var(--yellow); }
+    .btn-grow { flex: 1; }
+    .quiet { padding: 9px 0; color: var(--muted); font-size: 12px; text-decoration: underline; text-decoration-color: #665c54; background: none; border: none; }
+    .add { display: flex; flex-direction: column; gap: 9px; flex: 0 0 auto; }
+    .sectionhead { display: flex; align-items: center; justify-content: space-between; min-height: 16px; }
+    .sectionhead b { color: var(--text); font-size: 12px; font-weight: 600; }
+    .sectionhead button { background: none; border: 0; color: var(--dim); font-size: 11px; padding: 4px 0 4px 8px; }
+    .inputrow { display: flex; width: 100%; gap: 8px; }
+    .quick-input { flex: 1; min-width: 0; height: 49px; background: #3c3836; border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 0 14px; font-size: 17px; line-height: 1.1; letter-spacing: -.5px; caret-color: var(--yellow); outline: none; }
+    .quick-input::placeholder { color: #928374; opacity: .85; }
+    .quick-input:focus { border-color: var(--yellow-deep); }
+    .add-btn { width: 51px; flex-shrink: 0; height: 49px; padding: 0; border: 0; border-radius: 8px; background: var(--yellow); color: #282828; font-size: 29px; font-weight: 400; line-height: 1; }
+    .hint { color: var(--dim); font-size: 10px; min-height: 25px; line-height: 15px; }
+    .hint.has-value { color: var(--yellow); }
+    .hint.error { color: var(--red); }
+    .recent { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 6px; overflow: hidden; }
+    .recent-head { flex: 0 0 auto; }
+    .recent .rows, .history-list { flex: 1; overflow: hidden; min-height: 0; }
+    .shift { width: 100%; padding: 10px 0; background: none; border: 0; border-bottom: 1px solid #3c3836; text-align: left; color: var(--text); display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 58px; }
+    .shift .primaryline { display: block; font-size: 12px; line-height: 19px; font-weight: 600; }
+    .shift .subline { display: block; font-size: 10px; line-height: 17px; color: var(--dim); }
+    .shift .amount { font-size: 14px; white-space: nowrap; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .shift .paid { color: var(--green); }
+    .shift .planned { color: var(--dim); }
+    .empty { color: var(--dim); font-size: 12px; padding: 22px 0; line-height: 21px; }
+    .footer { flex: 0 0 18px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #7c6f64; }
+    .footer button { color: var(--dim); font-size: 10px; background: none; border: 0; padding: 2px 0; }
+    .history-controls { display: flex; gap: 7px; flex: 0 0 auto; }
+    .history-controls .btn { flex: 1; }
+    .history-list { flex: 1; }
+    .history-topline { display: flex; align-items: center; justify-content: space-between; }
+    .history-count { color: var(--dim); font-size: 11px; }
+    .pager { display: flex; flex: 0 0 auto; justify-content: space-between; align-items: center; gap: 10px; min-height: 41px; }
+    .pager span { color: var(--dim); font-size: 11px; }
+    .pager .btn { min-width: 65px; }
+    .history-sub { color: var(--dim); font-size: 11px; }
+    .filter-clear { color: var(--yellow); background: none; border: 0; padding: 8px 0; text-align: left; font-size: 11px; }
+    .toast { position: fixed; z-index: 12; bottom: max(22px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); border: 1px solid var(--line); background: #3c3836; color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 12px; width: max-content; max-width: calc(100vw - 40px); box-shadow: 0 6px 30px #0005; text-align: center; pointer-events: none; }
+    .modal-bg { position: fixed; inset: 0; background: #1d2021db; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 20px; padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+    .modal { width: min(100%, 390px); border: 1px solid var(--line); border-radius: 11px; background: var(--bg); padding: 19px; display: flex; flex-direction: column; gap: 17px; }
+    .modal h2 { margin: 0; font-size: 17px; color: var(--yellow); }
+    .modal p { margin: 0; font-size: 11px; line-height: 19px; color: var(--muted); }
+    .modal .quick-input { flex: none; width: 100%; }
+    .modal .buttons { display: flex; gap: 8px; }
+    .modal .buttons .btn { flex: 1; }
+    .modal .danger { color: var(--red); border-color: #7c3030; }
+    .modal .close-x { background: none; border: 0; color: var(--muted); padding: 3px; font-size: 20px; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; }
+    @media (max-height: 760px) {
+      .shell { gap: 10px; padding-top: max(9px, env(safe-area-inset-top)); }
+      .hero { min-height: 74px; gap: 5px; } .hero .number { font-size: 37px; }
+      .week { min-height: 54px; padding: 7px 0; }
+      .paycheck { padding: 9px 11px; } .paycheck .prompt-line { margin-bottom: 7px; }
+      .recent .shift:nth-child(n+3) { display: none; }
+    }
+    @media (max-height: 620px) {
+      .shell { gap: 8px; }
+      .hero { min-height: 62px; } .hero .number { font-size: 32px; }
+      .week { min-height: 45px; } .week .value { font-size: 17px; }
+      .recent .shift:nth-child(n+2) { display: none; }
+      .footer { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .btn:active { transform: none; } }
+  </style>
+</head>
+<body>
+  <main class="shell" id="app" aria-live="polite"></main>
+  <div id="overlay"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <input type="file" accept=".json,application/json" id="importFile" hidden>
+  <script>
+  (() => {
+    'use strict';
+    const KEY = 'work-pay-v1';
+    const el = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    const pad = n => String(n).padStart(2, '0');
+    const dateKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const dateFromKey = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d,12); };
+    const addDays = (s, n) => { const d = dateFromKey(s); d.setDate(d.getDate()+n); return dateKey(d); };
+    const today = () => dateKey(new Date());
+    const dmy = s => { const d = dateFromKey(s); return `${pad(d.getDate())}/${pad(d.getMonth()+1)}`; };
+    const shortDate = s => s.slice(0,4) === today().slice(0,4) ? dmy(s) : `${dmy(s)}/${s.slice(2,4)}`;
+    const pretty = s => { const d = dateFromKey(s); return `${pad(d.getDate())} ${['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'][d.getMonth()]}${d.getFullYear() !== new Date().getFullYear() ? ` '${String(d.getFullYear()).slice(2)}` : ''}`; };
+    const money = n => new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 }).format(Math.round((n + Number.EPSILON) * 100) / 100);
+    const weekday = s => ['sun','mon','tue','wed','thu','fri','sat'][dateFromKey(s).getDay()];
+    const payday = s => { const dow = (dateFromKey(s).getDay()+6)%7; return addDays(s, 11-dow); };
+    const nextFriday = s => addDays(s, (5 - dateFromKey(s).getDay() + 7) % 7);
+    const validDay = (y,m,d) => {
+      if (y < 2000 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return false;
+      const check = new Date(y, m-1, d, 12);
+      return check.getFullYear() === y && check.getMonth() === m-1 && check.getDate() === d;
+    };
+    function parseDate(raw) {
+      // DD/MM always means the current calendar year. DD/MM/YY or DD/MM/YYYY
+      // overrides it, so older shifts can be entered after New Year's Day.
+      const match = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?$/.exec(raw);
+      if (!match) return null;
+      const day = Number(match[1]), month = Number(match[2]);
+      const year = match[3] ? (match[3].length === 2 ? 2000 + Number(match[3]) : Number(match[3])) : new Date().getFullYear();
+      return validDay(year, month, day) ? `${year}-${pad(month)}-${pad(day)}` : null;
+    }
+    function parseShift(raw) {
+      const parts = raw.trim().split(/\s+/);
+      if (parts.length < 3) return null;
+      const date = parseDate(parts[0]);
+      const r = parts[1].replace(',','.');
+      const h = parts[2].replace(',','.');
+      if (!date || !/^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/.test(r) || !/^(?:\d+(?:\.\d{1,2})?|\.\d{1,2})$/.test(h)) return null;
+      const rate = +r, hours = +h;
+      if (rate <= 0 || hours <= 0 || rate > 100000 || hours > 24) return null;
+      const company = parts.slice(3).join(' ').trim().slice(0, 70);
+      return {date, rate, hours, company};
+    }
+    const amount = s => Math.round((s.rate*s.hours + Number.EPSILON)*100)/100;
+    const fresh = () => ({ version: 1, shifts: [], snoozes: {}, settled: [], lastPayment: null });
+    let state = fresh();
+    let saveError = false;
+    try {
+      const stored = JSON.parse(localStorage.getItem(KEY));
+      if (stored && stored.version === 1 && Array.isArray(stored.shifts)) {
+        state = { ...fresh(), ...stored };
+      }
+    } catch (e) { console.warn('Saved data could not be read', e); }
+    // Validate persisted rows independently; never trust imported or stale data.
+    state.shifts = (state.shifts || []).filter(s => {
+      if (!s || typeof s.id !== 'string' || !/^\d{4}-\d\d-\d\d$/.test(s.date)) return false;
+      const [y,m,d] = s.date.split('-').map(Number);
+      return validDay(y,m,d) && Number.isFinite(s.rate) && s.rate > 0 && Number.isFinite(s.hours) && s.hours > 0 && s.hours <= 24 && typeof s.company === 'string' && (!s.paidAt || /^\d{4}-\d\d-\d\d$/.test(s.paidAt));
+    });
+    state.snoozes = state.snoozes && typeof state.snoozes === 'object' ? state.snoozes : {};
+    state.settled = Array.isArray(state.settled) ? state.settled : [];
+    let screen = 'home', filteredWeek = null, page = 0, editId = null, draft = '', toastTimer = null;
+    const persist = () => {
+      try { localStorage.setItem(KEY, JSON.stringify(state)); saveError = false; return true; }
+      catch (e) { saveError = true; notify('Could not save. Check browser storage.'); return false; }
+    };
+    function notify(message) {
+      const t = el('toast'); t.textContent = message; t.className = 'toast';
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = ''; t.textContent = ''; }, 3000);
+    }
+    function unpaidShifts() { return state.shifts.filter(s => !s.paidAt); }
+    function outstanding(date) { return unpaidShifts().filter(s => payday(s.date) === date); }
+    function sum(shifts) { return Math.round(shifts.reduce((total,s) => total + amount(s), 0) * 100)/100; }
+    function weeks() {
+      const day = today(), base = nextFriday(day);
+      const overdue = [...new Set(unpaidShifts().map(s => payday(s.date)).filter(p => p <= day))].sort();
+      const first = overdue[0] || (state.settled.includes(base) ? addDays(base,7) : base);
+      return [first, addDays(first,7)];
+    }
+    function commonHeader(rightLabel, action) {
+      return `<header class="top"><div class="wordmark">work<span style="color:var(--text)">.</span></div><button class="nav" data-action="${action}">${esc(rightLabel)}</button></header>`;
+    }
+    function shiftHtml(s) {
+      const paid = !!s.paidAt, upcoming = s.date > today();
+      const status = paid ? `paid ${shortDate(s.paidAt)}` : upcoming ? 'planned' : `due ${shortDate(payday(s.date))}`;
+      const cls = paid ? 'paid' : upcoming ? 'planned' : '';
+      return `<button class="shift" data-action="edit" data-id="${esc(s.id)}" aria-label="Edit shift ${esc(dmy(s.date))}">
+        <span><span class="primaryline">${esc(shortDate(s.date))}${s.company ? ` · ${esc(s.company)}` : ''}</span><span class="subline">${money(s.hours)}h × ${money(s.rate)} lei · ${esc(status)}</span></span>
+        <span class="amount ${cls}">${money(amount(s))}</span>
+      </button>`;
+    }
+    function sortedShifts(rows) { return rows.slice().sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id)); }
+    function home() {
+      const [first,second] = weeks(), firstAmt = sum(outstanding(first)), secondAmt = sum(outstanding(second));
+      const due = first <= addDays(today(),1) && firstAmt > 0; // Thursday or later: some employers pay early
+      const deferred = state.snoozes[first] === today();
+      const dateStatus = first < today() ? 'overdue' : first === today() ? 'due today' : first === addDays(today(),1) ? 'due tomorrow' : 'scheduled';
+      const shifts = sortedShifts(state.shifts).slice(0,3);
+      return `${commonHeader('history ↗', 'history')}
+        <section class="hero"><span class="eyebrow">total to receive${state.shifts.some(s => !s.paidAt && s.date > today()) ? ' · incl. planned' : ''}</span>
+          <div class="number">${money(sum(unpaidShifts()))}<small> RON</small></div></section>
+        <section class="weeks" aria-label="Upcoming pay weeks">
+          <button class="week primary" data-action="week" data-date="${first}">
+            <span><span class="name">${first < nextFriday(today()) ? 'unpaid week' : (first === nextFriday(today()) ? 'this pay week' : 'upcoming pay week')}</span><span class="date">fri ${pretty(first)} · ${dateStatus}</span></span>
+            <span class="value">${money(firstAmt)}</span>
+          </button>
+          <button class="week" data-action="week" data-date="${second}">
+            <span><span class="name">next pay week</span><span class="date">fri ${pretty(second)}</span></span>
+            <span class="value">${money(secondAmt)}</span>
+          </button>
+        </section>
+        ${due ? `<section class="paycheck">
+          <div class="prompt-line"><strong>${deferred ? 'not yet — check again tomorrow' : 'did you get paid?'}</strong><span class="muted">fri ${dmy(first)}</span></div>
+          <div class="pay-actions">${deferred ? '' : '<button class="btn btn-grow" data-action="no">not yet</button>'}
+          <button class="btn btn-yellow btn-grow" data-action="yes" data-date="${first}">${deferred ? 'yes, paid now' : 'yes, got paid'}</button></div>
+        </section>` : ''}
+        <section class="add"><div class="sectionhead"><b>+ new shift</b><span class="eyebrow">date · rate · hours</span></div>
+          <form id="quickForm" class="inputrow" autocomplete="off"><input class="quick-input" id="quickInput" type="text" aria-label="Shift: day/month or day/month/year, rate, hours, and optional company" placeholder="21/11 20 8" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" value="${esc(draft)}"><button class="add-btn" aria-label="Save shift" title="Save shift" type="submit">+</button></form>
+          <div class="hint" id="liveHint">dd/mm[/yyyy] rate hours [company optional]</div>
+        </section>
+        <section class="recent"><div class="sectionhead recent-head"><b>shifts</b><button data-action="history">all ↗</button></div>
+          <div class="rows">${shifts.length ? shifts.map(shiftHtml).join('') : '<div class="empty">No shifts yet.<br>Try 21/11 20 8</div>'}</div>
+        </section>
+        <footer class="footer"><span>${saveError ? 'storage unavailable' : 'saved in this browser'}</span><span>${state.lastPayment ? '<button data-action="undo">undo payment ↶</button> · ' : ''}<button data-action="export">backup ↓</button></span></footer>`;
+    }
+    function history() {
+      let all = sortedShifts(state.shifts);
+      if (filteredWeek) all = all.filter(s => payday(s.date) === filteredWeek);
+      const size = window.innerHeight < 700 ? 4 : window.innerHeight < 840 ? 5 : 6;
+      const pages = Math.max(1, Math.ceil(all.length/size));
+      page = Math.min(page, pages-1);
+      const shown = all.slice(page*size, (page+1)*size);
+      return `${commonHeader('← back', 'home')}
+        <section class="hero" style="min-height:74px"><span class="eyebrow">${filteredWeek ? `pay week · fri ${pretty(filteredWeek)}` : 'all shifts · unpaid & paid'}</span>
+          <div class="number" style="font-size:36px">${money(sum(all))}<small> RON</small></div></section>
+        <div class="history-topline"><span class="history-count">${all.length} shift${all.length===1?'':'s'} ${filteredWeek ? 'in this pay week' : 'in history'}</span>${filteredWeek ? '<button class="filter-clear" data-action="all">show all ×</button>' : ''}</div>
+        <div class="history-list">${shown.length ? shown.map(shiftHtml).join('') : '<div class="empty">No shifts here yet.</div>'}</div>
+        <div class="pager"><button class="btn" data-action="prev" ${page===0?'disabled':''}>← prev</button><span>${page+1} / ${pages}</span><button class="btn" data-action="next" ${page>=pages-1?'disabled':''}>next →</button></div>
+        <div class="history-controls"><button class="btn" data-action="export">export JSON ↓</button><button class="btn" data-action="import">import JSON ↑</button></div>
+        <footer class="footer"><span>tap a shift to edit or delete</span>${state.lastPayment ? '<button data-action="undo">undo payment ↶</button>' : '<span>local only</span>'}</footer>`;
+    }
+    function refresh() {
+      el('app').innerHTML = screen === 'home' ? home() : history();
+      if (screen === 'home') updateHint();
+    }
+    function updateHint() {
+      const input = el('quickInput'), hint = el('liveHint');
+      if (!input || !hint) return;
+      draft = input.value;
+      if (!draft.trim()) { hint.textContent = 'dd/mm[/yyyy] rate hours [company optional]'; hint.className = 'hint'; return; }
+      const data = parseShift(draft);
+      if (!data) { hint.textContent = 'try: 21/11/2026 20 8'; hint.className = 'hint error'; return; }
+      hint.textContent = `${weekday(data.date)} ${pretty(data.date)} → fri ${pretty(payday(data.date))} · ${money(amount(data))} RON`;
+      hint.className = 'hint has-value';
+    }
+    function makeId() {
+      return (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+    function createShift(raw) {
+      const parsed = parseShift(raw);
+      if (!parsed) { notify('Use: 21/11[/2026] 20 8'); return; }
+      state.shifts.push({ ...parsed, id: makeId(), paidAt: null });
+      const saved = persist(); draft = ''; refresh(); if (saved) notify(`${money(amount(parsed))} RON added · due ${dmy(payday(parsed.date))}`);
+    }
+    function markPaid(week) {
+      const rows = outstanding(week);
+      if (!rows.length || week > addDays(today(),1)) return;
+      state.lastPayment = { payday: week, shifts: rows.map(s => ({id: s.id, previous: s.paidAt || null})) };
+      rows.forEach(s => { s.paidAt = today(); });
+      if (!state.settled.includes(week)) state.settled.push(week);
+      delete state.snoozes[week];
+      const saved = persist(); refresh();
+      if (saved) notify(`${money(sum(rows))} RON marked received`);
+    }
+    function undoPaid() {
+      const last = state.lastPayment;
+      if (!last) return;
+      last.shifts.forEach(item => {
+        const s = state.shifts.find(s => s.id === item.id);
+        if (s) s.paidAt = item.previous;
+      });
+      state.settled = state.settled.filter(w => w !== last.payday);
+      state.lastPayment = null;
+      persist(); refresh(); notify('Payment reverted');
+    }
+    function editor(id) {
+      const s = state.shifts.find(s => s.id === id);
+      if (!s) return;
+      editId = id;
+      const value = `${dmy(s.date)}/${s.date.slice(0,4)} ${s.rate} ${s.hours}${s.company ? ` ${s.company}` : ''}`;
+      el('overlay').innerHTML = `<div class="modal-bg" data-action="close"><section class="modal" role="dialog" aria-modal="true" aria-label="Edit shift">
+        <div class="modal-head"><h2>edit shift</h2><button class="close-x" data-action="close" aria-label="Close">×</button></div>
+        <p>dd/mm[/yyyy] · RON/hour · hours · company (optional)</p>
+        <form id="editForm"><input id="editInput" class="quick-input" autocomplete="off" aria-label="Edit shift" autocorrect="off" autocapitalize="off" spellcheck="false" value="${esc(value)}"></form>
+        <p>${s.paidAt ? `received ${dmy(s.paidAt)} · ` : ''}expected payday: fri ${pretty(payday(s.date))}</p>
+        <div class="buttons"><button class="btn danger" data-action="delete">delete</button><button class="btn btn-yellow" type="submit" form="editForm">save changes</button></div>
+      </section></div>`;
+    }
+    function closeEditor() { editId = null; el('overlay').innerHTML = ''; }
+    function saveEdit() {
+      const parsed = parseShift(el('editInput')?.value || '');
+      if (!parsed) { notify('Invalid shift. Try: 21/11 20 8'); return; }
+      const s = state.shifts.find(s => s.id === editId);
+      if (!s) return;
+      Object.assign(s, parsed);
+      // If the shift is moved to a different pay week, don't silently mark it paid.
+      persist(); closeEditor(); refresh(); notify('Shift updated');
+    }
+    function deleteEdit() {
+      if (!confirm('Delete this shift permanently?')) return;
+      state.shifts = state.shifts.filter(s => s.id !== editId);
+      persist(); closeEditor(); refresh(); notify('Shift deleted');
+    }
+    function exportData() {
+      const blob = new Blob([JSON.stringify({...state, exportedAt: new Date().toISOString()},null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `work-pay-${today()}.json`; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+      notify('Backup exported');
+    }
+    function importData(file) {
+      if (!file) return;
+      if (file.size > 5_000_000) { notify('File too large'); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!data || data.version !== 1 || !Array.isArray(data.shifts) || data.shifts.length > 100000) throw Error('bad file');
+          const clean = data.shifts.map(s => {
+            if (!s || typeof s.id !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s.date) || !Number.isFinite(s.rate) || s.rate <= 0 || !Number.isFinite(s.hours) || s.hours <= 0 || s.hours > 24) throw Error('bad shift');
+            const [y,m,d] = s.date.split('-').map(Number);
+            if (!validDay(y,m,d) || (s.paidAt && !/^\d{4}-\d{2}-\d{2}$/.test(s.paidAt))) throw Error('bad date');
+            return {id:s.id, date:s.date, rate:s.rate, hours:s.hours, company:typeof s.company==='string'?s.company.slice(0,70):'', paidAt:s.paidAt||null};
+          });
+          if (!confirm(`Replace your current history with ${clean.length} imported shifts?`)) return;
+          state = {version:1, shifts:clean, settled:Array.isArray(data.settled)?data.settled.filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)):[], snoozes:(data.snoozes && typeof data.snoozes==='object')?data.snoozes:{}, lastPayment:null};
+          page = 0; filteredWeek = null; persist(); refresh(); notify(`${clean.length} shifts imported`);
+        } catch (e) { notify('Invalid backup file'); }
+      };
+      reader.readAsText(file);
+    }
+    document.addEventListener('submit', e => {
+      if (e.target?.id === 'quickForm') { e.preventDefault(); createShift(el('quickInput').value); el('quickInput')?.blur(); }
+      if (e.target?.id === 'editForm') { e.preventDefault(); saveEdit(); }
+    });
+    document.addEventListener('input', e => { if (e.target?.id === 'quickInput') updateHint(); });
+    document.addEventListener('click', e => {
+      const button = e.target.closest('[data-action]'); if (!button) return;
+      const action = button.dataset.action;
+      if (action === 'close' && e.target !== button && !e.target.classList.contains('close-x')) return;
+      switch(action) {
+        case 'home': screen = 'home'; filteredWeek = null; page = 0; refresh(); break;
+        case 'history': screen = 'history'; filteredWeek = null; page = 0; refresh(); break;
+        case 'all': filteredWeek = null; page = 0; refresh(); break;
+        case 'week': screen = 'history'; filteredWeek = button.dataset.date; page = 0; refresh(); break;
+        case 'no': state.snoozes[weeks()[0]] = today(); persist(); refresh(); break;
+        case 'yes': markPaid(button.dataset.date); break;
+        case 'prev': page = Math.max(0,page-1); refresh(); break;
+        case 'next': page += 1; refresh(); break;
+        case 'edit': editor(button.dataset.id); break;
+        case 'close': closeEditor(); break;
+        case 'delete': deleteEdit(); break;
+        case 'export': exportData(); break;
+        case 'import': el('importFile').click(); break;
+        case 'undo': undoPaid(); break;
+      }
+    });
+    el('importFile').addEventListener('change', e => { importData(e.target.files[0]); e.target.value=''; });
+    document.addEventListener('keydown', e => { if (e.key==='Escape' && editId) closeEditor(); });
+    window.addEventListener('resize', () => { if (screen === 'history') refresh(); });
+    let lastDay = today();
+    setInterval(() => { if (today() !== lastDay) { lastDay = today(); refresh(); } }, 60000);
+    refresh();
+    // Expose only pure calculation utilities for quick sanity checks in browser devtools.
+    window.workPayHelpers = Object.freeze({ parseShift, payday, nextFriday });
+  })();
+  </script>
+</body>
+</html>
