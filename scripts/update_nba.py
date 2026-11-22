@@ -191,7 +191,7 @@ def team_injuries(team_id: str) -> dict:
             value = item.get(key)
             if isinstance(value, dict):
                 value = value.get("displayName") or value.get("name") or value.get("type")
-            if isinstance(value, str) and value.strip():
+            if isinstance(value, str) and value.strip() and not value.strip().upper().startswith("INJURY_STATUS_"):
                 values.append(value.strip())
         details = item.get("details") or {}
         if isinstance(details, dict):
@@ -231,7 +231,7 @@ def game_injuries(raw: dict) -> dict:
                 value = item.get(key)
                 if isinstance(value, dict):
                     value = value.get("displayName") or value.get("name") or value.get("type")
-                if isinstance(value, str) and value.strip():
+                if isinstance(value, str) and value.strip() and not value.strip().upper().startswith("INJURY_STATUS_"):
                     pieces.append(value.strip())
             details = item.get("details") or {}
             if isinstance(details, dict):
@@ -267,8 +267,8 @@ def add_missing_players(rosters: dict, team_id: str, game_notes: dict) -> None:
             continue
         game_note = game_notes.get((team_id, "id:" + aid)) or game_notes.get((team_id, "name:" + name.casefold()))
         injury = injuries.get("id:" + aid) or injuries.get("name:" + name.casefold())
-        reason = ("Game injury report: " + game_note) if game_note else (
-            ("Current injury report: " + injury) if injury else "Not in game box score")
+        reason = game_note if game_note else (
+            ("Current report: " + injury) if injury else "Reason not listed")
         players.append({
             "id": aid, "name": name, "played": False, "dnp": True,
             "reason": reason,
