@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#282828">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NBA Recap">
+  <meta name="description" content="Last night's NBA box scores and conference standings. Fast, minimal, Gruvbox.">
+  <title>NBA Recap</title>
+  <style>
+    :root { color-scheme: dark; --bg:#282828; --card:#3c3836; --line:#504945; --text:#ebdbb2; --dim:#a89984; --yellow:#fabd2f; --green:#b8bb26; --red:#fb4934; --blue:#83a598; }
+    *, *::before, *::after { box-sizing:border-box; }
+    html { background:var(--bg); overflow-x:clip; }
+    body { margin:0; min-width:0; width:100%; overflow-x:clip; overscroll-behavior-x:none; touch-action:pan-y; font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--text); background:var(--bg); -webkit-tap-highlight-color:transparent; }
+    button, summary { -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+    button { font:inherit; cursor:pointer; }
+    button:focus-visible, summary:focus-visible { outline:2px solid var(--yellow); outline-offset:3px; }
+    .app { width:100%; max-width:640px; padding:0 16px calc(22px + env(safe-area-inset-bottom)); margin:auto; }
+    .top { padding:calc(22px + env(safe-area-inset-top)) 2px 17px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .eyebrow { color:var(--dim); font-size:11px; font-weight:650; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { font-size:26px; margin:2px 0 0; line-height:1.1; letter-spacing:-.035em; color:var(--yellow); }
+    .refresh { flex:0 0 auto; min-width:44px; min-height:44px; border-radius:13px; border:1px solid var(--line); background:var(--card); color:var(--text); font-size:21px; display:grid; place-items:center; }
+    .refresh:active { background:#504945; }
+    .refresh[disabled] { opacity:.55; }
+    .tabs { position:sticky; top:0; z-index:5; padding:8px 0 11px; background:var(--bg); display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .tab { border:1px solid var(--line); border-radius:13px; min-height:45px; background:var(--card); color:var(--dim); font-weight:700; }
+    .tab[aria-selected="true"] { color:var(--bg); border-color:var(--yellow); background:var(--yellow); }
+    .meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:5px 14px; color:var(--dim); font-size:12px; padding:7px 2px 14px; }
+    .meta strong { color:var(--text); font-weight:650; }
+    .empty { border:1px solid var(--line); background:var(--card); border-radius:18px; padding:23px 18px; color:var(--dim); }
+    .empty strong { color:var(--text); display:block; margin-bottom:5px; }
+    .games { display:grid; gap:12px; }
+    .game { background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden; min-width:0; }
+    .game[open] { border-color:#665c54; }
+    .game > summary { list-style:none; padding:15px 15px 16px; cursor:pointer; min-height:100px; }
+    .game > summary::-webkit-details-marker { display:none; }
+    .game-note { color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+    .game-note .state { color:var(--green); font-weight:700; }
+    .game-grid { display:grid; grid-template-columns:1fr auto; gap:6px 8px; align-items:center; }
+    .squad { display:flex; min-width:0; align-items:center; gap:9px; }
+    .abbr { display:inline-grid; place-items:center; width:37px; height:32px; border-radius:9px; background:var(--bg); color:var(--yellow); font-size:11px; font-weight:800; letter-spacing:.01em; flex:0 0 auto; }
+    .team { font-size:15px; font-weight:700; line-height:1.2; overflow-wrap:anywhere; }
+    .score { font-variant-numeric:tabular-nums; font-size:21px; font-weight:800; letter-spacing:-.04em; color:var(--dim); }
+    .score.win { color:var(--text); }
+    .open-hint { margin-top:11px; display:flex; justify-content:space-between; align-items:center; color:var(--dim); font-size:12px; }
+    .arrow { transition: transform .16s; font-size:16px; line-height:1; }
+    .game[open] .arrow { transform:rotate(180deg); }
+    .boxscore { border-top:1px solid var(--line); padding:0 13px 13px; }
+    .team-block { padding-top:17px; }
+    .team-block + .team-block { border-top:1px solid var(--line); margin-top:16px; }
+    .section-head { display:flex; justify-content:space-between; align-items:center; gap:8px; padding-bottom:10px; }
+    .section-head strong { color:var(--yellow); font-size:14px; }
+    .section-head span { color:var(--dim); font-size:11px; }
+    .players { display:grid; gap:8px; }
+    .player { border:1px solid var(--line); background:var(--bg); border-radius:12px; padding:10px 11px; min-width:0; }
+    .player-top { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:3px 9px; margin-bottom:9px; }
+    .player-name { font-size:13px; font-weight:700; overflow-wrap:anywhere; }
+    .player-min { font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+    .stat-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; }
+    .stat { min-width:0; }
+    .stat .v { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1.15; }
+    .stat .k { color:var(--dim); font-size:10px; font-weight:650; letter-spacing:.03em; margin-top:3px; }
+    .stat .v.positive { color:var(--green); }
+    .stat .v.negative { color:var(--red); }
+    .minor { margin-top:9px; padding-top:8px; border-top:1px solid var(--line); display:flex; gap:14px; color:var(--dim); font-size:11px; }
+    .minor b { color:var(--text); font-weight:650; }
+    .shooting { margin-top:8px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+    .shot { min-width:0; border-radius:7px; background:var(--card); padding:6px 8px; display:flex; flex-wrap:wrap; gap:2px 6px; align-items:baseline; justify-content:space-between; font-variant-numeric:tabular-nums; font-size:11px; }
+    .shot .shot-label { color:var(--dim); font-weight:650; }
+    .shot .shot-val { color:var(--text); font-weight:650; white-space:nowrap; }
+    .dnp { color:var(--dim); font-size:12px; margin:0; }
+    .more { width:100%; min-height:49px; margin-top:14px; border:1px solid var(--line); background:var(--card); color:var(--yellow); border-radius:13px; font-weight:750; }
+    .stand-title { color:var(--yellow); font-size:15px; margin:19px 0 10px; }
+    .standings { border:1px solid var(--line); background:var(--card); border-radius:15px; overflow:hidden; }
+    .rank-row { display:grid; grid-template-columns:25px minmax(0,1fr) 29px 29px 40px; align-items:center; gap:7px; min-height:43px; padding:0 11px; border-top:1px solid var(--line); font-size:12px; font-variant-numeric:tabular-nums; }
+    .rank-row:first-child { border-top:0; }
+    .rank-row.head { min-height:31px; color:var(--dim); font-size:10px; font-weight:750; text-transform:uppercase; }
+    .rank-row .num { color:var(--dim); }
+    .rank-row .name { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; font-weight:650; }
+    .rank-row .right { text-align:right; }
+    .rank-row .pct { color:var(--dim); }
+    .footer { margin-top:21px; padding:12px 3px; color:var(--dim); font-size:11px; text-align:center; }
+    .footer a { color:var(--blue); }
+    [hidden] { display:none !important; }
+    @media(min-width:520px) { .app { padding-left:24px; padding-right:24px; } .shooting { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+    @media(prefers-reduced-motion:reduce) { * { transition:none !important; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div><div class="eyebrow">The morning box score</div><h1>NBA Recap<span style="color:var(--green)">.</span></h1></div>
+      <button class="refresh" id="refresh" type="button" aria-label="Refresh data" title="Refresh data">↻</button>
+    </header>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" id="games-tab" role="tab" aria-controls="games-panel" aria-selected="true" type="button">Games</button>
+      <button class="tab" id="standings-tab" role="tab" aria-controls="standings-panel" aria-selected="false" type="button">Standings</button>
+    </nav>
+    <div id="meta" class="meta" aria-live="polite"><strong>Last night's NBA</strong><span>Loading…</span></div>
+    <section id="games-panel" role="tabpanel" aria-labelledby="games-tab"><div class="empty"><strong>Loading results</strong>Checking the latest saved box scores…</div></section>
+    <section id="standings-panel" role="tabpanel" aria-labelledby="standings-tab" hidden></section>
+    <footer class="footer">Stats via ESPN · All times and dates refer to the NBA's Eastern Time game day.</footer>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const CACHE = 'nba-recap-data-v1';
+      const $ = id => document.getElementById(id);
+      const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+      const fmtDate = day => { try { return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z')); } catch { return day || 'Recent games'; } };
+      const fmtUpdate = iso => { if (!iso) return 'Not updated yet'; try { return 'Updated ' + new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',month:'short',day:'numeric'}).format(new Date(iso)); } catch { return 'Updated recently'; } };
+      let current = null;
+      let showAll = false;
+      let activeTab = 'games';
+      const EMPTY = '<div class="empty"><strong>No results yet</strong>Run the “Update NBA Recap” workflow in GitHub Actions once to populate real games and standings.</div>';
+      const cleanNumber = input => Number.isFinite(Number(input)) ? Number(input) : 0;
+      function shot(label, raw) {
+        const match = /^(\d+)\s*[-/]\s*(\d+)$/.exec(String(raw || ''));
+        if (!match) return `<div class="shot"><span class="shot-label">${label}</span><span class="shot-val">—</span></div>`;
+        const m = +match[1], a = +match[2];
+        return `<div class="shot"><span class="shot-label">${label}</span><span class="shot-val">${m}/${a} · ${a ? Math.round(100*m/a)+'%' : '—'}</span></div>`;
+      }
+      function twopt(p) {
+        const fg = /^(\d+)-(\d+)$/.exec(p.fg || '');
+        const three = /^(\d+)-(\d+)$/.exec(p.three || '');
+        if (!fg || !three) return '';
+        return `${Math.max(0,+fg[1]-+three[1])}-${Math.max(0,+fg[2]-+three[2])}`;
+      }
+      function playerHtml(p) {
+        const absent = p.dnp || !p.played;
+        if (absent) return `<article class="player"><div class="player-top" style="margin-bottom:0"><span class="player-name">${esc(p.name)}</span><span class="player-min">${esc(p.reason || 'DNP')}</span></div></article>`;
+        const plus = String(p.pm ?? '—');
+        const pmStyle = plus.startsWith('+') || Number(plus)>0 ? 'positive' : Number(plus)<0 ? 'negative' : '';
+        return `<article class="player">
+          <div class="player-top"><span class="player-name">${esc(p.name)}</span><span class="player-min">${esc(p.min || '—')} MIN</span></div>
+          <div class="stat-grid">
+            <div class="stat"><div class="v">${esc(p.pts)}</div><div class="k">PTS</div></div>
+            <div class="stat"><div class="v">${esc(p.reb)}</div><div class="k">REB</div></div>
+            <div class="stat"><div class="v">${esc(p.ast)}</div><div class="k">AST</div></div>
+            <div class="stat"><div class="v ${pmStyle}">${esc(plus)}</div><div class="k">+ / −</div></div>
+          </div>
+          <div class="minor"><span>STL <b>${esc(p.stl)}</b></span><span>BLK <b>${esc(p.blk)}</b></span><span>TO <b>${esc(p.to)}</b></span></div>
+          <div class="shooting">${shot('FG',p.fg)}${shot('3PT',p.three)}${shot('2PT',twopt(p))}${shot('FT',p.ft)}</div>
+        </article>`;
+      }
+      function teamHtml(t, roster) {
+        const players = Array.isArray(roster) ? roster : [];
+        const sorted = players.slice().sort((a,b) => Number(Boolean(b.played))-Number(Boolean(a.played)) || cleanNumber(b.pts)-cleanNumber(a.pts));
+        return `<div class="team-block"><div class="section-head"><strong>${esc(t.name)} · ${esc(t.abbr)}</strong><span>${players.length} players listed</span></div>
+          <div class="players">${sorted.map(playerHtml).join('') || '<p class="dnp">Box score not available yet.</p>'}</div></div>`;
+      }
+      function gameHtml(game, idx) {
+        const home = game.home || {}, away = game.away || {};
+        const hs = cleanNumber(home.score), as = cleanNumber(away.score);
+        const rosters = game.rosters || {};
+        return `<details class="game" data-id="${esc(game.id)}">
+          <summary aria-label="Expand ${esc(away.name)} at ${esc(home.name)} box score">
+            <div class="game-note"><span class="state">FINAL</span><span>${esc(game.time || '')}</span></div>
+            <div class="game-grid">
+              <div class="squad"><span class="abbr">${esc(away.abbr)}</span><span class="team">${esc(away.name)}</span></div><span class="score ${as>hs?'win':''}">${esc(away.score)}</span>
+              <div class="squad"><span class="abbr">${esc(home.abbr)}</span><span class="team">${esc(home.name)}</span></div><span class="score ${hs>as?'win':''}">${esc(home.score)}</span>
+            </div><div class="open-hint"><span>${game.boxscoreReady ? 'Both teams · full player stats' : 'Box score pending'}</span><span class="arrow">⌄</span></div>
+          </summary>
+          <div class="boxscore">${teamHtml(away,rosters[String(away.id)])}${teamHtml(home,rosters[String(home.id)])}</div>
+        </details>`;
+      }
+      function standingsHtml(data) {
+        const groups = Array.isArray(data.standings) ? data.standings : [];
+        if (!groups.length) return '<div class="empty"><strong>Standings unavailable</strong>Standings will appear after the next successful data refresh.</div>';
+        return groups.map(g => `<h2 class="stand-title">${esc(g.name)} Conference</h2><div class="standings" role="table" aria-label="${esc(g.name)} conference standings">
+          <div class="rank-row head" role="row"><span>#</span><span>TEAM</span><span class="right">W</span><span class="right">L</span><span class="right">PCT</span></div>
+          ${(g.teams || []).map((t,i) => `<div class="rank-row" role="row"><span class="num">${i+1}</span><span class="name">${esc(t.name || t.abbr)}</span><span class="right">${esc(t.w)}</span><span class="right">${esc(t.l)}</span><span class="right pct">${esc(t.pct)}</span></div>`).join('')}
+          </div>`).join('');
+      }
+      function render() {
+        if (!current) { $('games-panel').innerHTML = EMPTY; $('standings-panel').innerHTML = EMPTY; return; }
+        const games = Array.isArray(current.games) ? current.games : [];
+        $('meta').innerHTML = `<strong>${esc(fmtDate(current.date))} · ${games.length} game${games.length===1?'':'s'}</strong><span>${esc(fmtUpdate(current.updated))}</span>`;
+        const openIds = Array.from(document.querySelectorAll('.game[open]')).map(node => node.dataset.id);
+        const visible = games.slice(0,showAll ? 5 : 3);
+        $('games-panel').innerHTML = games.length ? `<div class="games">${visible.map(gameHtml).join('')}</div>
+          ${games.length>3 ? `<button class="more" type="button" id="more">${showAll ? 'Show fewer games' : `Show ${Math.min(2,games.length-3)} more game${Math.min(2,games.length-3)>1?'s':''}`}</button>` : ''}` : '<div class="empty"><strong>No completed games</strong>The next finished NBA games will appear after the scheduled update.</div>';
+        document.querySelectorAll('.game').forEach(node => { if (openIds.includes(node.dataset.id)) node.open=true; });
+        const more = $('more');
+        if (more) more.addEventListener('click', () => { showAll=!showAll; render(); });
+        $('standings-panel').innerHTML = standingsHtml(current);
+      }
+      function switchTab(next) {
+        activeTab=next;
+        for(const name of ['games','standings']) {
+          $(name+'-tab').setAttribute('aria-selected', String(name===next));
+          $(name+'-panel').hidden = name!==next;
+        }
+        window.scrollTo({top:0,behavior:'instant'});
+      }
+      async function refresh() {
+        const button=$('refresh'); button.disabled=true; button.setAttribute('aria-busy','true');
+        try {
+          const url = `data/latest.json?v=${Math.floor(Date.now()/600000)}`;
+          const res = await fetch(url,{cache:'no-store'});
+          if(!res.ok) throw new Error('HTTP '+res.status);
+          const data = await res.json();
+          if (!data || !Array.isArray(data.games) || !Array.isArray(data.standings)) throw new Error('Unexpected data format');
+          current=data;
+          try { localStorage.setItem(CACHE,JSON.stringify(data)); } catch {}
+          render();
+        } catch (err) {
+          if (!current) {
+            $('games-panel').innerHTML='<div class="empty"><strong>Could not load NBA data</strong>Check your connection or run the GitHub Actions update workflow.</div>';
+            $('standings-panel').innerHTML='<div class="empty"><strong>Could not load standings</strong>Try again in a moment.</div>';
+          }
+          console.warn('NBA Recap refresh:',err);
+        } finally { button.disabled=false; button.removeAttribute('aria-busy'); }
+      }
+      $('games-tab').addEventListener('click',()=>switchTab('games'));
+      $('standings-tab').addEventListener('click',()=>switchTab('standings'));
+      $('refresh').addEventListener('click',refresh);
+      try { const saved=JSON.parse(localStorage.getItem(CACHE)); if(saved && Array.isArray(saved.games) && Array.isArray(saved.standings)) { current=saved; render(); } } catch {}
+      refresh();
+    })();
+  </script>
+</body>
+</html>
