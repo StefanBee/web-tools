@@ -14,11 +14,11 @@ A no-framework, no-build, mobile-first NBA scoreboard for GitHub Pages.
 ## Deploy into StefanBee/web-tools
 
 1. Copy the `nba-recap/` folder, `scripts/update_nba.py`, and `.github/workflows/update-nba-recap.yml` from this package to the **root** of your existing [`web-tools`](https://github.com/StefanBee/web-tools) repository. Keep the folder hierarchy intact.
-2. Commit/push to `main`. In **Repository → Settings → Pages**, select **Source: GitHub Actions** instead of "Deploy from a branch." This workflow deploys your **entire existing `web-tools` homepage and tools**, not only NBA Recap.
+2. Commit/push to `main`. In **Repository → Settings → Pages**, select **Source: GitHub Actions** instead of "Deploy from a branch." This workflow deploys your **entire existing `web-tools` homepage and tools**, not only NBA Recap. Fresh ESPN JSON is generated inside the workflow and deployed directly (no automated commits).
 3. Go to **Actions → Update NBA Recap → Run workflow** for the first real snapshot and publish (a push to `main` also triggers it). Your URL will be `https://stefanbee.github.io/web-tools/nba-recap/` **after** the deployment succeeds.
 4. On iPhone: open the URL in Safari → Share → **Add to Home Screen**.
 
-**If the workflow cannot commit:** Repository → Settings → Actions → General → Workflow permissions → Read and write permissions. Some repository/org policies restrict this option. The workflow uses an explicit Pages artifact deployment because pushes made by `GITHUB_TOKEN` do not themselves trigger Pages builds. GitHub Pages should be set to **GitHub Actions**, not branch publishing.
+The workflow deploys a Pages artifact directly rather than committing updated JSON to `main`. This avoids failed pushes when several jobs run close together. GitHub Pages should be set to **GitHub Actions**, not branch publishing.
 
 The homepage in `web-tools/index.html` automatically discovers folders with `meta.json`, so NBA Recap also shows up in your tools list.
 

@@ -375,9 +375,7 @@ def build() -> None:
     day = now.astimezone(NY).date().isoformat()
     core = {"date": day, "windowHours": WINDOW_HOURS,
             "games": games, "standings": standings}
-    if core == {key: previous.get(key) for key in core}:
-        print("No changes to games or standings; keeping existing snapshot.")
-        return
+    # Always publish an accurate refresh timestamp; this file is deployed as an artifact.
     new_data = {"date": day, "windowHours": WINDOW_HOURS,
                 "updated": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
                 "games": games, "standings": standings}
