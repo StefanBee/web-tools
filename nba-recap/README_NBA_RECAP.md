@@ -5,9 +5,9 @@ A no-framework, no-build, mobile-first NBA scoreboard for GitHub Pages.
 ## What it does
 
 - Opens a static Gruvbox HTML page immediately; shows a saved on-device snapshot if present.
-- Displays the previous **NBA Eastern Time** game day's 3 most recent completed games, with an option for 2 more (5 maximum).
-- Tap a game to reveal **every player supplied by ESPN's box score, on both teams** (including DNP entries). Stats: MIN, PTS, REB, AST, +/−, STL, BLK, TO, FG, 2PT, 3PT, FT and calculated shooting percentages.
-- East and West conference W-L standings.
+- Displays **every final game with a tipoff in the rolling last 48 hours**, newest first. The list stays fast by rendering player tables only when a game is expanded.
+- Tap a game to reveal **ESPN's complete game box score plus anyone missing from each team's current ESPN roster** (with DNP where appropriate), on both teams. Stats: MIN, PTS, REB, AST, +/−, STL, BLK, TO, FG, 2PT, 3PT, FT and calculated shooting percentages.
+- East and West conference W-L standings, explicitly ranked best-to-worst by winning percentage.
 - Entire interface scrolls vertically only; touch targets are large and tabs stay at the top.
 - Does **not** fetch ESPN directly from the phone. A scheduled workflow prepares one compact JSON snapshot.
 
@@ -26,15 +26,16 @@ The homepage in `web-tools/index.html` automatically discovers folders with `met
 
 - 0 libraries, 0 frameworks, 0 web fonts, 0 third-party images, 0 build steps.
 - One HTML document + one compact JSON data request on load; repeated opens paint from `localStorage` immediately, then refresh the JSON.
-- Only 5 per-game ESPN requests per scheduled refresh (parallel) + 1 scoreboard + 1 standings; neither blocks the iPhone browser.
+- Only one compact JSON fetch on iPhone. The scheduled refresh collects all final games from the last 48 hours, loads box scores in parallel, and cross-checks ESPN team rosters and optional current injury reports.
 - On GitHub Pages, CDN caching and Actions schedule delays mean data will **not** be literally real time. The update timestamp is always shown.
 - GitHub Actions uses only Python standard library (no `pip install`) and deploys the full static site explicitly; each run publishes a fresh snapshot regardless of Pages branch-build triggers.
 - If the box-score request fails, a previous complete box score for that game is retained; the app notes when a new game is missing box-score data.
+- Players who are listed on a **current team roster**, but missing from the individual game box score, are shown as DNP / not in game box score. Current injury reports are labeled **current**, because they don't establish why someone missed a past game. ESPN roster information may omit players or change after trades; don't treat a DNP label as an official historical injury designation.
 
 ## Edit game cap / defaults
 
-- Max downloaded box scores: `MAX_GAMES = 5` in `scripts/update_nba.py`.
-- First three shown: `games.slice(0,showAll ? 5 : 3)` in `nba-recap/index.html`.
+- Rolling window: `WINDOW_HOURS = 48` in `scripts/update_nba.py`.
+- All scorecards render immediately, but detailed player grids are created only when a game is tapped.
 - Update schedule: `.github/workflows/update-nba-recap.yml`.
 
 ## Data source / limitations

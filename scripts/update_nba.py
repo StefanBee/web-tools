@@ -11,6 +11,7 @@ import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -22,7 +23,7 @@ OUT = ROOT / "nba-recap" / "data" / "latest.json"
 API = "https://site.api.espn.com/apis/"
 HEADERS = {"User-Agent": "NBA-Recap/1.0 (+GitHub-Pages-personal-project)", "Accept": "application/json"}
 NY = ZoneInfo("America/New_York")
-MAX_GAMES = 5
+WINDOW_HOURS = 48
 
 
 def get_json(url: str) -> dict:
@@ -85,15 +86,27 @@ def final_games_for_date(day: str) -> list[dict]:
     return finals
 
 
-def pick_game_day(now: datetime) -> tuple[str, list[dict]]:
-    # US Eastern calendar day: a late-night tip-off stays with its NBA date.
-    eastern_today = now.astimezone(NY).date()
-    for days_ago in range(1, 6):
-        day = (eastern_today - timedelta(days=days_ago)).strftime("%Y%m%d")
-        finals = final_games_for_date(day)
-        if finals:
-            return f"{day[:4]}-{day[4:6]}-{day[6:]}", finals[:MAX_GAMES]
-    return "", []
+def pick_recent_games(now: datetime) -> list[dict]:
+    # Rolling 48-hour window, using actual UTC tipoff times instead of NBA dates.
+    cutoff = now - timedelta(hours=WINDOW_HOURS)
+    first = cutoff.astimezone(NY).date()
+    last = now.astimezone(NY).date()
+    days = [(first + timedelta(days=n)).strftime("%Y%m%d")
+            for n in range((last - first).days + 1)]
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        chunks = list(pool.map(final_games_for_date, days))
+    recent = []
+    for chunk in chunks:
+        for game in chunk:
+            try:
+                tipoff = datetime.fromisoformat(game["stamp"].replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+            if cutoff <= tipoff <= now:
+                recent.append(game)
+    recent.sort(key=lambda game: game["stamp"], reverse=True)
+    # No artificial 3- or 5-game limit: show every finished game in the window.
+    return recent
 
 
 def stat_for(stats: dict, *keys: str) -> str:
@@ -110,6 +123,7 @@ def parse_player(entry: dict, labels: list[str]) -> dict:
     athlete = entry.get("athlete") or {}
     dnp = bool(entry.get("didNotPlay") or athlete.get("didNotPlay") or not raw_stats)
     return {
+        "id": str(athlete.get("id") or ""),
         "name": str(athlete.get("displayName") or athlete.get("fullName") or "Unknown player"),
         "played": not dnp,
         "reason": str(entry.get("reason") or athlete.get("reason") or "DNP") if dnp else "",
@@ -125,6 +139,99 @@ def parse_player(entry: dict, labels: list[str]) -> dict:
         "blk": stat_for(by_name,"BLK"),
         "to": stat_for(by_name,"TO","TOV"),
     }
+
+
+def roster_athletes(node):
+    """Accept ESPN's flat or position-grouped roster arrays."""
+    if isinstance(node, list):
+        for item in node:
+            yield from roster_athletes(item)
+    elif isinstance(node, dict):
+        if node.get("id") and (node.get("displayName") or node.get("fullName")):
+            yield node
+        for key in ("items", "athletes", "players"):
+            if key in node:
+                yield from roster_athletes(node[key])
+
+
+@lru_cache(maxsize=64)
+def team_roster(team_id: str) -> list[dict]:
+    raw = get_json(f"{API}site/v2/sports/basketball/nba/teams/{team_id}/roster")
+    athletes = {}
+    for athlete in roster_athletes(raw.get("athletes") or []):
+        aid = str(athlete.get("id") or "")
+        if aid:
+            athletes[aid] = {"id": aid, "name": str(athlete.get("displayName")
+                                                  or athlete.get("fullName"))}
+    return list(athletes.values())
+
+
+@lru_cache(maxsize=64)
+def team_injuries(team_id: str) -> dict:
+    # Optional current injury information. It is not a historical game-day report.
+    url = f"{API}site/v2/sports/basketball/nba/teams/{team_id}/injuries"
+    try:
+        with urlopen(Request(url, headers=HEADERS), timeout=7) as response:
+            raw = json.load(response)
+    except (HTTPError, URLError, TimeoutError, ValueError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    result = {}
+    for item in raw.get("injuries") or []:
+        if not isinstance(item, dict):
+            continue
+        athlete = item.get("athlete") or item.get("player") or {}
+        if not isinstance(athlete, dict):
+            continue
+        aid = str(athlete.get("id") or "")
+        name = str(athlete.get("displayName") or athlete.get("fullName") or "")
+        values = []
+        for key in ("status", "type", "shortComment"):
+            value = item.get(key)
+            if isinstance(value, dict):
+                value = value.get("displayName") or value.get("name") or value.get("type")
+            if isinstance(value, str) and value.strip():
+                values.append(value.strip())
+        details = item.get("details") or {}
+        if isinstance(details, dict):
+            description = details.get("detail") or details.get("type")
+            if isinstance(description, str) and description.strip():
+                values.append(description.strip())
+        summary = " · ".join(dict.fromkeys(values))[:120]
+        if summary:
+            if aid:
+                result["id:" + aid] = summary
+            if name:
+                result["name:" + name.casefold()] = summary
+    return result
+
+
+def add_missing_players(rosters: dict, team_id: str) -> None:
+    players = rosters.setdefault(team_id, [])
+    try:
+        known = team_roster(team_id)
+    except (RuntimeError, KeyError, TypeError, ValueError) as exc:
+        print(f"WARN: Unable to load team {team_id} roster: {exc}", file=sys.stderr)
+        return
+
+    # Current injury reports are supplementary only; do not present them
+    # as confirmed reasons for why somebody missed a past game.
+    injuries = team_injuries(team_id)
+    seen_ids = {str(p.get("id")) for p in players if p.get("id")}
+    seen_names = {str(p.get("name") or "").casefold() for p in players}
+    for athlete in known:
+        aid, name = athlete["id"], athlete["name"]
+        if aid in seen_ids or name.casefold() in seen_names:
+            continue
+        injury = injuries.get("id:" + aid) or injuries.get("name:" + name.casefold())
+        reason = ("Current injury report: " + injury) if injury else "Not in game box score"
+        players.append({
+            "id": aid, "name": name, "played": False, "dnp": True,
+            "reason": reason,
+        })
+        seen_ids.add(aid)
+        seen_names.add(name.casefold())
 
 
 def get_boxscore(game: dict, previous_games: dict) -> dict:
@@ -146,7 +253,9 @@ def get_boxscore(game: dict, previous_games: dict) -> dict:
                     if p["name"] not in seen:
                         players.append(p)
                         seen.add(p["name"])
-        expected = [game["home"]["id"],game["away"]["id"]]
+        expected = [game["home"]["id"], game["away"]["id"]]
+        for team_id in expected:
+            add_missing_players(rosters, team_id)
         # Do not call an incomplete response a full box score.
         if all(rosters.get(team_id) for team_id in expected):
             game["rosters"] = rosters
@@ -188,6 +297,8 @@ def parse_standings(raw: dict) -> list[dict]:
                 teams.append({"name": str(team.get("displayName") or team.get("name") or "Team"),
                               "abbr": str(team.get("abbreviation") or ""),
                               "w": str(wins), "l": str(losses), "pct": pct})
+            teams.sort(key=lambda t: (-float(t["pct"]) if t["pct"] != "—" else 0,
+                                      -int(float(t["w"])), int(float(t["l"]))))
             groups[conference] = {"name": conference, "teams": teams}
         for child in node.get("children") or []:
             visit(child)
@@ -199,15 +310,12 @@ def parse_standings(raw: dict) -> list[dict]:
 def build() -> None:
     previous = load_previous()
     now = datetime.now(timezone.utc)
-    day, games = pick_game_day(now)
-    if not games and previous.get("games"):
-        print("No recent completed games; retaining last night's saved games.")
-        games = previous["games"]
-        day = previous.get("date") or ""
-    else:
-        old_games = {str(g.get("id")): g for g in previous.get("games") or []}
-        with ThreadPoolExecutor(max_workers=5) as pool:
-            futures = {pool.submit(get_boxscore, game, old_games): game["id"] for game in games}
+    games = pick_recent_games(now)
+    old_games = {str(g.get("id")): g for g in previous.get("games") or []}
+    if games:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            futures = {pool.submit(get_boxscore, game, old_games): game["id"]
+                       for game in games}
             results = {futures[f]: f.result() for f in as_completed(futures)}
             games = [results[game["id"]] for game in games]
     try:
@@ -220,18 +328,22 @@ def build() -> None:
 
     if not games and not standings:
         raise RuntimeError("No NBA data available; not publishing an empty snapshot")
-    core = {"date":day or None,"games":games,"standings":standings}
-    old_core = {key: previous.get(key) for key in core}
-    if core == old_core:
+    day = now.astimezone(NY).date().isoformat()
+    core = {"date": day, "windowHours": WINDOW_HOURS,
+            "games": games, "standings": standings}
+    if core == {key: previous.get(key) for key in core}:
         print("No changes to games or standings; keeping existing snapshot.")
         return
-    new_data = {"date":core["date"],"updated":now.isoformat(timespec="seconds").replace("+00:00","Z"),
-                "games":games,"standings":standings}
+    new_data = {"date": day, "windowHours": WINDOW_HOURS,
+                "updated": now.isoformat(timespec="seconds").replace("+00:00", "Z"),
+                "games": games, "standings": standings}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     temp = OUT.with_suffix(".tmp")
-    temp.write_text(json.dumps(new_data,ensure_ascii=False,separators=(",",":")),encoding="utf-8")
-    os.replace(temp,OUT)
-    print(f"Snapshot updated: {day}, {len(games)} games, {len(standings)} conferences; {OUT.stat().st_size} bytes")
+    temp.write_text(json.dumps(new_data, ensure_ascii=False, separators=(",", ":")),
+                    encoding="utf-8")
+    os.replace(temp, OUT)
+    print(f"Snapshot updated: last {WINDOW_HOURS}h, {len(games)} games, "
+          f"{len(standings)} conferences; {OUT.stat().st_size} bytes")
 
 
 if __name__ == "__main__":

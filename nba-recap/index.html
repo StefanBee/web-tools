@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NBA Recap">
-  <meta name="description" content="Last night's NBA box scores and conference standings. Fast, minimal, Gruvbox.">
+  <meta name="description" content="NBA games from the last 48 hours, complete player stats and standings. Fast, minimal, Gruvbox.">
   <title>NBA Recap</title>
   <style>
     :root { color-scheme: dark; --bg:#282828; --card:#3c3836; --line:#504945; --text:#ebdbb2; --dim:#a89984; --yellow:#fabd2f; --green:#b8bb26; --red:#fb4934; --blue:#83a598; }
@@ -98,10 +98,10 @@
       <button class="tab" id="games-tab" role="tab" aria-controls="games-panel" aria-selected="true" type="button">Games</button>
       <button class="tab" id="standings-tab" role="tab" aria-controls="standings-panel" aria-selected="false" type="button">Standings</button>
     </nav>
-    <div id="meta" class="meta" aria-live="polite"><strong>Last night's NBA</strong><span>Loading…</span></div>
+    <div id="meta" class="meta" aria-live="polite"><strong>Last 48 hours</strong><span>Loading…</span></div>
     <section id="games-panel" role="tabpanel" aria-labelledby="games-tab"><div class="empty"><strong>Loading results</strong>Checking the latest saved box scores…</div></section>
     <section id="standings-panel" role="tabpanel" aria-labelledby="standings-tab" hidden></section>
-    <footer class="footer">Stats via ESPN · All times and dates refer to the NBA's Eastern Time game day.</footer>
+    <footer class="footer">Stats via ESPN · Game times are Eastern Time · DNP details from ESPN rosters and injury reports.</footer>
   </main>
   <script>
     (() => {
@@ -112,7 +112,6 @@
       const fmtDate = day => { try { return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z')); } catch { return day || 'Recent games'; } };
       const fmtUpdate = iso => { if (!iso) return 'Not updated yet'; try { return 'Updated ' + new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',month:'short',day:'numeric'}).format(new Date(iso)); } catch { return 'Updated recently'; } };
       let current = null;
-      let showAll = false;
       let activeTab = 'games';
       const EMPTY = '<div class="empty"><strong>No results yet</strong>Run the “Update NBA Recap” workflow in GitHub Actions once to populate real games and standings.</div>';
       const cleanNumber = input => Number.isFinite(Number(input)) ? Number(input) : 0;
@@ -130,7 +129,7 @@
       }
       function playerHtml(p) {
         const absent = p.dnp || !p.played;
-        if (absent) return `<article class="player"><div class="player-top" style="margin-bottom:0"><span class="player-name">${esc(p.name)}</span><span class="player-min">${esc(p.reason || 'DNP')}</span></div></article>`;
+        if (absent) return `<article class="player"><div class="player-top" style="margin-bottom:0"><span class="player-name">${esc(p.name)}</span><span class="player-min">${esc(p.reason ? 'DNP · ' + p.reason : 'DNP · Reason not listed')}</span></div></article>`;
         const plus = String(p.pm ?? '—');
         const pmStyle = plus.startsWith('+') || Number(plus)>0 ? 'positive' : Number(plus)<0 ? 'negative' : '';
         return `<article class="player">
@@ -151,10 +150,9 @@
         return `<div class="team-block"><div class="section-head"><strong>${esc(t.name)} · ${esc(t.abbr)}</strong><span>${players.length} players listed</span></div>
           <div class="players">${sorted.map(playerHtml).join('') || '<p class="dnp">Box score not available yet.</p>'}</div></div>`;
       }
-      function gameHtml(game, idx) {
+      function gameHtml(game) {
         const home = game.home || {}, away = game.away || {};
         const hs = cleanNumber(home.score), as = cleanNumber(away.score);
-        const rosters = game.rosters || {};
         return `<details class="game" data-id="${esc(game.id)}">
           <summary aria-label="Expand ${esc(away.name)} at ${esc(home.name)} box score">
             <div class="game-note"><span class="state">FINAL</span><span>${esc(game.time || '')}</span></div>
@@ -163,7 +161,7 @@
               <div class="squad"><span class="abbr">${esc(home.abbr)}</span><span class="team">${esc(home.name)}</span></div><span class="score ${hs>as?'win':''}">${esc(home.score)}</span>
             </div><div class="open-hint"><span>${game.boxscoreReady ? 'Both teams · full player stats' : 'Box score pending'}</span><span class="arrow">⌄</span></div>
           </summary>
-          <div class="boxscore">${teamHtml(away,rosters[String(away.id)])}${teamHtml(home,rosters[String(home.id)])}</div>
+          <div class="boxscore"></div>
         </details>`;
       }
       function standingsHtml(data) {
@@ -171,20 +169,33 @@
         if (!groups.length) return '<div class="empty"><strong>Standings unavailable</strong>Standings will appear after the next successful data refresh.</div>';
         return groups.map(g => `<h2 class="stand-title">${esc(g.name)} Conference</h2><div class="standings" role="table" aria-label="${esc(g.name)} conference standings">
           <div class="rank-row head" role="row"><span>#</span><span>TEAM</span><span class="right">W</span><span class="right">L</span><span class="right">PCT</span></div>
-          ${(g.teams || []).map((t,i) => `<div class="rank-row" role="row"><span class="num">${i+1}</span><span class="name">${esc(t.name || t.abbr)}</span><span class="right">${esc(t.w)}</span><span class="right">${esc(t.l)}</span><span class="right pct">${esc(t.pct)}</span></div>`).join('')}
+          ${(g.teams || []).slice().sort((a,b) => (Number(b.pct)-Number(a.pct)) || (Number(b.w)-Number(a.w)) || (Number(a.l)-Number(b.l))).map((t,i) => `<div class="rank-row" role="row"><span class="num">${i+1}</span><span class="name">${esc(t.name || t.abbr)}</span><span class="right">${esc(t.w)}</span><span class="right">${esc(t.l)}</span><span class="right pct">${esc(t.pct)}</span></div>`).join('')}
           </div>`).join('');
       }
       function render() {
         if (!current) { $('games-panel').innerHTML = EMPTY; $('standings-panel').innerHTML = EMPTY; return; }
         const games = Array.isArray(current.games) ? current.games : [];
-        $('meta').innerHTML = `<strong>${esc(fmtDate(current.date))} · ${games.length} game${games.length===1?'':'s'}</strong><span>${esc(fmtUpdate(current.updated))}</span>`;
+        $('meta').innerHTML = `<strong>Last 48 hours · ${games.length} finished game${games.length === 1 ? '' : 's'}</strong><span>${esc(fmtUpdate(current.updated))}</span>`;
         const openIds = Array.from(document.querySelectorAll('.game[open]')).map(node => node.dataset.id);
-        const visible = games.slice(0,showAll ? 5 : 3);
-        $('games-panel').innerHTML = games.length ? `<div class="games">${visible.map(gameHtml).join('')}</div>
-          ${games.length>3 ? `<button class="more" type="button" id="more">${showAll ? 'Show fewer games' : `Show ${Math.min(2,games.length-3)} more game${Math.min(2,games.length-3)>1?'s':''}`}</button>` : ''}` : '<div class="empty"><strong>No completed games</strong>The next finished NBA games will appear after the scheduled update.</div>';
-        document.querySelectorAll('.game').forEach(node => { if (openIds.includes(node.dataset.id)) node.open=true; });
-        const more = $('more');
-        if (more) more.addEventListener('click', () => { showAll=!showAll; render(); });
+        $('games-panel').innerHTML = games.length
+          ? `<div class="games">${games.map(gameHtml).join('')}</div>`
+          : '<div class="empty"><strong>No completed games in the last 48 hours</strong>Games will appear after the next data refresh.</div>';
+        // Closed cards remain small: render complete player grids only after a tap.
+        const byId = new Map(games.map(game => [String(game.id), game]));
+        document.querySelectorAll('.game').forEach(node => {
+          node.addEventListener('toggle', () => {
+            if (!node.open) return;
+            const box = node.querySelector('.boxscore');
+            if (box.dataset.ready) return;
+            const game = byId.get(node.dataset.id);
+            if (!game) return;
+            const rosters = game.rosters || {};
+            box.innerHTML = teamHtml(game.away || {}, rosters[String((game.away || {}).id)])
+              + teamHtml(game.home || {}, rosters[String((game.home || {}).id)]);
+            box.dataset.ready = '1';
+          });
+          if (openIds.includes(node.dataset.id)) node.open = true;
+        });
         $('standings-panel').innerHTML = standingsHtml(current);
       }
       function switchTab(next) {
