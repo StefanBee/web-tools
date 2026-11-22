@@ -207,7 +207,48 @@ def team_injuries(team_id: str) -> dict:
     return result
 
 
-def add_missing_players(rosters: dict, team_id: str) -> None:
+def game_injuries(raw: dict) -> dict:
+    """Read injury statuses attached to the specific game summary, if supplied."""
+    result = {}
+    for block in raw.get("injuries") or []:
+        if not isinstance(block, dict):
+            continue
+        team = block.get("team") or {}
+        team_id = str(team.get("id") or block.get("teamId") or "")
+        entries = block.get("injuries") or block.get("athletes") or []
+        if not team_id or not isinstance(entries, list):
+            continue
+        for item in entries:
+            if not isinstance(item, dict):
+                continue
+            athlete = item.get("athlete") or item.get("player") or {}
+            if not isinstance(athlete, dict):
+                continue
+            aid = str(athlete.get("id") or "")
+            name = str(athlete.get("displayName") or athlete.get("fullName") or "")
+            pieces = []
+            for key in ("status", "type", "shortComment"):
+                value = item.get(key)
+                if isinstance(value, dict):
+                    value = value.get("displayName") or value.get("name") or value.get("type")
+                if isinstance(value, str) and value.strip():
+                    pieces.append(value.strip())
+            details = item.get("details") or {}
+            if isinstance(details, dict):
+                detail = details.get("detail") or details.get("type")
+                if isinstance(detail, str) and detail.strip():
+                    pieces.append(detail.strip())
+            description = " · ".join(dict.fromkeys(pieces))[:120]
+            if not description:
+                continue
+            if aid:
+                result[(team_id, "id:" + aid)] = description
+            if name:
+                result[(team_id, "name:" + name.casefold())] = description
+    return result
+
+
+def add_missing_players(rosters: dict, team_id: str, game_notes: dict) -> None:
     players = rosters.setdefault(team_id, [])
     try:
         known = team_roster(team_id)
@@ -224,8 +265,10 @@ def add_missing_players(rosters: dict, team_id: str) -> None:
         aid, name = athlete["id"], athlete["name"]
         if aid in seen_ids or name.casefold() in seen_names:
             continue
+        game_note = game_notes.get((team_id, "id:" + aid)) or game_notes.get((team_id, "name:" + name.casefold()))
         injury = injuries.get("id:" + aid) or injuries.get("name:" + name.casefold())
-        reason = ("Current injury report: " + injury) if injury else "Not in game box score"
+        reason = ("Game injury report: " + game_note) if game_note else (
+            ("Current injury report: " + injury) if injury else "Not in game box score")
         players.append({
             "id": aid, "name": name, "played": False, "dnp": True,
             "reason": reason,
@@ -254,8 +297,9 @@ def get_boxscore(game: dict, previous_games: dict) -> dict:
                         players.append(p)
                         seen.add(p["name"])
         expected = [game["home"]["id"], game["away"]["id"]]
+        game_notes = game_injuries(raw)
         for team_id in expected:
-            add_missing_players(rosters, team_id)
+            add_missing_players(rosters, team_id, game_notes)
         # Do not call an incomplete response a full box score.
         if all(rosters.get(team_id) for team_id in expected):
             game["rosters"] = rosters
