@@ -19,7 +19,7 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "nba-recap" / "data" / "latest.json"
+OUT = ROOT / "data" / "latest.json"
 API = "https://site.api.espn.com/apis/"
 HEADERS = {"User-Agent": "NBA-Recap/1.0 (+GitHub-Pages-personal-project)", "Accept": "application/json"}
 NY = ZoneInfo("America/New_York")

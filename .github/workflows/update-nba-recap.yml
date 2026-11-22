@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Prepare latest NBA data
-        run: python scripts/update_nba.py
+        run: python nba-recap/scripts/update_nba.py
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload complete web-tools site
