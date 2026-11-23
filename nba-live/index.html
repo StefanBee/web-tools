@@ -738,7 +738,7 @@ function setMobileView(view){
  if(!['away','home','both'].includes(view))return;
  state.mobileView=view;
  document.querySelector('.app').dataset.mobileView=view;
- document.querySelectorAll('[data-mobile-view]').forEach(function(b){
+ document.querySelectorAll('#mobile-tabs [data-mobile-view]').forEach(function(b){
   var active=b.dataset.mobileView===view;
   b.classList.toggle('active',active);
   b.setAttribute('aria-pressed',String(active));
