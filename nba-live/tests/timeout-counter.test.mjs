@@ -42,7 +42,7 @@ test('official timeout, descriptive mention, and duplicate ID are not charged',(
  const extra=[
   dup,
   {id:'official',period:{number:4},team:{id:'9'},type:{text:'Official Timeout'},text:'OFFICIAL TIMEOUT'},
-  {id:'review',period:{number:4},team:{id:'9'},type:{text:'Coach\\'s Challenge (Overturned)'},text:'Warriors retain their timeout'},
+  {id:'review',period:{number:4},team:{id:'9'},type:{text:"Coach's Challenge (Overturned)"},text:'Warriors retain their timeout'},
   {id:'caption',period:{number:4},team:{id:'9'},type:{text:'Instant Replay'},text:'Warriors retain their timeout'}
  ];
  const totals=makeApi({...fixture,plays:[...fixture.plays,...extra]}).calculateTimeouts(null,fixture.teams);
@@ -56,6 +56,6 @@ test('overtime timeouts have a separate 2-timeout allowance bucket',()=>{
 });
 test('types with no timeout but mention it in prose are not classified as timeout',()=>{
  assert.equal(api.timeoutPlay({type:{text:'Ref-Initiated Review'},text:'Warriors get timeout back'}),false);
- assert.equal(api.timeoutPlay({type:{text:'Coach\\'s Challenge (Overturned)'},text:'Warriors retain their timeout'}),false);
+ assert.equal(api.timeoutPlay({type:{text:"Coach's Challenge (Overturned)"},text:'Warriors retain their timeout'}),false);
  assert.equal(api.timeoutPlay({type:{text:'Full Timeout'},text:'Golden State Full timeout'}),true);
 });
