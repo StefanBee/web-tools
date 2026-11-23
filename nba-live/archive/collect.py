@@ -115,6 +115,14 @@ def ensure_schema(db: sqlite3.Connection) -> None:
       CREATE TABLE IF NOT EXISTS pending_games (
         id TEXT PRIMARY KEY, date TEXT NOT NULL, reason TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS stat_validations (
+        game_id TEXT NOT NULL, scope TEXT NOT NULL, entity_id TEXT NOT NULL,
+        metric TEXT NOT NULL, official INTEGER NOT NULL, observed INTEGER NOT NULL,
+        status TEXT NOT NULL,
+        PRIMARY KEY(game_id,scope,entity_id,metric),
+        FOREIGN KEY(game_id) REFERENCES games(id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_validations_status ON stat_validations(status,scope,metric);
     ''')
 
 
@@ -158,11 +166,14 @@ def period_of(play: dict) -> int:
     return numeric(p.get('number') if isinstance(p, dict) else p) or 0
 
 
-def actor_id(play: dict) -> str:
-    p = play.get('participants') or []
-    if not p or not isinstance(p, list) or not isinstance(p[0], dict): return ''
-    a = p[0]
-    return str((a.get('athlete') or {}).get('id') or a.get('athleteId') or a.get('id') or '')
+def actor_id(play: dict, index: int = 0) -> str:
+    participants = play.get('participants') or []
+    if not isinstance(participants, list) or len(participants) <= index:
+        return ''
+    part = participants[index]
+    if not isinstance(part, dict):
+        return ''
+    return str((part.get('athlete') or {}).get('id') or part.get('athleteId') or part.get('id') or '')
 
 
 def event_type(play: dict) -> str:
@@ -171,26 +182,42 @@ def event_type(play: dict) -> str:
 
 
 def event_stats(play: dict) -> dict[str, int]:
-    """Explicitly heuristic: do not label these as official box-score splits."""
+    """Use ESPN's structured attempt value and athlete IDs; text only for credit types.
+
+    pointsAttempted=1 is a free throw, 2 is a 2PT field goal, and 3 is a
+    three-pointer. All attempts (including misses) expose this in standard
+    NBA play-by-play. Fall back to type/text for older or partial feeds.
+    """
     txt = str(play.get('text') or '')
-    full = txt + ' ' + event_type(play)
-    free = bool(re.search(r'free[\s-]?throw', full, re.I))
-    three = bool(re.search(r'\b3[\s-]?(?:pt|point)\b|three[\s-]?point', full, re.I))
-    nonshot = bool(re.search(r'\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitution)\b', full, re.I))
-    shot = not free and (play.get('shootingPlay') is True or (not nonshot and (three or bool(re.search(r'\b(?:jumper|jump shot|layup|dunk|hook shot|tip shot|field goal|finger roll)\b', full, re.I)))))
-    made = bool(play.get('scoringPlay')) or bool(re.search(r'\b(?:makes|made)\b', txt, re.I))
-    # A scoring play is not necessarily a basket (e.g. technical FT).
+    typ = event_type(play)
+    full = txt + ' ' + typ
+    attempt = numeric(play.get('pointsAttempted'))
+    structured = play.get('shootingPlay') is True and attempt in (1, 2, 3)
+    free = attempt == 1 if structured else bool(re.search(r'\bfree[\s-]?throws?\b', typ, re.I))
+    nonshot = bool(re.search(r'\b(?:rebound|turnover|steals?|blocks?|foul|substitut|timeout|violation)\b', typ, re.I))
+    shot = attempt in (2, 3) if structured else not free and (
+        play.get('shootingPlay') is True or not nonshot and bool(re.search(
+            r'\b(?:jumper|jump shot|layup|dunk|hook shot|tip shot|field goal|finger roll)\b', typ, re.I)))
+    scoring = play.get('scoringPlay')
+    value = numeric(play.get('scoreValue')) or 0
+    made = bool(scoring and value > 0) if scoring is not None else bool(re.search(r'\b(?:makes?|made)\b', txt, re.I))
+    three = (attempt == 3 if structured else shot and (
+        (scoring is True and value == 3) or bool(re.search(
+            r'\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b', full, re.I))))
+    primary = actor_id(play, 0)
+    secondary = actor_id(play, 1)
+    turnover = bool(re.search(r'\b(?:turnover|traveling|travelling)\b', typ, re.I))
     return {
-        'pts': numeric(play.get('scoreValue')) if play.get('scoringPlay') else 0,
+        'pts': value if scoring and 0 < value <= 4 else 0,
         'fgm': int(shot and made), 'fga': int(shot),
         'tpm': int(shot and three and made), 'tpa': int(shot and three),
         'ftm': int(free and made), 'fta': int(free),
-        'reb': int(bool(re.search(r'\brebound\b', full, re.I))),
-        'to': int(bool(re.search(r'\bturnover\b', full, re.I))),
-        'pf': int(bool(re.search(r'\bfoul\b', full, re.I)) and not bool(re.search(r'foul shot', full, re.I))),
-        'ast': int(bool(re.search(r'\bassist\b', full, re.I))),
-        'stl': int(bool(re.search(r'\bsteal\b', full, re.I))),
-        'blk': int(bool(re.search(r'\bblock\b', full, re.I))),
+        'reb': int(bool(primary) and bool(re.search(r'\brebound\b', typ, re.I))),
+        'to': int(turnover),
+        'pf': int(bool(re.search(r'\bfoul\b', typ, re.I)) and not turnover),
+        'ast': int(bool(secondary) and shot and made and bool(re.search(r'\bassists?\b', txt, re.I))),
+        'stl': int(bool(secondary) and turnover and bool(re.search(r'\bsteals?\b', txt, re.I))),
+        'blk': int(bool(secondary) and shot and not made and bool(re.search(r'\bblocks?\b', txt, re.I))),
     }
 
 
@@ -274,30 +301,41 @@ def derive_periods(event: dict, raw: dict, players: list[dict]) -> tuple[list[di
     play_counts: dict[int, int] = defaultdict(int)
     per_team_plays: dict[tuple[str, int], int] = defaultdict(int)
     players_by_id = {p['athlete_id']: p for p in players}
+    opposing = {str(teams['away']['team']['id']): str(teams['home']['team']['id']),
+                str(teams['home']['team']['id']): str(teams['away']['team']['id'])}
+    seen = set()
     for play in plays:
         period = period_of(play)
         if period <= 0 or period > 20: continue
+        uniq = play.get('id') or play.get('playId') or ''
+        if uniq:
+            if str(uniq) in seen: continue
+            seen.add(str(uniq))
         play_counts[period] += 1
+        primary, secondary = actor_id(play, 0), actor_id(play, 1)
         team_id = str((play.get('team') or {}).get('id') or play.get('teamId') or '')
+        if team_id not in valid_team_ids and primary in players_by_id:
+            team_id = players_by_id[primary]['team_id']
         stat = event_stats(play)
         if team_id in valid_team_ids:
             per_team_plays[(team_id, period)] += 1
-            for key, value in stat.items(): counts[(team_id, period)][key] += value or 0
-        # Only credit the *primary actor* for field goals/FTs/rebounds/turnovers.
-        # Secondary assists/steals/blocks may be in the prose; cannot rely on team labels.
-        aid = actor_id(play)
-        if aid in players_by_id:
-            key = (aid, period)
+            # A steal or block is credited to the DEFENDING team, not the
+            # offense owning the turnover or blocked field-goal attempt.
+            for key in ('pts', 'fgm', 'fga', 'tpm', 'tpa', 'ftm', 'fta', 'reb', 'to', 'pf', 'ast'):
+                counts[(team_id, period)][key] += stat[key]
+        for key in ('stl', 'blk'):
+            if not stat[key]: continue
+            defender_team = (players_by_id.get(secondary) or {}).get('team_id') or opposing.get(team_id)
+            if defender_team in valid_team_ids:
+                counts[(defender_team, period)][key] += stat[key]
+        if primary in players_by_id:
+            key = (primary, period)
             for field in ('pts', 'fgm', 'fga', 'tpm', 'tpa', 'ftm', 'fta', 'reb', 'to', 'pf'):
-                player_counts[key][field] += stat[field] or 0
-        prose = str(play.get('text') or '')
-        for field, verb in (('ast', 'assists?'), ('stl', 'steals?'), ('blk', 'blocks?')):
-            # Reproduce the live inspector's name-based secondary credit only.
-            if not re.search(r'\b'+verb+r'\b', prose, re.I): continue
-            for player in players:
-                base = re.sub(r'\s+(?:Jr\.?|Sr\.?|II|III|IV)$', '', player['athlete_name'], flags=re.I)
-                if re.search(r'(?:^|[^a-z])'+re.escape(base)+r'\s+'+verb+r'\b', prose, re.I):
-                    player_counts[(player['athlete_id'], period)][field] += 1
+                player_counts[key][field] += stat[field]
+        if secondary in players_by_id:
+            key = (secondary, period)
+            for field in ('ast', 'stl', 'blk'):
+                player_counts[key][field] += stat[field]
     max_period = max([4, *play_counts.keys(),
                       *(len(c.get('linescores') or []) for c in teams.values())])
     max_period = min(20, max_period)

@@ -79,6 +79,15 @@ jobs:
           echo "ARCHIVE_EXIT=$result" >> "$GITHUB_ENV"
           echo "Collector exit code: $result"
           exit 0
+      - name: Replay and validate every saved game offline
+        id: replay
+        shell: bash
+        run: |
+          set +e
+          python nba-live/archive/reprocess.py --data-dir "$DATA_DIR"
+          result=$?
+          echo "REPLAY_EXIT=$result" >> "$GITHUB_ENV"
+          exit 0
       - name: Commit original source data and indexed SQLite season
         shell: bash
         run: |
@@ -91,8 +100,8 @@ jobs:
           else
             echo 'No changes to season archive.'
           fi
-      - name: Surface incomplete collection as workflow failure
-        if: env.ARCHIVE_EXIT != '0'
+      - name: Surface incomplete collection or replay as workflow failure
+        if: env.ARCHIVE_EXIT != '0' || env.REPLAY_EXIT != '0'
         run: |
-          echo 'Some games or scoreboards could not be collected. Successfully archived data was committed. The next scheduled run will retry.'
+          echo 'Collection or replay was incomplete. Successful data was committed and failures are recorded for review.'
           exit 1

@@ -18,12 +18,16 @@ GitHub Pages**. Visiting `nba-live/` does not download the season database.
 - `2026-27/raw/games/GAME_ID.json.gz` — original ESPN game summaries, including
   play-by-play and box scores. These compressed files allow future reprocessing.
 - `2026-27/manifest.json` — update timestamp, record counts, and pending games.
+- `2026-27/validation.json` — full-season reconciliation report and per-metric disagreements with ESPN box scores.
+- `stat_validations` table — per-team/player game box-score comparisons, queryable by metric and mismatch status.
 
 **Data caveat:** Only final scores and per-quarter points (when ESPN linescores are
 available) are taken from ESPN's published numbers. Per-quarter rebounds, FGs,
 3PTs, FTs, fouls and player statistics are reconstructed from play-by-play.
-They are tagged `quality='derived'` and **are not verified official quarter box
-scores**. If ESPN omits a period's play-by-play, its derived values are `NULL`,
+Replayed values are tagged `quality='reconciled'` only when their *full-game*
+aggregates match ESPN's published box scores for available metrics, or
+`quality='mismatch'` when not. Even `reconciled` **does not prove** each
+quarter's events are complete or correctly attributed. If ESPN omits a period's play-by-play, its derived values are `NULL`,
 not zero. Raw data is kept so the parser can improve later without losing games.
 
 ## Automatic operation
@@ -48,6 +52,7 @@ load is needed.
 ```bash
 python -m unittest discover -s nba-live/archive -v
 python nba-live/archive/collect.py --data-dir /path/to/separate/data-checkout
+python nba-live/archive/reprocess.py --data-dir /path/to/separate/data-checkout
 ```
 
 Pass `--force` to re-fetch/rebuild every game or `--today YYYY-MM-DD` for a
@@ -64,8 +69,9 @@ WHERE abbr = 'ATL' AND period = 4 AND reb IS NOT NULL;
 ```
 
 Note that a season-wide query like this should exclude games whose derived
-rebounds are incomplete or inaccurate. Current `quality='derived'` is a
-provenance label, **not an accuracy guarantee**. Before publishing an
+rebounds are incomplete or inaccurate. Review `2026-27/validation.json` and filter
+`quality='reconciled'` for more trustworthy comparisons. This means all *available*
+full-game checks passed; it is **not a guarantee** that a particular quarter is error-free. Before publishing an
 analytical Explorer, validate the quarter splits against a trustworthy source.
 
 ## Scope and performance
@@ -78,3 +84,16 @@ analytical Explorer, validate the quarter splits against a trustworthy source.
 - Since ESPN's data source is unofficial, collection may sometimes fail;
   GitHub Actions logs and the archive manifest expose failures. Respect the
   provider's access policies and rate limits.
+
+## Validation and historical recalculation
+
+The new offline replay takes every saved `raw/games/*.json.gz` and computes
+period stats again with the same structured ESPN shot values and primary/
+secondary participant IDs used by NBA Live. It **does not request the entire
+season from ESPN again**, and does not modify official final scores or original
+compressed source files. It compares each game's reconstructed team and player
+totals against ESPN's own final box score, storing per-stat matches/mismatches
+in `stat_validations` and a searchable `validation.json` report. The process
+runs automatically after each regular archive update. A 450-play real ESPN
+fixture tests complete team and player reconciliation before any archive
+write. Mismatches remain visible rather than silently repaired or hidden.
