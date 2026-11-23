@@ -83,6 +83,7 @@ button:focus:not(:focus-visible),.scroll:focus:not(:focus-visible){outline:none}
 .data .inactive{color:var(--muted)}
 .data .positive{color:var(--green)}
 .data .negative{color:var(--red)}
+.data .approximate{color:var(--yellow);font-weight:750}
 .data .focus-row{background:#41413d!important}
 .data .focus-col{box-shadow:inset 0 0 0 999px #83a59812}
 .data .focus-row.focus-col{background:#4a4a42!important}
@@ -236,7 +237,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <button class="mobile-tab" type="button" data-mobile-view="home" aria-pressed="false"><span id="mobile-home-label">HOME</span></button>
     <button class="mobile-tab active" type="button" data-mobile-view="both" aria-pressed="true">BOTH</button>
   </nav>
-  <div class="mobile-help">TEAM: starts on current quarter · ALL = live full-game totals · Tap stats for the crosshair</div>
+  <div class="mobile-help">TEAM Q stats from plays · ≈ means totals differ · ALL = official live totals</div>
   <section id="section-away" class="section" aria-label="Away team player statistics">
     <div class="section-head"><span id="title-away" class="section-title">AWAY TEAM</span><span class="section-note">Click a header to sort · s sorts selected column</span></div>
     <div class="scroll" tabindex="0" data-region="away" aria-label="Away team players grid">
@@ -591,22 +592,29 @@ function validateTeamPeriods(raw,g,allDerived){
 }
 
 function derivePlays(raw,g,period){
- var plays=allPlays(raw),teams={},teamPlays={},seen=new Set();
- [g.away,g.home].forEach(function(t){
+ var plays=allPlays(raw),teams={},teamPlays={},seen=new Set(),actorTeams=new Map();
+ ['away','home'].forEach(function(side){
+  var t=g[side];
   teams[t.id]={name:t.abbr,pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0};
   teamPlays[t.id]=0;
+  (state.players[side]||[]).forEach(function(p){if(p.id)actorTeams.set(String(p.id),t.id)});
  });
  var count=0;
  plays.forEach(function(p){
   var per=readPeriod(p);if(!per||(period!=='ALL'&&per!==period))return;
   var uniq=p.id||p.playId||'';
   if(uniq){var key=String(uniq);if(seen.has(key))return;seen.add(key)}
-  var id=String((p.team||{}).id||p.teamId||''),x=teams[id];
-  if(!x)return;
+  var id=String((p.team||{}).id||p.teamId||'');
+  if(!teams[id]){
+   var people=p.participants||[],actor=Array.isArray(people)?people[0]:null;
+   var aid=actor&&String((actor.athlete||{}).id||actor.athleteId||actor.id||'');
+   id=actorTeams.get(aid)||'';
+  }
+  var x=teams[id];if(!x)return;
   var label=String(p.text||''),type=playType(p),full=label+' '+type;
   var free=/\bfree[\s-]?throws?\b/i.test(full);
-  var three=/\b3[\s-]?(?:pt|point|pointer)\b|\bthree[\s-]?(?:pt|point|pointer)\b/i.test(full);
-  var nonShot=/\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitut)\b/i.test(type);
+  var three=/\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b/i.test(full)||(p.scoringPlay===true&&Number(p.scoreValue)===3&&!free);
+  var nonShot=/\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitut|timeout|violation)\b/i.test(type);
   var shot=!free&&(p.shootingPlay===true||(!nonShot&&three&&/\b(?:makes?|made|misses?|missed|jump(?:er| shot)?|shot)\b/i.test(full))||(!nonShot&&/\b(?:jump shot|jumper|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(type)));
   var made=!!p.scoringPlay||/\b(?:makes?|made)\b/i.test(label);
   if(free){x.fta++;if(made)x.ftm++}
@@ -805,7 +813,7 @@ function getTeamRows(){
  var raw=state.raw||{},d=period==='ALL'?null:derivePlays(raw,g,period);
  var quality=period==='ALL'?null:validateTeamPeriods(raw,g,derivePlays(raw,g,'ALL'));
  $('period-description').textContent=period==='ALL'?' · FULL GAME · ESPN BOX SCORE':
-  ' · '+periodLabel(period)+(state.followCurrent?' · CURRENT':'')+' · Play-by-play (checked against game totals)';
+  ' · '+periodLabel(period)+(state.followCurrent?' · CURRENT':'')+' · Play-by-play estimates · ≈ means totals differ';
  return [g.away,g.home].map(function(t,i){
   var id=i===0?'away':'home',official=teamBoxTotals(raw,t.id);
   if(period==='ALL'){
@@ -817,10 +825,14 @@ function getTeamRows(){
   var line=(t.line||[])[Number(period)-1]||null;
   var linePts=line&&(line.value!=null?line.value:line.displayValue);
   var pts=linePts!=null?linePts:hasPlays?x.pts:'—';
-  return {id:id,name:t.abbr,pts:pts,
-   fg:hasPlays&&ok.fg?x.fgm+'/'+x.fga:'—',three:hasPlays&&ok.three?x.tpm+'/'+x.tpa:'—',
-   ft:hasPlays&&ok.ft?x.ftm+'/'+x.fta:'—',reb:hasPlays&&ok.reb?x.reb:'—',
-   to:hasPlays&&ok.to?x.to:'—',pf:hasPlays&&ok.pf?x.pf:'—'};
+  // These are observed play-by-play counts. A full-game mismatch marks the
+  // category as approximate instead of hiding useful per-period information.
+  var approx={};
+  ['fg','three','ft','reb','to','pf'].forEach(function(k){approx[k]=hasPlays&&!ok[k]});
+  return {id:id,name:t.abbr,pts:pts,fromPlays:true,approx:approx,
+   fg:hasPlays?x.fgm+'/'+x.fga:'—',three:hasPlays?x.tpm+'/'+x.tpa:'—',
+   ft:hasPlays?x.ftm+'/'+x.fta:'—',reb:hasPlays?x.reb:'—',
+   to:hasPlays?x.to:'—',pf:hasPlays?x.pf:'—'};
  });
 }
 function sortValue(row,key){
@@ -849,7 +861,8 @@ function display(row,col){
  if(row.dnp)return '<span class="inactive">'+(col==='min'?'DNP':'—')+'</span>';
  var v=row[col]==null?'—':String(row[col]);
  var cl=col==='pm'?(number(v)>0?'positive':number(v)<0?'negative':''):'';
- return '<span class="'+cl+'">'+esc(v)+'</span>';
+ var estimated=row.fromPlays&&row.approx&&row.approx[col]&&v!=='—';
+ return '<span class="'+cl+'">'+(estimated?'<span class="approximate" title="Play-by-play totals differ from official game totals">≈</span>':'')+esc(v)+'</span>';
 }
 function tableHtml(region,rows){
  var cols=colsFor(region),isTeam=region==='teams';
@@ -865,7 +878,8 @@ function tableHtml(region,rows){
   cols.forEach(function(col,i){
    var key=col[0];
    if(i===0)html+='<tr>';
-   html+='<td data-region="'+region+'" data-row="'+esc(row.id)+'" data-col="'+key+'" title="'+esc(row.name+' · '+col[1]+' · '+String(row[key]||''))+'">'+display(row,key)+'</td>';
+   var note=row.fromPlays&&key!=='name'&&key!=='pts'?' · Derived from ESPN plays'+(row.approx&&row.approx[key]?' · Does not reconcile with official game totals':''):'';
+   html+='<td data-region="'+region+'" data-row="'+esc(row.id)+'" data-col="'+key+'" title="'+esc(row.name+' · '+col[1]+' · '+String(row[key]==null?'':row[key])+note)+'">'+display(row,key)+'</td>';
    if(i===cols.length-1)html+='</tr>';
   });
  });
