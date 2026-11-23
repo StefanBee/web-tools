@@ -76,7 +76,8 @@ def totals(periods: list[dict], entity_key: str) -> dict[str, dict[str, int]]:
     for row in periods:
         eid = row[entity_key]
         for k in STATS:
-            value = row.get(k)
+            # SQLite team periods call turnovers "tov", player periods call them "to".
+            value = row.get('tov') if k == 'to' and entity_key == 'team_id' else row.get(k)
             if value is not None: out[eid][k] += value
     return out
 
@@ -106,8 +107,9 @@ def replay_one(db: sqlite3.Connection, game: sqlite3.Row, raw: dict) -> tuple[in
     for p in players:
         if p['did_not_play']: continue
         pid = p['athlete_id']
+        official = dict(p, to=p.get('tov'))
         checks.extend(validate_entity(game['id'], 'player', pid,
-                                      player_totals[pid], p, PLAYER_METRICS))
+                                      player_totals[pid], official, PLAYER_METRICS))
     mismatches: dict[tuple[str, str], int] = defaultdict(int)
     matched: dict[tuple[str, str], int] = defaultdict(int)
     for _gid, scope, entity_id, _metric, _official, _observed, status in checks:

@@ -44,8 +44,9 @@ class ReplayTests(unittest.TestCase):
         for player in p:
             if player['did_not_play']: continue
             for stat in collect.STATS:
-                if player[stat] is None: continue
-                self.assertEqual(player_totals[player['athlete_id']][stat],player[stat],
+                official = player.get('tov') if stat == 'to' else player.get(stat)
+                if official is None: continue
+                self.assertEqual(player_totals[player['athlete_id']][stat],official,
                                  (player['athlete_name'],stat))
                 checked+=1
         self.assertGreater(checked,200)
