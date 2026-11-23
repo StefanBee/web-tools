@@ -25,7 +25,7 @@ function setup(){
   selectInspectorPeriod(n){if(n>=1&&n<=maxPeriod){inspectorKeys.push(n);if(state.inspector){state.inspector.period=n;state.inspector.followCurrent=false}}},closeInspector(){},openPalette(){},closePalette(){},
   closeSchedule(){},moveSchedule(){},viewScheduledGame(){},paletteRun(){},drawPalette(){},
   moveCursor(){},changeSort(){},allPlayers(){return []},openInspector(){},
-  $(){return {focus(){},querySelector(){return null}}}
+  $(){return {focus(){},querySelector(){return null},querySelectorAll(){return []}}}
  };
  const logic=section('function periodSelect(value){','/* Lightweight, lazy 7-day');
  const keys=section("document.addEventListener('keydown',function(e){","$('game-picker').addEventListener");
