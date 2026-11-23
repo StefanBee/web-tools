@@ -36,6 +36,17 @@ The active cell is outlined in yellow. The entire active row and column have sub
 - A compact **unanswered scoring run** appears beside the score at **8–0 or more**, including the team and run duration in *elapsed game-clock time* since the run's first basket. Runs may cross quarters and overtime periods. A basket by the opponent ends the streak; incomplete scoring events suppress the indicator.
 - Run duration is derived from the latest ESPN clock snapshot, so it advances on fresh data updates, not by guessing that the game clock is continuously running while play is stopped. The main box score is fetched at the same rate as before, with no additional API requests for either feature.
 
+## Phone controls
+
+The same page now adapts to a narrow phone screen without changing the desktop layout.
+
+- A **persistent yellow search button** in the bottom-right opens the full command palette and focuses the search input so the phone keyboard appears. Search for a game, player, period or action; tap a result. The palette also has a visible close button.
+- The **AWAY / HOME / BOTH** bar remains accessible while scrolling. Select one roster for a compact view or BOTH to keep the two full rosters visible.
+- **Tap any number/stat cell** to highlight its row and column, including the yellow outlined active cell. The selection tracks the same player when live data refreshes or sorting changes.
+- **Tap a statistic header** to sort; tap again to reverse. **Tap a player name** to open their current-quarter inspector.
+- **Swipe the tables horizontally** to access every statistic. Player names and team abbreviations stay pinned on the left; the table layouts use narrow phone-sized columns.
+- All existing keyboard shortcuts are retained for desktop or a hardware keyboard.
+
 ## Live data and performance
 
 - Direct browser calls to ESPN's unofficial `site.api.espn.com` endpoints; there are no tokens or API keys.

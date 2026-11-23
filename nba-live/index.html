@@ -102,7 +102,84 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
 .palette-help{border-top:1px solid var(--line);padding:7px 12px;color:var(--muted);font-size:10px}
 .error{color:var(--red)}
 @media(min-width:1120px){.app{padding:14px 20px 24px}.data td{height:30px}.score{font-size:36px}}
-@media(max-width:750px){.app{padding:8px 7px 18px;gap:7px}.top{gap:7px;grid-template-columns:auto minmax(100px,1fr) auto}.brand{font-size:10px}.connection{font-size:10px}.scoreline{padding:10px}.venue{font-size:12px}.score{font-size:24px}.section-head{gap:4px;padding:7px}.section-note{display:none}.period{padding:3px 5px}.data{min-width:800px}.footer{line-height:1.8}}
+/* Mobile controls are absent from the desktop layout. */
+.mobile-tabs,.mobile-search,.mobile-help,.palette-close{display:none}
+.search-row{display:flex;min-width:0}
+.search-row .search{flex:1;min-width:0}
+@media(max-width:750px){
+ html,body{max-width:100%;overflow-x:hidden}
+ body{font-size:11.5px}
+ .app{padding:6px 6px calc(76px + env(safe-area-inset-bottom));gap:6px}
+ .top{gap:7px;grid-template-columns:auto minmax(0,1fr) auto;min-height:34px}
+ .brand{font-size:10px}
+ .game-picker{padding:7px 5px;height:34px;font-size:11px}
+ .connection{gap:5px;font-size:9.5px}
+ .scoreline{padding:8px 9px;gap:5px;border-radius:7px}
+ .venue{font-size:11.5px}
+ .score{font-size:25px}
+ .score .gap{margin:0 4px}
+ .game-state,.run{font-size:10px}
+ .game-note,.hint{font-size:9px}
+ .timeouts{gap:4px 10px;font-size:10px;margin-top:3px}
+ .timeouts .to-label{font-size:9px}
+ .section{border-radius:7px}
+ .section-head{gap:4px;padding:5px 7px;min-height:30px}
+ .section-title{font-size:10px;letter-spacing:.055em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .section-note{display:none}
+ .periods{gap:1px;flex-wrap:nowrap;flex-shrink:0}
+ .period{padding:4px 5px;font-size:10px;min-width:28px}
+ .scroll{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+ .data th{height:27px;padding:3px 4px;font-size:9.5px}
+ .data td{height:27px;padding:3px 4px;font-size:11px}
+ .data .jersey{min-width:15px;margin-right:4px;font-size:9px}
+ .data:not(.team-data){width:710px;min-width:710px}
+ .data:not(.team-data) col:nth-child(1){width:138px!important}
+ .data:not(.team-data) col:nth-child(2){width:41px!important}
+ .data:not(.team-data) col:nth-child(3),.data:not(.team-data) col:nth-child(4),.data:not(.team-data) col:nth-child(5){width:43px!important}
+ .data:not(.team-data) col:nth-child(6),.data:not(.team-data) col:nth-child(7){width:65px!important}
+ .data:not(.team-data) col:nth-child(8){width:60px!important}
+ .data:not(.team-data) col:nth-child(9){width:48px!important}
+ .data:not(.team-data) col:nth-child(n+10){width:41px!important}
+ .data.team-data{width:397px;min-width:397px}
+ .data.team-data col:nth-child(1){width:65px!important}
+ .data.team-data col:nth-child(2){width:42px!important}
+ .data.team-data col:nth-child(3),.data.team-data col:nth-child(4),.data.team-data col:nth-child(5){width:56px!important}
+ .data.team-data col:nth-child(6){width:44px!important}
+ .data.team-data col:nth-child(7),.data.team-data col:nth-child(8){width:39px!important}
+ /* Both team names stay visible as shooting statistics scroll horizontally. */
+ .data.team-data th:first-child,.data.team-data td:first-child{position:sticky;left:0;border-right:1px solid var(--line)}
+ .data.team-data th:first-child{z-index:3;background:var(--raised)}
+ .data.team-data td:first-child{z-index:2;background:var(--pane)}
+ .data.team-data td:first-child.focus-cell{z-index:4}
+ .data.team-data th:first-child.focus-col{background:#45443d}
+ .data td.focus-cell{outline-width:2px}
+ .mobile-tabs{display:flex;position:sticky;top:0;z-index:12;gap:4px;align-items:center;padding:5px;background:var(--bg);border:1px solid var(--line);border-radius:7px}
+ .mobile-tab{flex:1;min-width:0;min-height:33px;background:var(--pane);color:var(--ink);border:1px solid var(--line);border-radius:5px;font-size:11px;font-weight:850;letter-spacing:.04em}
+ .mobile-tab.active{background:var(--yellow);border-color:var(--yellow);color:var(--bg)}
+ .app[data-mobile-view="away"] #section-home,.app[data-mobile-view="home"] #section-away{display:none}
+ .mobile-help{display:block;color:var(--muted);font-size:10px;padding:0 3px;line-height:1.4}
+ .mobile-search{display:flex;position:fixed;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:20;align-items:center;justify-content:center;width:50px;height:50px;border-radius:14px;border:1px solid #e5ae26;background:var(--yellow);color:var(--bg);box-shadow:0 3px 18px #000a}
+ .mobile-search:active{transform:scale(.96)}
+ .footer{display:none}
+ .overlay{padding:12px 7px calc(12px + env(safe-area-inset-bottom));align-items:flex-start}
+ .palette{width:100%;max-height:calc(100dvh - 24px);display:flex;flex-direction:column;border-radius:9px}
+ .search{padding:14px 12px;font-size:16px;min-height:51px}
+ .palette-close{display:block;flex:none;background:transparent;border:0;border-bottom:1px solid var(--line);padding:0 15px;font-size:20px;color:var(--muted)}
+ .results{max-height:min(62dvh,440px);min-height:0;overscroll-behavior:contain}
+ .result{padding:11px 9px;min-height:47px}
+ .palette-help{font-size:10px}
+ .inspector-grid{gap:5px}
+ .inspector-stat{padding:9px 7px}
+ .inspector-body{padding:10px 12px}
+ .inspector-head{padding:11px 12px}
+}
+@media(max-width:420px){.connection #connection-text{display:none}}
+@media(max-width:350px){
+ .section-title{font-size:9px}
+ .period{padding:4px 3px;min-width:24px;font-size:9px}
+ .venue{font-size:10.5px}
+ .score{font-size:23px}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -125,6 +202,12 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
       <table id="table-teams" class="data team-data"><tbody><tr><td class="no-data">Loading team data…</td></tr></tbody></table>
     </div>
   </section>
+  <nav id="mobile-tabs" class="mobile-tabs" aria-label="Player tables">
+    <button class="mobile-tab" type="button" data-mobile-view="away" aria-pressed="false"><span id="mobile-away-label">AWAY</span></button>
+    <button class="mobile-tab" type="button" data-mobile-view="home" aria-pressed="false"><span id="mobile-home-label">HOME</span></button>
+    <button class="mobile-tab active" type="button" data-mobile-view="both" aria-pressed="true">BOTH</button>
+  </nav>
+  <div class="mobile-help">Tap a stat for the crosshair · Tap a player for Q stats · Swipe sideways for more columns</div>
   <section id="section-away" class="section" aria-label="Away team player statistics">
     <div class="section-head"><span id="title-away" class="section-title">AWAY TEAM</span><span class="section-note">Click a header to sort · s sorts selected column</span></div>
     <div class="scroll" tabindex="0" data-region="away" aria-label="Away team players grid">
@@ -143,11 +226,14 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
   </div>
   <div id="nav-scroll-room" aria-hidden="true" style="height:0;min-height:0;pointer-events:none"></div>
 </main>
+<button id="mobile-search" class="mobile-search" type="button" aria-label="Search games, players and actions" title="Search games, players and actions">
+  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 5 5"></path></svg>
+</button>
 <div id="inspector-overlay" class="overlay" hidden>
   <div class="palette inspector" role="dialog" aria-modal="true" aria-label="Current quarter player statistics">
     <div class="inspector-head">
       <div><div id="inspector-name" class="inspector-title"></div><div id="inspector-context" class="inspector-sub"></div></div>
-      <button id="inspector-close" class="inspector-exit" type="button">Esc · Close</button>
+      <button id="inspector-close" class="inspector-exit" type="button">✕ Close</button>
     </div>
     <div id="inspector-body" class="inspector-body"></div>
     <div class="palette-help">Play-by-play quarter totals · Refreshes with the live feed · Esc returns to your selected cell</div>
@@ -155,7 +241,10 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
 </div>
 <div id="palette-overlay" class="overlay" hidden>
   <div class="palette" role="dialog" aria-modal="true" aria-label="Search players, games and actions">
-    <input id="palette-input" class="search" type="text" autocomplete="off" spellcheck="false" placeholder="Search players, games, stats, commands…">
+    <div class="search-row">
+      <input id="palette-input" class="search" type="text" autocomplete="off" spellcheck="false" enterkeyhint="go" aria-label="Search players, games, and actions" placeholder="Search players, games, stats, commands…">
+      <button id="palette-close" class="palette-close" type="button" aria-label="Close search">✕</button>
+    </div>
     <div id="palette-results" class="results" role="listbox" aria-label="Command results"></div>
     <div class="palette-help">↑ ↓ navigate · Enter select · Esc close · Search a player, team, or action</div>
   </div>
@@ -173,7 +262,7 @@ var state={
  games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
- lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0
+ lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both'
 };
 function $(id){return document.getElementById(id)}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -640,12 +729,24 @@ function scrollToRegion(region){
  tail.style.height='0px';
  if(region==='teams'){window.scrollTo(0,0);return}
  var section=$('section-'+region);
- var top=Math.max(0,window.scrollY+section.getBoundingClientRect().top-8);
+ var top=Math.max(0,window.scrollY+section.getBoundingClientRect().top-(isMobile()?48:8));
  var needed=Math.max(0,Math.ceil(top+window.innerHeight-document.documentElement.scrollHeight));
  tail.style.height=needed+'px';
  window.scrollTo(0,top);
 }
+function setMobileView(view){
+ if(!['away','home','both'].includes(view))return;
+ state.mobileView=view;
+ document.querySelector('.app').dataset.mobileView=view;
+ document.querySelectorAll('[data-mobile-view]').forEach(function(b){
+  var active=b.dataset.mobileView===view;
+  b.classList.toggle('active',active);
+  b.setAttribute('aria-pressed',String(active));
+ });
+}
+function isMobile(){return window.matchMedia('(max-width:750px)').matches}
 function focusRegion(region,scroll){
+ if(isMobile()&&region!=='teams'&&state.mobileView!=='both'&&state.mobileView!==region)setMobileView(region);
  var changed=state.active!==region;
  state.active=region;
  var wrap=document.querySelector('[data-region="'+region+'"].scroll');
@@ -716,6 +817,8 @@ function renderScore(){
   }
   $('title-away').textContent=g.away.name.toUpperCase()+' · '+g.away.abbr+' · AWAY';
   $('title-home').textContent=g.home.name.toUpperCase()+' · '+g.home.abbr+' · HOME';
+  $('mobile-away-label').textContent=g.away.abbr+' · AWAY';
+  $('mobile-home-label').textContent=g.home.abbr+' · HOME';
  }else{$('game-state').textContent='—';$('timeouts').hidden=true;$('scoring-run').hidden=true}
  var age=state.lastSync?Math.round((Date.now()-state.lastSync)/1000):null;
  var stale=age!==null&&age>35;
@@ -783,10 +886,11 @@ function paletteActions(){
  return actions;
 }
 function openPalette(){
+ if(state.paletteOpen)return;
  state.paletteOpen=true;
  $('palette-overlay').hidden=false;$('palette-input').value='';
  $('palette-input').placeholder='Search players, games, stats, commands…';
- state.paletteIndex=0;drawPalette();$('palette-input').focus();
+ state.paletteIndex=0;drawPalette();$('palette-input').focus({preventScroll:true});
 }
 function closePalette(){
  state.paletteOpen=false;$('palette-overlay').hidden=true;$('palette-input').value='';
@@ -847,24 +951,41 @@ document.addEventListener('keydown',function(e){
   if(p)openInspector(state.active,p.id);return}
 });
 $('game-picker').addEventListener('change',function(e){selectGame(e.target.value)});
+$('mobile-search').addEventListener('click',openPalette);
+$('palette-close').addEventListener('click',closePalette);
+$('mobile-tabs').addEventListener('click',function(e){
+ var button=e.target.closest('[data-mobile-view]');if(!button)return;
+ var view=button.dataset.mobileView;
+ setMobileView(view);
+ if(view==='away'||view==='home'){
+  state.active=view;paintCursor(false);scrollToRegion(view);
+ }else{
+  scrollToRegion(state.active==='home'?'home':'away');
+ }
+});
 $('period-buttons').addEventListener('click',function(e){var b=e.target.closest('[data-period]');if(b)periodSelect(b.dataset.period)});
 document.querySelectorAll('.data').forEach(function(table){
  table.addEventListener('click',function(e){
   var h=e.target.closest('th[data-col]'),td=e.target.closest('td[data-row]');
   if(h){changeSort(h.dataset.region,h.dataset.col);return}
-  if(td){state.cursor[td.dataset.region]={row:td.dataset.row,col:td.dataset.col};focusRegion(td.dataset.region,false)}
+  if(td){
+   state.cursor[td.dataset.region]={row:td.dataset.row,col:td.dataset.col};
+   focusRegion(td.dataset.region,false);
+   if(isMobile()&&td.dataset.region!=='teams'&&td.dataset.col==='name')openInspector(td.dataset.region,td.dataset.row);
+  }
  });
 });
 $('palette-input').addEventListener('input',function(){state.paletteIndex=0;drawPalette()});
 $('palette-results').addEventListener('click',function(e){var node=e.target.closest('[data-index]');if(node)paletteRun(Number(node.dataset.index))});
-$('palette-overlay').addEventListener('mousedown',function(e){if(e.target===$('palette-overlay'))closePalette()});
+$('palette-overlay').addEventListener('click',function(e){if(e.target===$('palette-overlay'))closePalette()});
 $('inspector-close').addEventListener('click',closeInspector);
-$('inspector-overlay').addEventListener('mousedown',function(e){if(e.target===$('inspector-overlay'))closeInspector()});
+$('inspector-overlay').addEventListener('click',function(e){if(e.target===$('inspector-overlay'))closeInspector()});
 document.querySelectorAll('.scroll').forEach(function(w){w.addEventListener('focus',function(){state.active=w.dataset.region;paintCursor(false)})});
 document.addEventListener('visibilitychange',function(){if(!document.hidden){loadGames();loadBox()}});
 setInterval(function(){if(!document.hidden)loadBox()},12000);
 setInterval(function(){if(!document.hidden)loadGames()},45000);
 setInterval(renderScore,1000);
+setMobileView(state.mobileView);
 render();loadGames();
 })();
 </script>
