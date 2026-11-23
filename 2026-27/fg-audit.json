@@ -1,0 +1,239 @@
+{
+  "game_id": "401910035",
+  "play_count": 478,
+  "teams": {
+    "away": {
+      "team_id": "2",
+      "abbr": "BOS",
+      "native_espn_boxscore": {
+        "fieldGoalsMade-fieldGoalsAttempted": "32-83",
+        "fieldGoalPct": "39",
+        "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "14-47",
+        "threePointFieldGoalPct": "30",
+        "freeThrowsMade-freeThrowsAttempted": "9-12",
+        "freeThrowPct": "75",
+        "totalRebounds": "41",
+        "offensiveRebounds": "15",
+        "defensiveRebounds": "26",
+        "assists": "26",
+        "steals": "9",
+        "blocks": "1",
+        "turnovers": "14",
+        "teamTurnovers": "2",
+        "totalTurnovers": "16",
+        "technicalFouls": "0",
+        "totalTechnicalFouls": "0",
+        "flagrantFouls": "0",
+        "turnoverPoints": "14",
+        "fastBreakPoints": "8",
+        "pointsInPaint": "36",
+        "fouls": "16",
+        "largestLead": "11",
+        "leadChanges": "4",
+        "leadPercentage": "36"
+      },
+      "official_normalized": {
+        "fgm": 32,
+        "fga": 83,
+        "tpm": 14,
+        "tpa": 47,
+        "ftm": 9,
+        "fta": 12,
+        "reb": 41,
+        "ast": 26,
+        "to": 16,
+        "pf": 16,
+        "stl": 9,
+        "blk": 1
+      },
+      "summed_players": {
+        "fg": {
+          "made": 32,
+          "attempted": 83,
+          "missing_players": 0
+        },
+        "three": {
+          "made": 14,
+          "attempted": 47,
+          "missing_players": 0
+        },
+        "ft": {
+          "made": 9,
+          "attempted": 12,
+          "missing_players": 0
+        }
+      },
+      "derived_quarters": [
+        {
+          "period": 1,
+          "pts": 20,
+          "fgm": 7,
+          "fga": 18,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 3,
+          "fta": 3,
+          "quality": "derived"
+        },
+        {
+          "period": 2,
+          "pts": 22,
+          "fgm": 9,
+          "fga": 24,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 1,
+          "fta": 2,
+          "quality": "derived"
+        },
+        {
+          "period": 3,
+          "pts": 33,
+          "fgm": 11,
+          "fga": 22,
+          "tpm": 7,
+          "tpa": 17,
+          "ftm": 4,
+          "fta": 5,
+          "quality": "derived"
+        },
+        {
+          "period": 4,
+          "pts": 12,
+          "fgm": 5,
+          "fga": 19,
+          "tpm": 1,
+          "tpa": 8,
+          "ftm": 1,
+          "fta": 2,
+          "quality": "derived"
+        }
+      ],
+      "summed_quarters": {
+        "fgm": 32,
+        "fga": 83,
+        "tpm": 14,
+        "tpa": 47,
+        "ftm": 9,
+        "fta": 12
+      }
+    },
+    "home": {
+      "team_id": "9",
+      "abbr": "GS",
+      "native_espn_boxscore": {
+        "fieldGoalsMade-fieldGoalsAttempted": "33-83",
+        "fieldGoalPct": "40",
+        "threePointFieldGoalsMade-threePointFieldGoalsAttempted": "14-45",
+        "threePointFieldGoalPct": "31",
+        "freeThrowsMade-freeThrowsAttempted": "8-10",
+        "freeThrowPct": "80",
+        "totalRebounds": "45",
+        "offensiveRebounds": "19",
+        "defensiveRebounds": "26",
+        "assists": "27",
+        "steals": "8",
+        "blocks": "1",
+        "turnovers": "19",
+        "teamTurnovers": "1",
+        "totalTurnovers": "20",
+        "technicalFouls": "1",
+        "totalTechnicalFouls": "1",
+        "flagrantFouls": "0",
+        "turnoverPoints": "24",
+        "fastBreakPoints": "4",
+        "pointsInPaint": "34",
+        "fouls": "20",
+        "largestLead": "10",
+        "leadChanges": "4",
+        "leadPercentage": "59"
+      },
+      "official_normalized": {
+        "fgm": 33,
+        "fga": 83,
+        "tpm": 14,
+        "tpa": 45,
+        "ftm": 8,
+        "fta": 10,
+        "reb": 45,
+        "ast": 27,
+        "to": 20,
+        "pf": 20,
+        "stl": 8,
+        "blk": 1
+      },
+      "summed_players": {
+        "fg": {
+          "made": 33,
+          "attempted": 83,
+          "missing_players": 0
+        },
+        "three": {
+          "made": 14,
+          "attempted": 45,
+          "missing_players": 0
+        },
+        "ft": {
+          "made": 8,
+          "attempted": 10,
+          "missing_players": 0
+        }
+      },
+      "derived_quarters": [
+        {
+          "period": 1,
+          "pts": 27,
+          "fgm": 10,
+          "fga": 24,
+          "tpm": 5,
+          "tpa": 15,
+          "ftm": 2,
+          "fta": 2,
+          "quality": "derived"
+        },
+        {
+          "period": 2,
+          "pts": 17,
+          "fgm": 5,
+          "fga": 19,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 4,
+          "fta": 6,
+          "quality": "derived"
+        },
+        {
+          "period": 3,
+          "pts": 25,
+          "fgm": 10,
+          "fga": 21,
+          "tpm": 3,
+          "tpa": 10,
+          "ftm": 2,
+          "fta": 2,
+          "quality": "derived"
+        },
+        {
+          "period": 4,
+          "pts": 19,
+          "fgm": 8,
+          "fga": 19,
+          "tpm": 3,
+          "tpa": 9,
+          "ftm": 0,
+          "fta": 0,
+          "quality": "derived"
+        }
+      ],
+      "summed_quarters": {
+        "fgm": 33,
+        "fga": 83,
+        "tpm": 14,
+        "tpa": 45,
+        "ftm": 8,
+        "fta": 10
+      }
+    }
+  },
+  "note": "Team/native and summed player stats are separate ESPN views. Per-quarter numbers are derived."
+}
