@@ -19,6 +19,9 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | `gg` / `Home` | Jump to first row |
 | `G` / `End` | Jump to last row |
 | `s` | Sort by the selected column; press again to reverse |
+| `1`–`4` with Team Statistics active | Show Q1–Q4 team statistics (pins the selected quarter) |
+| `5` with Team Statistics active | Show ALL full-game team statistics |
+| `0` with Team Statistics active | Jump to the current quarter and resume following it on live updates |
 | Click column header | Sort by that statistic |
 | `Ctrl+K` or `/` | dmenu-style search: players, games, periods, commands. While open, `Tab` / `Shift+Tab` cycles results (wraps around); `Enter` selects |
 | `Escape` | Close command menu or restore grid focus |

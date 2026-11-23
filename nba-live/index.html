@@ -1417,6 +1417,11 @@ document.addEventListener('keydown',function(e){
  }
  if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.target.isContentEditable)return;
  if(ctrl||e.altKey)return;
+ if(state.active==='teams'&&!e.shiftKey&&/^[0-5]$/.test(e.key)){
+  e.preventDefault();
+  periodSelect(e.key==='5'?'ALL':e.key==='0'?'CURRENT':e.key);
+  return;
+ }
  if(e.key==='/'){e.preventDefault();openPalette();return}
  var move={h:[0,-1],j:[1,0],k:[-1,0],l:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0],ArrowRight:[0,1]};
  if(move[e.key]){e.preventDefault();moveCursor(move[e.key][0],move[e.key][1]);state.pendingG=0;return}
