@@ -47,6 +47,15 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 - **Swipe the tables horizontally** to access every statistic. Player names and team abbreviations stay pinned on the left; the table layouts use narrow phone-sized columns.
 - All existing keyboard shortcuts are retained for desktop or a hardware keyboard.
 
+
+## Schedule command
+
+- Open **`/`** (or **`Ctrl+K`**) and type **`schedule`**; press Enter or tap the result.
+- The overlay starts on the **next future game**, showing local dates and tipoff times according to your phone/computer's timezone. Earlier games appear above the selection, with final scores.
+- **`j` / ↓** moves to the next game, **`k` / ↑** to the previous game. On phones use **↑ Older** and **↓ Newer**, swipe vertically, or tap a game to highlight it.
+- **Enter** / **View game** opens the selected game's box score. **Escape**, **Close**, or tapping outside the dialog dismisses it.
+- Data is only fetched **when the schedule opens**, with seven-day chunks cached per browser session. Browsing past the loaded dates fetches more, and failed multi-day ESPN requests fall back to individual dates. An older game remains selected when the main daily refresh runs.
+
 ## Live data and performance
 
 - Direct browser calls to ESPN's unofficial `site.api.espn.com` endpoints; there are no tokens or API keys.

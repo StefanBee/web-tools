@@ -101,6 +101,25 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
 .result .kind{color:var(--muted);font-size:10px;white-space:nowrap}
 .palette-help{border-top:1px solid var(--line);padding:7px 12px;color:var(--muted);font-size:10px}
 .error{color:var(--red)}
+/* ESPN schedule: fetched on demand, not in the live box-score loop. */
+.schedule{width:min(660px,100%);max-height:min(84vh,780px);display:flex;flex-direction:column}
+.schedule-list{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) var(--pane);min-height:120px;max-height:min(62vh,580px);padding:4px 8px}
+.schedule-day{position:sticky;top:0;z-index:1;background:var(--pane);border-bottom:1px solid var(--line);color:var(--yellow);font-size:10px;font-weight:850;letter-spacing:.07em;padding:10px 7px 5px}
+.schedule-game{display:grid;grid-template-columns:82px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;min-height:40px;padding:6px 7px;text-align:left;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--ink)}
+.schedule-game:hover{background:var(--raised)}
+.schedule-game.selected{border-color:var(--yellow);background:#4a4333}
+.schedule-time{font-size:11px;color:var(--muted);white-space:nowrap}
+.schedule-game.selected .schedule-time{color:var(--yellow)}
+.schedule-match{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.schedule-score{font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+.schedule-score.final{color:var(--ink);font-weight:850}
+.schedule-controls{display:flex;gap:6px;padding:9px 12px;align-items:center;border-top:1px solid var(--line)}
+.schedule-control{min-height:35px;min-width:75px;border:1px solid var(--line);background:var(--raised);border-radius:5px;padding:7px 10px;font-weight:750}
+.schedule-control.primary{margin-left:auto;color:var(--bg);background:var(--yellow);border-color:var(--yellow)}
+.schedule-control:disabled{opacity:.45;cursor:default}
+.schedule-status{min-height:25px;padding:6px 13px;font-size:10px;color:var(--muted)}
+.schedule-status.error{color:var(--red)}
+
 @media(min-width:1120px){.app{padding:14px 20px 24px}.data td{height:30px}.score{font-size:36px}}
 /* Mobile controls are absent from the desktop layout. */
 .mobile-tabs,.mobile-search,.mobile-help,.palette-close{display:none}
@@ -172,6 +191,15 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
  .inspector-stat{padding:9px 7px}
  .inspector-body{padding:10px 12px}
  .inspector-head{padding:11px 12px}
+ .schedule{max-height:calc(100dvh - 24px)}
+ .schedule-list{max-height:calc(100dvh - 190px);padding:3px 5px}
+ .schedule-day{padding:9px 6px 4px}
+ .schedule-game{grid-template-columns:61px minmax(0,1fr) auto;gap:5px;padding:7px 5px;min-height:45px}
+ .schedule-match{font-size:11px}
+ .schedule-time,.schedule-score{font-size:10px}
+ .schedule-controls{gap:4px;padding:8px}
+ .schedule-control{min-width:0;flex:1;padding:9px 5px}
+ .schedule-control.primary{flex:1.15}
 }
 @media(max-width:420px){.connection #connection-text{display:none}}
 @media(max-width:350px){
@@ -239,6 +267,22 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <div class="palette-help">Play-by-play quarter totals · Refreshes with the live feed · Esc returns to your selected cell</div>
   </div>
 </div>
+<div id="schedule-overlay" class="overlay" hidden>
+  <div class="palette schedule" role="dialog" aria-modal="true" aria-label="NBA schedule">
+    <div class="inspector-head">
+      <div><div class="inspector-title">NBA SCHEDULE</div><div id="schedule-zone" class="inspector-sub">Local dates and tipoffs</div></div>
+      <button id="schedule-close" class="inspector-exit" type="button">✕ Close</button>
+    </div>
+    <div id="schedule-list" class="schedule-list" role="listbox" tabindex="0" aria-label="NBA schedule games"></div>
+    <div id="schedule-status" class="schedule-status" aria-live="polite">Loading schedule…</div>
+    <div class="schedule-controls">
+      <button id="schedule-older" class="schedule-control" type="button">↑ Older</button>
+      <button id="schedule-newer" class="schedule-control" type="button">↓ Newer</button>
+      <button id="schedule-view" class="schedule-control primary" type="button">View game ↵</button>
+    </div>
+    <div class="palette-help">j / ↓ newer · k / ↑ older · Enter view · Esc close · Tap outside to dismiss</div>
+  </div>
+</div>
 <div id="palette-overlay" class="overlay" hidden>
   <div class="palette" role="dialog" aria-modal="true" aria-label="Search players, games and actions">
     <div class="search-row">
@@ -264,6 +308,7 @@ var state={
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
  lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both'
 };
+var schedule={open:false,initialized:false,serial:0,busy:false,selected:'',moved:false,error:'',games:new Map(),weeks:new Map(),older:-1,newer:2};
 function $(id){return document.getElementById(id)}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function number(v){var n=Number(String(v==null?'':v).replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:0}
@@ -297,6 +342,9 @@ async function loadGames(){
   ((result.value||{}).events||[]).forEach(function(e){var g=parseGame(e);if(g&&g.id)map.set(g.id,g)});
  });
  if(map.size){
+  // Keep a game selected from historical schedule through daily game-list refreshes.
+  var selected=state.games.find(function(x){return x.id===state.id});
+  if(selected&&!map.has(selected.id))map.set(selected.id,selected);
   state.games=Array.from(map.values()).sort(function(a,b){
    var pa=statusOf(a),pb=statusOf(b),rank=function(v){return v===2?0:v===1?1:2};
    return rank(pa)-rank(pb)||(pa===1?String(a.date).localeCompare(String(b.date)):String(b.date).localeCompare(String(a.date)));
@@ -867,8 +915,155 @@ async function loadBox(){
  }finally{if(serial===state.serial)state.fetching=false}
 }
 function periodSelect(value){state.period=value;paintPeriods();renderTables();focusRegion('teams',false)}
+
+/* Lightweight, lazy 7-day ESPN schedule. Times are formatted in device timezone. */
+var S_DAY=86400000,S_WEEK=7*S_DAY;
+function scheduleMonday(){
+ var d=new Date(),day=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate());
+ return day-((new Date(day).getUTCDay()+6)%7)*S_DAY;
+}
+function scheduleKey(ms){
+ var d=new Date(ms);
+ return ''+d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,'0')+String(d.getUTCDate()).padStart(2,'0');
+}
+function scheduleRows(){
+ return Array.from(schedule.games.values()).filter(function(g){return Number.isFinite(Date.parse(g.date))})
+  .sort(function(a,b){return Date.parse(a.date)-Date.parse(b.date)||a.id.localeCompare(b.id)});
+}
+function addScheduled(games){games.forEach(function(g){if(g&&g.id)schedule.games.set(g.id,g)})}
+async function scheduleWeek(offset){
+ var start=scheduleMonday()+offset*S_WEEK,key=scheduleKey(start);
+ if(schedule.weeks.has(key))return schedule.weeks.get(key);
+ var pending=(async function(){
+  var events=[];
+  try{
+   var response=await get(API+'scoreboard?dates='+key+'-'+scheduleKey(start+6*S_DAY)+'&limit=200');
+   if(!Array.isArray(response.events))throw Error('Unexpected scoreboard');
+   events=response.events;
+  }catch(_){
+   // Range support varies; individual YYYYMMDD requests are the fallback.
+   var results=await Promise.allSettled(Array.from({length:7},function(_,i){
+    return get(API+'scoreboard?dates='+scheduleKey(start+i*S_DAY)+'&limit=100');
+   }));
+   var good=results.filter(function(r){return r.status==='fulfilled'&&Array.isArray((r.value||{}).events)});
+   if(!good.length)throw Error('ESPN schedule unavailable');
+   good.forEach(function(r){events.push.apply(events,r.value.events)});
+  }
+  addScheduled(events.map(parseGame).filter(Boolean));
+  return events.length;
+ })();
+ schedule.weeks.set(key,pending);
+ try{return await pending}catch(e){schedule.weeks.delete(key);throw e}
+}
+function scheduleDateLabel(date){
+ return new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}).format(new Date(date));
+}
+function scheduleTimeLabel(date){
+ return new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date(date));
+}
+function scheduleResult(g){
+ var st=statusOf(g);
+ if(st===3)return {text:'FINAL '+g.away.score+'–'+g.home.score,cls:'final'};
+ if(st===2)return {text:'LIVE '+g.away.score+'–'+g.home.score,cls:'final'};
+ return {text:'UPCOMING',cls:''};
+}
+function firstUpcoming(){
+ var rows=scheduleRows(),now=Date.now();
+ var next=rows.find(function(g){return statusOf(g)===1&&Date.parse(g.date)>=now});
+ if(!next)next=rows.find(function(g){return statusOf(g)===2});
+ if(!next)next=rows[rows.length-1];
+ if(next)schedule.selected=next.id;
+ return rows.some(function(g){return statusOf(g)===1&&Date.parse(g.date)>=now});
+}
+function drawSchedule(position){
+ if(!schedule.open)return;
+ var list=$('schedule-list'),scroll=list.scrollTop,lastDay='',html='';
+ scheduleRows().forEach(function(g){
+  var day=scheduleDateLabel(g.date),stateText=scheduleResult(g),active=g.id===schedule.selected;
+  if(day!==lastDay){html+='<div class="schedule-day">'+esc(day)+'</div>';lastDay=day}
+  html+='<button type="button" role="option" aria-selected="'+active+'" data-schedule-id="'+esc(g.id)+'" class="schedule-game'+(active?' selected':'')+'">'
+   +'<span class="schedule-time">'+esc(scheduleTimeLabel(g.date))+'</span>'
+   +'<span class="schedule-match">'+esc(g.away.abbr+' @ '+g.home.abbr)+'</span>'
+   +'<span class="schedule-score '+stateText.cls+'">'+esc(stateText.text)+'</span></button>';
+ });
+ list.innerHTML=html||'<div class="schedule-empty">No games in this range.</div>';
+ list.scrollTop=scroll;
+ if(position){
+  var active=Array.from(list.querySelectorAll('[data-schedule-id]')).find(function(el){return el.dataset.scheduleId===schedule.selected});
+  if(active)active.scrollIntoView({block:position,inline:'nearest'});
+ }
+ $('schedule-status').textContent=schedule.busy?'Loading schedule…':schedule.error||scheduleRows().length+' games loaded · tap a row, then View game';
+ $('schedule-status').classList.toggle('error',!!schedule.error);
+ $('schedule-older').disabled=schedule.busy;
+ $('schedule-newer').disabled=schedule.busy;
+ $('schedule-view').disabled=!schedule.selected;
+}
+async function loadSchedule(serial){
+ schedule.busy=true;schedule.error='';drawSchedule(false);
+ var offsets=[-1,0,1,2],result=await Promise.allSettled(offsets.map(scheduleWeek));
+ if(!schedule.open||serial!==schedule.serial)return;
+ schedule.busy=false;schedule.initialized=true;
+ var success=result.filter(function(r){return r.status==='fulfilled'}).length;
+ if(!success)schedule.error='Could not reach ESPN schedule. Close and retry.';
+ else if(success<offsets.length)schedule.error='Some dates were unavailable; browsing will retry.';
+ addScheduled(state.games);
+ if(!schedule.moved){
+  if(!firstUpcoming()&&success){
+   schedule.busy=true;drawSchedule('start');
+   for(var offset=3;offset<=10&&schedule.open&&serial===schedule.serial;offset++){
+    try{await scheduleWeek(offset);schedule.newer=offset}
+    catch(_){schedule.error='Could not load later dates';break}
+    if(firstUpcoming())break;
+   }
+   schedule.busy=false;
+  }
+ }
+ drawSchedule('start');
+}
+function openSchedule(){
+ if(schedule.open)return;
+ schedule.open=true;schedule.serial++;schedule.moved=false;schedule.error='';
+ $('schedule-overlay').hidden=false;
+ $('palette-input').blur();
+ $('schedule-zone').textContent='Local time · '+(Intl.DateTimeFormat().resolvedOptions().timeZone||'device timezone');
+ addScheduled(state.games);firstUpcoming();drawSchedule('start');
+ $('schedule-list').focus({preventScroll:true});
+ if(!schedule.initialized)loadSchedule(schedule.serial);
+}
+function closeSchedule(){
+ if(!schedule.open)return;
+ schedule.open=false;schedule.serial++;
+ $('schedule-overlay').hidden=true;focusRegion(state.active,false);
+}
+async function moveSchedule(step){
+ if(!schedule.open||schedule.busy)return;
+ var rows=scheduleRows(),idx=rows.findIndex(function(g){return g.id===schedule.selected}),next=idx+step;
+ if(next>=0&&next<rows.length){
+  schedule.moved=true;schedule.selected=rows[next].id;drawSchedule('nearest');return;
+ }
+ schedule.busy=true;schedule.error='';drawSchedule(false);
+ var current=schedule.selected,found=false;
+ for(var n=0;n<8;n++){
+  var offset=step<0?schedule.older-1:schedule.newer+1;
+  try{await scheduleWeek(offset)}catch(_){schedule.error='Could not load more dates from ESPN';break}
+  if(step<0)schedule.older=offset;else schedule.newer=offset;
+  rows=scheduleRows();idx=rows.findIndex(function(g){return g.id===current});next=idx+step;
+  if(next>=0&&next<rows.length){found=true;break}
+ }
+ schedule.busy=false;
+ if(found){schedule.moved=true;schedule.selected=rows[next].id}
+ else if(!schedule.error)schedule.error='No more games found in this direction.';
+ drawSchedule(found?'nearest':false);
+}
+function viewScheduledGame(){
+ var g=schedule.games.get(schedule.selected);if(!g)return;
+ closeSchedule();
+ if(!state.games.some(function(x){return x.id===g.id})){state.games.push(g);updatePicker()}
+ selectGame(g.id);
+}
+
 function paletteActions(){
- var actions=[];
+ var actions=[{label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule}];
  state.games.forEach(function(g){actions.push({label:gameLabel(g),sub:gameShort(g),kind:'GAME',run:function(){selectGame(g.id)}})});
  ['away','home'].forEach(function(side){
   allPlayers(side).forEach(function(p){actions.push({label:(p.jersey?'#'+p.jersey+' ':'')+p.name,sub:(game()?game()[side].abbr:'')+' · Jump to player',kind:'PLAYER',
@@ -912,6 +1107,14 @@ function paletteRun(index){
 }
 document.addEventListener('keydown',function(e){
  var ctrl=e.ctrlKey||e.metaKey;
+ if(schedule.open){
+  if(e.key==='Escape'){e.preventDefault();closeSchedule();return}
+  if(e.key==='j'||e.key==='ArrowDown'){e.preventDefault();moveSchedule(1);return}
+  if(e.key==='k'||e.key==='ArrowUp'){e.preventDefault();moveSchedule(-1);return}
+  if(e.key==='Enter'){e.preventDefault();viewScheduledGame();return}
+  if(e.key==='Tab'){e.preventDefault();$('schedule-close').focus({preventScroll:true});return}
+  return;
+ }
  if(state.inspector){
   if(e.key==='Escape'){e.preventDefault();closeInspector();return}
   if(ctrl&&e.key.toLowerCase()==='k'){e.preventDefault();closeInspector();openPalette();return}
@@ -978,6 +1181,15 @@ document.querySelectorAll('.data').forEach(function(table){
 $('palette-input').addEventListener('input',function(){state.paletteIndex=0;drawPalette()});
 $('palette-results').addEventListener('click',function(e){var node=e.target.closest('[data-index]');if(node)paletteRun(Number(node.dataset.index))});
 $('palette-overlay').addEventListener('click',function(e){if(e.target===$('palette-overlay'))closePalette()});
+$('schedule-close').addEventListener('click',closeSchedule);
+$('schedule-older').addEventListener('click',function(){moveSchedule(-1)});
+$('schedule-newer').addEventListener('click',function(){moveSchedule(1)});
+$('schedule-view').addEventListener('click',viewScheduledGame);
+$('schedule-list').addEventListener('click',function(e){
+ var row=e.target.closest('[data-schedule-id]');if(!row)return;
+ schedule.selected=row.dataset.scheduleId;schedule.moved=true;drawSchedule(false);
+});
+$('schedule-overlay').addEventListener('click',function(e){if(e.target===$('schedule-overlay'))closeSchedule()});
 $('inspector-close').addEventListener('click',closeInspector);
 $('inspector-overlay').addEventListener('click',function(e){if(e.target===$('inspector-overlay'))closeInspector()});
 document.querySelectorAll('.scroll').forEach(function(w){w.addEventListener('focus',function(){state.active=w.dataset.region;paintCursor(false)})});
