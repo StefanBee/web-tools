@@ -1,11 +1,18 @@
 {
   "season": "2026-27",
-  "updated_at": "2026-11-23T01:55:52+00:00",
-  "games": 243,
-  "team_periods": 1970,
-  "newly_archived": 243,
-  "unchanged": 0,
+  "updated_at": "2026-11-23T11:46:52+00:00",
+  "games": 248,
+  "team_periods": 2012,
+  "newly_archived": 5,
+  "unchanged": 21,
   "pending_games": 0,
   "scoreboard_errors": 0,
-  "note": "Period stats other than score are estimates reconstructed from ESPN plays; raw source retained."
+  "note": "Period stats other than score are estimates reconstructed from ESPN plays; raw source retained.",
+  "validation": {
+    "parser_version": "structured-2026-11-23-v1",
+    "games_validated": 248,
+    "games_with_mismatches": 229,
+    "team_metric_mismatches": 640,
+    "player_metric_mismatches": 938
+  }
 }
