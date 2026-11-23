@@ -32,6 +32,11 @@ button:focus:not(:focus-visible),.scroll:focus:not(:focus-visible){outline:none}
 .score .gap{color:var(--muted);font-weight:400;margin:0 7px}
 .game-state{font-size:11px;color:var(--green);font-weight:750;text-align:right;white-space:nowrap}
 .game-state.subtle{color:var(--muted)}
+.game-state.break{color:var(--yellow)}
+.timeouts{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin-top:5px;font-size:11px;color:var(--muted)}
+.timeouts .to-label{color:var(--muted);font-size:10px;letter-spacing:.035em;font-weight:750}
+.timeouts strong{color:var(--ink);font-weight:800}
+.timeouts .team-to{white-space:nowrap}
 .hint{color:var(--muted);font-size:10.5px;margin-top:3px}
 .section{background:var(--pane);border:1px solid var(--line);border-radius:9px;min-width:0;overflow:hidden}
 .section.active{border-color:#786848}
@@ -95,19 +100,12 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <div class="connection"><span id="dot" class="dot"></span><span id="connection-text">Connecting…</span></div>
   </header>
   <section class="scoreline" aria-label="Selected game's score">
-    <div class="matchup"><div id="matchup" class="venue">Finding games…</div><div id="game-note" class="hint">Live box scores from ESPN</div></div>
+    <div class="matchup"><div id="matchup" class="venue">Finding games…</div><div id="game-note" class="hint">Live box scores from ESPN</div><div id="timeouts" class="timeouts" aria-label="Timeouts taken by each team" hidden></div></div>
     <div><div id="score" class="score">— <span class="gap">–</span> —</div><div id="game-state" class="game-state subtle">—</div></div>
   </section>
   <section id="section-teams" class="section" aria-label="Team statistics">
     <div class="section-head"><div><span class="section-title">TEAM STATISTICS</span><span id="period-description" class="section-note"> · Shot splits from play-by-play</span></div>
-      <div class="periods" id="period-buttons" aria-label="Team statistics period">
-        <button class="period active" data-period="NOW" type="button">NOW</button>
-        <button class="period" data-period="1" type="button">Q1</button>
-        <button class="period" data-period="2" type="button">Q2</button>
-        <button class="period" data-period="3" type="button">Q3</button>
-        <button class="period" data-period="4" type="button">Q4</button>
-        <button class="period" data-period="ALL" type="button">ALL</button>
-      </div>
+      <div class="periods" id="period-buttons" aria-label="Team statistics period"></div>
     </div>
     <div class="scroll" tabindex="0" data-region="teams" aria-label="Team stats grid; Tab to move to away team">
       <table id="table-teams" class="data team-data"><tbody><tr><td class="no-data">Loading team data…</td></tr></tbody></table>
@@ -148,7 +146,7 @@ var PLAYER_COLS=[
 ];
 var TEAM_COLS=[['name','TEAM'],['pts','PTS'],['fg','FG'],['three','3PT'],['ft','FT'],['reb','REB'],['to','TO'],['pf','PF']];
 var state={
- games:[],id:'',raw:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
+ games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
  lastSync:0,error:'',paletteOpen:false,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0
@@ -217,7 +215,7 @@ function game(){return state.games.find(function(g){return g.id===state.id})||nu
 function selectGame(id){
  if(!state.games.some(function(g){return g.id===id}))return;
  var changed=state.id!==id||!state.raw;
- state.id=id;state.serial++;state.fetching=false;state.raw=null;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};
+ state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};
  state.cursor.away.row='';state.cursor.home.row='';
  try{localStorage.setItem('nba-live-last-game',id)}catch(_){}
  updatePicker();render();
@@ -281,8 +279,85 @@ function allPlayers(side){
  return out;
 }
 function readPeriod(p){return Number((p.period||{}).number||p.period||0)}
+function allPlays(raw){return Array.isArray(raw&&raw.plays)?raw.plays:Array.isArray((raw&&raw.plays||{}).plays)?raw.plays.plays:[]}
+function periodLabel(period){return period==='ALL'?'Full game':period>4?'OT'+(period-4):'Q'+period}
+function periodChoices(){
+ var g=game(),max=4;
+ if(g){
+  max=Math.max(max,number((g.status||{}).period||0),(g.away.line||[]).length,(g.home.line||[]).length);
+  allPlays(state.raw).forEach(function(p){max=Math.max(max,readPeriod(p))});
+ }
+ max=Math.min(20,max);
+ return ['NOW'].concat(Array.from({length:max},function(_,i){return String(i+1)}),['ALL']);
+}
+function playType(p){return String((p.type||{}).text||(p.type||{}).name||'')}
+function timeoutPlay(p){
+ var txt=String(p.text||''),type=playType(p);
+ return /time[\s-]?out/i.test(txt+' '+type);
+}
+function nonTeamTimeout(p){
+ return /(?:official|mandatory|media|television|tv|referee|commercial)[\s-]*(?:team[\s-]*)?time[\s-]?out|time[\s-]?out[\s-]*(?:official|mandatory|media|tv)/i.test(String(p.text||'')+' '+playType(p));
+}
+function playTeamId(p,g){
+ var given=String((p.team||{}).id||p.teamId||'');
+ if(given===g.away.id||given===g.home.id)return given;
+ var desc=String(p.text||'').toLowerCase();
+ // Some play-by-play records omit team.id. Only infer from a clear team name.
+ for(var i=0;i<2;i++){
+  var t=i?g.home:g.away;
+  if(t.name&&t.name.length>4&&desc.includes(t.name.toLowerCase()))return t.id;
+  if(t.abbr&&new RegExp('\\b'+t.abbr.toLowerCase()+'\\b').test(desc))return t.id;
+ }
+ return '';
+}
+function calculateTimeouts(raw,g){
+ var plays=allPlays(raw),byPeriod={},seen=new Set(),minPeriod=99;
+ plays.forEach(function(p){
+  var per=readPeriod(p);if(per>0)minPeriod=Math.min(minPeriod,per);
+  if(!per||!timeoutPlay(p)||nonTeamTimeout(p))return;
+  var id=playTeamId(p,g);if(!id)return;
+  var uniq=p.id||p.playId||p.sequenceNumber||'';
+  if(uniq){var key=String(uniq);if(seen.has(key))return;seen.add(key)}
+  var bucket=per<=4?'REG':String(per);
+  if(!byPeriod[bucket])byPeriod[bucket]={};
+  byPeriod[bucket][id]=(byPeriod[bucket][id]||0)+1;
+ });
+ return {counts:byPeriod,complete:plays.length>0&&minPeriod===1};
+}
+function latestTimeout(raw,g){
+ var st=g.status||{},per=Number(st.period||0),clock=String(st.displayClock||'').trim();
+ var plays=allPlays(raw);
+ for(var i=plays.length-1;i>=0;i--){
+  var p=plays[i],n=readPeriod(p);
+  if(n!==per)continue;
+  var type=playType(p),txt=String(p.text||'');
+  if(/substitution|substitute|lineup|instant replay|video review/i.test(type+' '+txt))continue;
+  if(!timeoutPlay(p))return '';
+  var playClock=String((p.clock||{}).displayValue||p.clock||'').trim();
+  if(clock&&playClock&&clock!==playClock)return '';
+  if(nonTeamTimeout(p))return 'OFFICIAL TIMEOUT';
+  var teamId=playTeamId(p,g),team=teamId===g.away.id?g.away:teamId===g.home.id?g.home:null;
+  return (team?team.abbr+' ':'')+'TIMEOUT';
+ }
+ return '';
+}
+function liveStateLabel(g,raw){
+ var st=g.status||{},s=statusOf(g),per=Number(st.period||0),clock=String(st.displayClock||''),detail=[(st.type||{}).shortDetail,(st.type||{}).detail,(st.type||{}).description,(st.type||{}).name,st.detail].filter(Boolean).join(' ');
+ if(s===3)return {label:per>4?'FINAL · '+periodLabel(per):'FINAL',isBreak:false};
+ if(s!==2)return {label:(st.type||{}).shortDetail||'SCHEDULED',isBreak:false};
+ if(/half[\s-]?time|end of (?:the )?(?:2nd|second) quarter/i.test(detail))return {label:'HALFTIME',isBreak:true};
+ var plays=allPlays(raw),last=plays.slice().reverse().find(function(p){return readPeriod(p)===per&&!/substitution/i.test(playType(p))})||{};
+ var lastText=String(last.text||'')+' '+playType(last);
+ if(per===2&&/end of (?:the )?(?:2nd|second) (?:quarter|period)|halftime/i.test(lastText))return {label:'HALFTIME',isBreak:true};
+ if(/end of (?:period|quarter|q[1-4])|end of (?:the )?(?:first|second|third|fourth|1st|2nd|3rd|4th) (?:quarter|period)|intermission|quarter break/i.test(detail+ ' '+lastText)&&/^(?:0:00(?:\.0)?|00:00)$/.test(clock)){
+  return {label:periodLabel(per)+' BREAK',isBreak:true};
+ }
+ var timeout=latestTimeout(raw,g);
+ if(timeout)return {label:timeout+' · '+periodLabel(per)+' '+clock,isBreak:true};
+ return {label:periodLabel(per)+' · '+clock,isBreak:false};
+}
 function derivePlays(raw,g,period){
- var plays=Array.isArray(raw.plays)?raw.plays:Array.isArray((raw.plays||{}).plays)?raw.plays.plays:[];
+ var plays=allPlays(raw);
  var teams={};[g.away,g.home].forEach(function(t){teams[t.id]={name:t.abbr,pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0}});
  var count=0;
  plays.forEach(function(p){
@@ -307,7 +382,7 @@ function getTeamRows(){
  var g=game();if(!g)return [];
  var period=state.period==='ALL'?'ALL':state.period==='NOW'?Math.max(1,number((g.status||{}).period||1)):Number(state.period);
  var d=derivePlays(state.raw||{},g,period);
- $('period-description').textContent=' · '+(period==='ALL'?'Full game':'Q'+period)+' · '+(d.count?'From play-by-play':'Waiting for play-by-play');
+ $('period-description').textContent=' · '+periodLabel(period)+' · '+(d.count?'From play-by-play':'Waiting for play-by-play');
  return [g.away,g.home].map(function(t,i){
   var x=d.teams[t.id]||{pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0};
   // Official line scores are more reliable for quarter point totals.
@@ -454,13 +529,27 @@ function renderScore(){
  $('score').innerHTML=g?esc(g.away.score)+'<span class="gap">–</span>'+esc(g.home.score):'— <span class="gap">–</span> —';
  if(g){
   var st=g.status||{},s=statusOf(g),period=Number(st.period||0);
-  var clock=st.displayClock||'';
-  $('game-state').textContent=s===2?(period<=4?'Q'+period:'OT'+(period-4))+' · '+clock:s===3?'FINAL':st.type&&st.type.shortDetail||'SCHEDULED';
+  var live=liveStateLabel(g,state.raw);
+  $('game-state').textContent=live.label;
   $('game-state').classList.toggle('subtle',s!==2);
+  $('game-state').classList.toggle('break',live.isBreak);
   $('game-note').textContent=(g.venue?g.venue+' · ':'')+'Away @ Home · '+(state.lastSync?'Box score refreshed':'Waiting for live data');
+  var counter=$('timeouts');
+  counter.hidden=s===1;
+  if(s!==1){
+   var ot=period>4,limit=ot?2:7,bucket=ot?String(period):'REG';
+   var data=state.timeoutData||{counts:{},complete:false},counts=data.counts[bucket]||{};
+   var caption='TIMEOUTS USED · '+(ot?periodLabel(period):'REG');
+   var renderCount=function(t){
+    var used=data.complete?String(counts[t.id]||0):'—';
+    return '<span class="team-to">'+esc(t.abbr)+' <strong>'+used+'/'+limit+'</strong></span>';
+   };
+   counter.innerHTML='<span class="to-label">'+esc(caption)+'</span>'+renderCount(g.away)+renderCount(g.home);
+   counter.title=data.complete?'Charged team timeouts counted from ESPN play-by-play':'Timeout data unavailable or incomplete';
+  }
   $('title-away').textContent=g.away.name.toUpperCase()+' · '+g.away.abbr+' · AWAY';
   $('title-home').textContent=g.home.name.toUpperCase()+' · '+g.home.abbr+' · HOME';
- }else{$('game-state').textContent='—'}
+ }else{$('game-state').textContent='—';$('timeouts').hidden=true}
  var age=state.lastSync?Math.round((Date.now()-state.lastSync)/1000):null;
  var stale=age!==null&&age>35;
  var dot=$('dot');dot.className='dot'+(state.error||stale?' error':g&&statusOf(g)===2?' live':'');
@@ -469,7 +558,14 @@ function renderScore(){
 }
 function render(){renderScore();renderTables();paintPeriods()}
 function paintPeriods(){
- document.querySelectorAll('[data-period]').forEach(function(b){b.classList.toggle('active',b.dataset.period===state.period)});
+ var values=periodChoices(),bar=$('period-buttons'),key=values.join(',');
+ if(bar.dataset.periods!==key){
+  bar.innerHTML=values.map(function(v){
+   return '<button type="button" class="period" data-period="'+v+'">'+(v==='NOW'||v==='ALL'?v:periodLabel(Number(v)))+'</button>';
+  }).join('');
+  bar.dataset.periods=key;
+ }
+ bar.querySelectorAll('[data-period]').forEach(function(b){b.classList.toggle('active',b.dataset.period===state.period)});
 }
 async function loadBox(){
  if(state.fetching||!state.id||document.hidden)return;
@@ -489,6 +585,7 @@ async function loadBox(){
    });
    if(comp.status)g.status=comp.status;
   }
+  state.timeoutData=g?calculateTimeouts(raw,g):null;
   state.players.away=parsePlayers(raw,g?g.away.id:'');
   state.players.home=parsePlayers(raw,g?g.home.id:'');
   state.error='';state.lastSync=Date.now();
@@ -512,8 +609,8 @@ function paletteActions(){
  [{name:'Team statistics',id:'teams'},{name:'Away team',id:'away'},{name:'Home team',id:'home'}].forEach(function(x){
   actions.push({label:'Go to '+x.name,sub:'Move keyboard focus',kind:'GO',run:function(){focusRegion(x.id,true)}})
  });
- ['NOW','1','2','3','4','ALL'].forEach(function(p){
-  actions.push({label:'Team stats · '+(p==='NOW'?'Current quarter':p==='ALL'?'Whole game':'Q'+p),sub:'Select period',kind:'PERIOD',run:function(){periodSelect(p)}})
+ periodChoices().forEach(function(p){
+  actions.push({label:'Team stats · '+(p==='NOW'?'Current quarter':p==='ALL'?'Whole game':periodLabel(Number(p))),sub:'Select period',kind:'PERIOD',run:function(){periodSelect(p)}})
  });
  actions.push({label:'Refresh box score',sub:'Get the latest player stats',kind:'ACTION',run:function(){loadBox()}});
  return actions;
