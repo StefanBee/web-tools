@@ -466,7 +466,23 @@ function paintCursor(ensureVisible){
   });
   table.querySelectorAll('th[data-col="'+cursor.col+'"]').forEach(function(th){th.classList.add('focus-col')});
   var target=Array.from(table.querySelectorAll('td[data-row]')).find(function(td){return td.dataset.row===cursor.row&&td.dataset.col===cursor.col});
-  if(ensureVisible&&target)target.scrollIntoView({block:'nearest',inline:'nearest'});
+  if(ensureVisible&&target){
+   // Sticky names appear in view even when the table is scrolled far right.
+   // Keep the selected stat visible beyond the sticky column as you move.
+   target.scrollIntoView({block:'nearest',inline:'nearest'});
+   var wrap=table.parentElement;
+   if(cursor.col==='name'){
+    // Navigating back to a player's name resets the horizontal scroll.
+    wrap.scrollLeft=0;
+   }else{
+    var bounds=wrap.getBoundingClientRect(),rect=target.getBoundingClientRect();
+    var first=table.querySelector('thead th:first-child');
+    var pinned=region==='teams'||!first?0:first.getBoundingClientRect().width;
+    var minX=bounds.left+pinned+6,maxX=bounds.right-6;
+    if(rect.left<minX)wrap.scrollLeft+=rect.left-minX;
+    else if(rect.right>maxX)wrap.scrollLeft+=rect.right-maxX;
+   }
+  }
  });
 }
 function regionRows(region){
