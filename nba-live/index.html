@@ -78,6 +78,7 @@ button:focus:not(:focus-visible),.scroll:focus:not(:focus-visible){outline:none}
 .data td:first-child{text-align:left}
 .data tr:hover td{background:#3c3836}
 .data .name{font-weight:650;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.data .on-court{color:var(--yellow);font-weight:950;font-size:13px;letter-spacing:0;vertical-align:baseline}
 .data .jersey{display:inline-block;min-width:19px;text-align:right;margin-right:7px;color:var(--muted);font-size:10px}
 .data .inactive{color:var(--muted)}
 .data .positive{color:var(--green)}
@@ -306,7 +307,7 @@ var state={
  games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
- lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both'
+ lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both',onCourt:{away:new Set(),home:new Set()}
 };
 var schedule={open:false,initialized:false,serial:0,busy:false,selected:'',moved:false,error:'',games:new Map(),weeks:new Map(),older:-1,newer:2};
 function $(id){return document.getElementById(id)}
@@ -376,19 +377,19 @@ function game(){return state.games.find(function(g){return g.id===state.id})||nu
 function selectGame(id){
  if(!state.games.some(function(g){return g.id===id}))return;
  var changed=state.id!==id||!state.raw;
- state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.inspector=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};
+ state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.inspector=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};state.onCourt={away:new Set(),home:new Set()};
  state.cursor.away.row='';state.cursor.home.row='';
  try{localStorage.setItem('nba-live-last-game',id)}catch(_){}
  updatePicker();render();
  loadRosters(state.serial);
  if(changed)loadBox();
 }
-function parsePlayer(item,labels){
+function parsePlayer(item,labels,isStarter){
  var a=item.athlete||{},values=item.stats||[],by={};
  labels.forEach(function(label,i){by[String(label).toUpperCase()]=values[i]});
  function read(){for(var i=0;i<arguments.length;i++){var k=arguments[i];if(by[k]!=null&&by[k]!=='')return String(by[k])}return '—'}
  return {id:String(a.id||a.uid||a.displayName||''),name:a.displayName||a.fullName||'Unknown',jersey:String(a.jersey||item.jersey||''),
-  dnp:!!(item.didNotPlay||a.didNotPlay||!values.length),reason:item.reason||a.reason||'',
+  dnp:!!(item.didNotPlay||a.didNotPlay||!values.length),starter:!!(isStarter||item.starter===true||a.starter===true),reason:item.reason||a.reason||'',
   min:read('MIN'),pts:read('PTS'),reb:read('REB','TOT'),ast:read('AST'),fg:read('FG'),
   three:read('3PT','3P'),ft:read('FT'),pm:read('+/-','PM','PLUSMINUS'),
   stl:read('STL'),blk:read('BLK'),to:read('TO','TOV'),pf:read('PF')};
@@ -399,8 +400,9 @@ function parsePlayers(raw,teamId){
   if(String((team.team||{}).id)!==teamId)return;
   (team.statistics||[]).forEach(function(group){
    var labels=group.names||group.labels||[];
+   var starters=/^starters?$/i.test(String(group.name||group.displayName||group.label||''));
    (group.athletes||[]).forEach(function(entry){
-    var p=parsePlayer(entry,labels),key=p.id||p.name;
+    var p=parsePlayer(entry,labels,starters),key=p.id||p.name;
     if(!seen.has(key)){out.push(p);seen.add(key)}
    });
   });
@@ -431,7 +433,7 @@ async function loadRosters(serial){
  renderTables();
 }
 function allPlayers(side){
- var out=state.players[side].map(function(p){return Object.assign({},p)});
+ var out=state.players[side].map(function(p){return Object.assign({},p,{onCourt:state.onCourt[side].has(p.id)})});
  var seen=new Set(out.map(function(p){return p.id}));
  state.extras[side].forEach(function(p){
   if(!seen.has(p.id)){out.push(Object.assign({},p));seen.add(p.id)}
@@ -660,6 +662,65 @@ function closeInspector(){
  $('inspector-overlay').hidden=true;
  focusRegion(state.active,false);
 }
+
+/* Reconstruct the live five from ESPN starters + chronological substitutions.
+   If any part of the timeline is ambiguous, hide stars for that team. */
+function playerNameKey(value){
+ return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+  .replace(/[\u2018\u2019]/g,"'").replace(/[.]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+}
+function reconstructOnCourt(raw,g,players){
+ var empty=function(){return {away:new Set(),home:new Set()}};
+ if(!g||statusOf(g)!==2||liveStateLabel(g,raw).isBreak)return empty();
+ var plays=allPlays(raw);
+ // A partial/incomplete feed cannot establish who is currently playing.
+ if(!plays.length||!plays.some(function(p){return readPeriod(p)===1}))return empty();
+ var lineup=empty(),valid={away:true,home:true},names={away:new Map(),home:new Map()};
+ ['away','home'].forEach(function(side){
+  var starters=players[side].filter(function(p){return p.starter&&!p.dnp&&p.id});
+  if(starters.length!==5){valid[side]=false;return}
+  starters.forEach(function(p){lineup[side].add(p.id)});
+  players[side].forEach(function(p){
+   var key=playerNameKey(p.name);
+   if(!key)return;
+   if(names[side].has(key))names[side].set(key,null);
+   else names[side].set(key,p.id);
+  });
+ });
+ // Prefer sequence/order numbering when present; otherwise ESPN sends plays
+ // in chronological order. Do not sort by the game clock (which resets).
+ var ordered=plays.slice();
+ if(ordered.length>1&&ordered.every(function(p){return Number.isFinite(Number(p.sequenceNumber))&&p.sequenceNumber!=null})){
+  ordered.sort(function(a,b){return Number(a.sequenceNumber)-Number(b.sequenceNumber)});
+ }
+ ordered.forEach(function(p){
+  var type=playType(p),text=String(p.text||'');
+  if(!/substitut|enters\s+(?:the\s+)?game\s+for/i.test(type+' '+text))return;
+  var match=text.trim().match(/^(.+?)\s+enters\s+(?:the\s+)?game\s+for\s+(.+?)(?:\.)?$/i);
+  var given=String((p.team||{}).id||p.teamId||'');
+  var side=given===g.away.id?'away':given===g.home.id?'home':'';
+  if(!side&&match){
+   var inKey=playerNameKey(match[1]),outKey=playerNameKey(match[2]);
+   var candidates=['away','home'].filter(function(s){return names[s].get(inKey)&&names[s].get(outKey)});
+   if(candidates.length===1)side=candidates[0];
+  }
+  if(!side)return; // No team identifier: cannot safely attribute an event.
+  if(!valid[side])return;
+  if(!match){valid[side]=false;return}
+  var incoming=names[side].get(playerNameKey(match[1]));
+  var outgoing=names[side].get(playerNameKey(match[2]));
+  if(!incoming||!outgoing||incoming===outgoing||!lineup[side].has(outgoing)){
+   valid[side]=false;return;
+  }
+  // Duplicate events can be harmless; unexpected 6-man lineups cannot.
+  lineup[side].delete(outgoing);
+  lineup[side].add(incoming);
+  if(lineup[side].size!==5)valid[side]=false;
+ });
+ ['away','home'].forEach(function(side){if(!valid[side]||lineup[side].size!==5)lineup[side].clear()});
+ return lineup;
+}
+
 function getTeamRows(){
  var g=game();if(!g)return [];
  var period=state.period==='ALL'?'ALL':state.period==='NOW'?Math.max(1,number((g.status||{}).period||1)):Number(state.period);
@@ -696,7 +757,7 @@ function colsFor(region){return region==='teams'?TEAM_COLS:PLAYER_COLS}
 function display(row,col){
  if(col==='name'){
   if(row.id==='away'||row.id==='home')return '<span class="name">'+esc(row.name)+' '+(row.id==='away'?'↗':'⌂')+'</span>';
-  return '<span class="name"><span class="jersey">'+esc(row.jersey||'–')+'</span>'+esc(row.name)+'</span>';
+  return '<span class="name"><span class="jersey">'+esc(row.jersey||'–')+'</span>'+esc(row.name)+(row.onCourt?'<span class="on-court" title="Currently on court"> *</span>':'')+'</span>';
  }
  if(row.dnp)return '<span class="inactive">'+(col==='min'?'DNP':'—')+'</span>';
  var v=row[col]==null?'—':String(row[col]);
@@ -906,12 +967,13 @@ async function loadBox(){
   state.timeoutData=g?calculateTimeouts(raw,g):null;
   state.players.away=parsePlayers(raw,g?g.away.id:'');
   state.players.home=parsePlayers(raw,g?g.home.id:'');
+  state.onCourt=reconstructOnCourt(raw,g,state.players);
   state.error='';state.lastSync=Date.now();
   render();
  }catch(e){
   if(serial!==state.serial)return;
   state.error='ESPN '+(e.name==='AbortError'?'request timed out':'request failed')+' · retrying';
-  renderScore();
+  state.onCourt={away:new Set(),home:new Set()};renderTables();renderScore();
  }finally{if(serial===state.serial)state.fetching=false}
 }
 function periodSelect(value){state.period=value;paintPeriods();renderTables();focusRegion('teams',false)}
