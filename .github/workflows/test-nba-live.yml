@@ -1,0 +1,19 @@
+name: Test NBA Live quarter statistics
+on:
+  push:
+    paths:
+      - 'nba-live/index.html'
+      - 'nba-live/tests/**'
+      - '.github/workflows/test-nba-live.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test nba-live/tests/*.test.mjs

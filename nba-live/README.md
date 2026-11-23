@@ -69,9 +69,13 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 - The **NOW button has been removed**. Team Statistics opens on the actual current quarter (e.g. Q3 during Q3, Q4 during Q4) and follows quarter changes during live play unless you select a different period.
 - **`/ current`** jumps directly to that actual quarter and resumes automatic quarter-following. **`/ q3`** explicitly selects Q3 and stays there even if the game advances.
 - **ALL** stays selected across all refreshes and shows continuously updated full-game ESPN box-score totals (on the existing 12-second polling cycle). It never switches to another quarter automatically.
-- **Q1–Q4/OT 3PT, FG, FT, rebounds, turnovers, and fouls are summed from ESPN's play-by-play events by period.** Available quarter figures are displayed even when ESPN's game-total box score doesn't match the reconstruction. In that case, a **yellow ≈** marks the affected category as approximate. Missing period data still shows **—**. `ALL` continues using ESPN's full-game box score. Quarter counts are best-effort, not verified official period box scores.
+- **Q1–Q4/OT 3PT, FG, FT, rebounds, turnovers, and fouls are summed from ESPN's structured shot values, team and player IDs, and typed play events by period.** Available quarter figures are displayed even when ESPN's game-total box score doesn't match the reconstruction. In that case, a **yellow ≈** marks the affected category as approximate. Missing period data still shows **—**. `ALL` continues using ESPN's full-game box score. Quarter counts are best-effort, not verified official period box scores.
 - Quarter points continue using ESPN's published linescores when available, including correct zero-point quarters.
 - Existing archived season quarter splits have not been recalculated by this change; those derived values still need validation before being used in historical analytics.
+
+
+- The current-quarter player popup now uses these same structured play events: `pointsAttempted` differentiates FT/2PT/3PT even for misses, primary athlete IDs credit shots, rebounds and turnovers, and second participant IDs credit assists, steals and blocks. An `≈` on a popup stat means its reconstructed full-game total disagrees with the main ESPN player box score. No extra requests are made.
+- Verified against a real 450-play ESPN fixture (TOR–ORL): all 12 team FG/3PT/FT/REB/TOV/PF values and 312 player box-score fields reconcile. The fixture is included as a test asset, not downloaded by the live page.
 
 ## Live data and performance
 

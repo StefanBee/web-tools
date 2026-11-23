@@ -591,6 +591,36 @@ function validateTeamPeriods(raw,g,allDerived){
  return quality;
 }
 
+/* ESPN NBA plays expose pointsAttempted (1 FT / 2 FG / 3 3PT),
+   shootingPlay and athlete IDs. Use these instead of parsing shot prose. */
+function playFacts(p){
+ var type=playType(p),text=String(p.text||''),actors=Array.isArray(p.participants)?p.participants:[],
+  actor=function(n){var x=actors[n]||{};return String((x.athlete||{}).id||x.athleteId||x.id||'')},
+  primary=actor(0),secondary=actor(1),value=Number(p.scoreValue||0);
+ var attempted=Number(p.pointsAttempted),structured=p.shootingPlay===true&&
+  p.pointsAttempted!=null&&Number.isInteger(attempted)&&attempted>=1&&attempted<=3;
+ var free=structured?attempted===1:/\bfree[\s-]?throws?\b/i.test(type);
+ var blocked=/\bblocks?\b/i.test(text);
+ var nonShot=/\b(?:rebound|turnover|steal|foul|substitut|timeout|violation|jumpball)\b/i.test(type);
+ var shot=structured?attempted>=2:(p.shootingPlay===true&&!free||
+  !free&&!nonShot&&/\b(?:jump shot|jumper|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(type));
+ var three=shot&&(structured?attempted===3:(p.scoringPlay===true&&value===3||
+  /\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b/i.test(type+' '+text)));
+ var made=(free||shot)&&(p.scoringPlay===true&&value>0||
+  p.scoringPlay==null&&/\b(?:makes?|made)\b/i.test(text));
+ var turnover=/\bturnover\b|\btravelling\b|\btraveling\b/i.test(type);
+ var rebound=/\brebound\b/i.test(type)&&!!primary; // exclude team-only rebounds
+ var foul=/\bfoul\b/i.test(type)&&!turnover&&!/\btechnical\b/i.test(type);
+ return {
+  primary:primary,secondary:secondary,free:free,shot:shot,three:three,made:made,
+  pts:p.scoringPlay===true&&value>0&&value<=4?value:0,
+  rebound:rebound,turnover:turnover,foul:foul,
+  assist:shot&&made&&!!secondary&&/\bassists?\b/i.test(text),
+  steal:turnover&&!!secondary&&/\bsteals?\b/i.test(text),
+  block:shot&&!made&&blocked&&!!secondary
+ };
+}
+
 function derivePlays(raw,g,period){
  var plays=allPlays(raw),teams={},teamPlays={},seen=new Set(),actorTeams=new Map();
  ['away','home'].forEach(function(side){
@@ -604,25 +634,15 @@ function derivePlays(raw,g,period){
   var per=readPeriod(p);if(!per||(period!=='ALL'&&per!==period))return;
   var uniq=p.id||p.playId||'';
   if(uniq){var key=String(uniq);if(seen.has(key))return;seen.add(key)}
-  var id=String((p.team||{}).id||p.teamId||'');
-  if(!teams[id]){
-   var people=p.participants||[],actor=Array.isArray(people)?people[0]:null;
-   var aid=actor&&String((actor.athlete||{}).id||actor.athleteId||actor.id||'');
-   id=actorTeams.get(aid)||'';
-  }
+  var facts=playFacts(p),id=String((p.team||{}).id||p.teamId||'');
+  if(!teams[id])id=actorTeams.get(facts.primary)||'';
   var x=teams[id];if(!x)return;
-  var label=String(p.text||''),type=playType(p),full=label+' '+type;
-  var free=/\bfree[\s-]?throws?\b/i.test(full);
-  var three=/\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b/i.test(full)||(p.scoringPlay===true&&Number(p.scoreValue)===3&&!free);
-  var nonShot=/\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitut|timeout|violation)\b/i.test(type);
-  var shot=!free&&(p.shootingPlay===true||(!nonShot&&three&&/\b(?:makes?|made|misses?|missed|jump(?:er| shot)?|shot)\b/i.test(full))||(!nonShot&&/\b(?:jump shot|jumper|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(type)));
-  var made=!!p.scoringPlay||/\b(?:makes?|made)\b/i.test(label);
-  if(free){x.fta++;if(made)x.ftm++}
-  else if(shot){x.fga++;if(made)x.fgm++;if(three){x.tpa++;if(made)x.tpm++}}
-  if(/\brebound\b/i.test(type+' '+label))x.reb++;
-  if(/\bturnover\b/i.test(type+' '+label))x.to++;
-  if(/\bfoul\b/i.test(type+' '+label)&&!/foul shot/i.test(type+' '+label))x.pf++;
-  if(p.scoringPlay)x.pts+=number(p.scoreValue||0);
+  if(facts.free){x.fta++;if(facts.made)x.ftm++}
+  else if(facts.shot){x.fga++;if(facts.made)x.fgm++;if(facts.three){x.tpa++;if(facts.made)x.tpm++}}
+  if(facts.rebound)x.reb++;
+  if(facts.turnover)x.to++;
+  if(facts.foul)x.pf++;
+  x.pts+=facts.pts;
   teamPlays[id]++;count++;
  });
  return {teams:teams,teamPlays:teamPlays,count:count};
@@ -640,55 +660,54 @@ function gameElapsed(period,clock){
  if(period<1||remaining===null||remaining<0||remaining>length)return null;
  return (period<=4?(period-1)*720:2880+(period-5)*300)+(length-remaining);
 }
-function playActor(p){
- var people=p.participants||[],first=Array.isArray(people)?people[0]:null;
- return String(first&&((first.athlete||{}).id||first.athleteId||first.id)||'');
+/* Player quarter numbers use the same typed events as the team table.
+   In ESPN, participants[0] is the shooter/rebounder/turnover actor and
+   participants[1] identifies the assister, stealer or blocker. */
+function playerPeriodTotals(raw,playerId,period){
+ var s={pts:0,reb:0,ast:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,stl:0,blk:0,to:0},
+  seen=new Set(),observed=false;
+ allPlays(raw).forEach(function(p){
+  var per=readPeriod(p);if(!per||(period!=='ALL'&&per!==period))return;
+  observed=true;
+  var key=p.id||p.playId||'';
+  if(key){key=String(key);if(seen.has(key))return;seen.add(key)}
+  var f=playFacts(p);
+  if(f.primary===String(playerId)){
+   if(f.free){s.fta++;if(f.made)s.ftm++}
+   else if(f.shot){s.fga++;if(f.made)s.fgm++;if(f.three){s.tpa++;if(f.made)s.tpm++}}
+   s.pts+=f.pts;
+   if(f.rebound)s.reb++;
+   if(f.turnover)s.to++;
+  }
+  if(f.secondary===String(playerId)){
+   if(f.assist)s.ast++;
+   if(f.steal)s.stl++;
+   if(f.block)s.blk++;
+  }
+ });
+ return observed?s:null;
 }
-function nameExpression(name){
- var cleaned=String(name||'').replace(/\s+(Jr\.?|Sr\.?|II|III|IV)$/i,'');
- return cleaned.replace(/[.*+?^$()|[\]{}]/g,'\\$&');
-}
-function credited(p,player,verb){
- var pattern=new RegExp('(?:^|[^a-z])'+nameExpression(player.name)+'\\s+'+verb+'\\b','i');
- return pattern.test(String(p.text||''));
-}
-function mainActor(p,player){
- var id=playActor(p);
- if(id)return id===String(player.id);
- return new RegExp('^'+nameExpression(player.name)+'\\b','i').test(String(p.text||''));
-}
-function shotInfo(p){
- var text=String(p.text||''),full=text+' '+playType(p);
- var free=/free[\s-]?throw/i.test(full);
- var three=/\b3[\s-]?(?:pt|point)\b|three[\s-]?point/i.test(full);
- var nonShot=/\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitution)\b/i.test(full);
- var shot=!free&&(p.shootingPlay===true||(!nonShot&&(three||/\b(jumper|jump shot|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(full))));
- var made=!!p.scoringPlay||/\b(makes|made)\b/i.test(text);
- return {free:free,three:three,shot:shot,made:made};
+function playerQuarterAccuracy(player,full){
+ var result={};
+ if(!full)return result;
+ function value(key){var n=Number(player[key]);return player[key]!=null&&String(player[key]).trim()!==''&&String(player[key])!=='—'&&Number.isFinite(n)?n:null}
+ function pair(key,m,a){
+  var official=madeAttempts(player[key]);
+  if(official)result[key]=full[m]===official.made&&full[a]===official.attempted;
+ }
+ pair('fg','fgm','fga');pair('three','tpm','tpa');pair('ft','ftm','fta');
+ [['pts','pts'],['reb','reb'],['ast','ast'],['stl','stl'],['blk','blk'],['to','to']].forEach(function(x){
+  var v=value(x[0]);if(v!==null)result[x[0]]=full[x[1]]===v;
+ });
+ return result;
 }
 function currentQuarterStats(raw,g,player){
- var plays=allPlays(raw),period=Math.max(1,Number((g.status||{}).period||1));
- if(!plays.length||!plays.some(function(p){return readPeriod(p)===period}))return null;
- var s={pts:0,reb:0,ast:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,stl:0,blk:0,to:0};
- plays.forEach(function(p){
-  if(readPeriod(p)!==period)return;
-  var text=String(p.text||''),type=playType(p),info=shotInfo(p);
-  if(mainActor(p,player)){
-   if(info.free){s.fta++;if(info.made)s.ftm++}
-   else if(info.shot){s.fga++;if(info.made)s.fgm++;if(info.three){s.tpa++;if(info.made)s.tpm++}}
-   if(p.scoringPlay){
-    var n=Number(p.scoreValue);
-    if(Number.isFinite(n)&&n>0&&n<=4)s.pts+=n;
-   }
-   if(/\brebound\b/i.test(type+' '+text))s.reb++;
-   if(/\bturnover\b/i.test(type+' '+text))s.to++;
-  }
-  if(credited(p,player,'assists?'))s.ast++;
-  if(credited(p,player,'steals?'))s.stl++;
-  if(credited(p,player,'blocks?'))s.blk++;
- });
- return {period:period,stats:s};
+ var period=Math.max(1,Number((g.status||{}).period||1));
+ var stats=playerPeriodTotals(raw,player.id,period);
+ if(!stats)return null;
+ return {period:period,stats:stats,verified:playerQuarterAccuracy(player,playerPeriodTotals(raw,player.id,'ALL'))};
 }
+
 function scoringRun(raw,g){
  if(!g||statusOf(g)!==2)return null;
  var plays=allPlays(raw);
@@ -731,11 +750,12 @@ function renderInspector(){
   $('inspector-body').innerHTML='<div class="inspector-empty">Quarter play-by-play is unavailable. No stats have been guessed.</div>';
   return;
  }
- var s=res.stats,items=[['PTS',s.pts],['REB',s.reb],['AST',s.ast],['3PT',s.tpm+'/'+s.tpa],
-  ['FG',s.fgm+'/'+s.fga],['FT',s.ftm+'/'+s.fta],['STL',s.stl],['TOV',s.to],['BLK',s.blk]];
+ var s=res.stats,items=[['PTS',s.pts,'pts'],['REB',s.reb,'reb'],['AST',s.ast,'ast'],['3PT',s.tpm+'/'+s.tpa,'three'],
+  ['FG',s.fgm+'/'+s.fga,'fg'],['FT',s.ftm+'/'+s.fta,'ft'],['STL',s.stl,'stl'],['TOV',s.to,'to'],['BLK',s.blk,'blk']];
  $('inspector-body').innerHTML='<div class="inspector-grid">'+items.map(function(item){
-  return '<div class="inspector-stat"><div class="inspector-key">'+esc(item[0])+'</div><div class="inspector-value">'+esc(item[1])+'</div></div>';
- }).join('')+'</div><div class="inspector-note">Derived from ESPN play-by-play. Event credits can lag or be corrected. Minutes and +/− are omitted because quarter-specific values are not reliably available.</div>';
+  var mismatch=res.verified[item[2]]===false;
+  return '<div class="inspector-stat"><div class="inspector-key">'+esc(item[0])+(mismatch?' <span class="approximate" title="Play events do not match the official player box score">≈</span>':'')+'</div><div class="inspector-value">'+esc(item[1])+'</div></div>';
+ }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. Quarter minutes and +/− are not available reliably.</div>';
 }
 function openInspector(side,id){
  state.inspector={side:side,id:id};
