@@ -22,6 +22,7 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | `1`–`4` with Team Statistics active | Show Q1–Q4 team statistics (pins the selected quarter) |
 | `5` with Team Statistics active | Show ALL full-game team statistics |
 | `0` with Team Statistics active | Jump to the current quarter and resume following it on live updates |
+| `o`, then `1`–`9` with Team Statistics active | Select OT1–OT9 if that overtime period is present (press within 1.2 seconds) |
 | Click column header | Sort by that statistic |
 | `Ctrl+K` or `/` | dmenu-style search: players, games, periods, commands. While open, `Tab` / `Shift+Tab` cycles results (wraps around); `Enter` selects |
 | `Escape` | Close command menu or restore grid focus |

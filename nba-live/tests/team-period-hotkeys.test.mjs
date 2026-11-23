@@ -13,7 +13,7 @@ function section(start,end){
  return source.slice(a,b);
 }
 function setup(){
- let keydown,current='3';
+ let keydown,current='3',maxPeriod=4;
  const inspectorKeys=[];
  class HTMLInputElement {}
  class HTMLSelectElement {}
@@ -21,7 +21,7 @@ function setup(){
  const schedule={open:false};
  const document={addEventListener(type,listener){if(type==='keydown')keydown=listener}};
  const env={document,state,schedule,HTMLInputElement,HTMLSelectElement,
-  currentPeriod(){return current},paintPeriods(){},renderTables(){},focusRegion(){},scrollToRegion(){},
+  currentPeriod(){return current},periodChoices(){return Array.from({length:maxPeriod},(_,i)=>String(i+1)).concat(['ALL'])},paintPeriods(){},renderTables(){},focusRegion(){},scrollToRegion(){},
   selectInspectorPeriod(n){inspectorKeys.push(n)},closeInspector(){},openPalette(){},closePalette(){},
   closeSchedule(){},moveSchedule(){},viewScheduledGame(){},paletteRun(){},drawPalette(){},
   moveCursor(){},changeSort(){},allPlayers(){return []},openInspector(){},
@@ -33,6 +33,7 @@ function setup(){
  assert.equal(typeof keydown,'function');
  return {state,schedule,inspectorKeys,Input:HTMLInputElement,
   setCurrent(quarter){current=quarter},
+  setMaxPeriod(period){maxPeriod=period},
   key(key,overrides={}){
    let prevented=false;
    keydown({key,ctrlKey:false,metaKey:false,altKey:false,shiftKey:false,
@@ -93,4 +94,58 @@ test('schedule, palette, typing and modified keys do not switch team period',()=
   assert.equal(app.key('2',override),false);
  }
  assert.equal(app.state.period,'3');
+});
+
+test('o + digit selects the corresponding available overtime period',()=>{
+ const app=setup();
+ app.setMaxPeriod(6); // OT1 and OT2 exist in the selected game
+ assert.equal(app.key('o'),true);
+ assert.equal(app.state.period,'3','prefix alone does not switch periods');
+ assert.equal(app.key('1'),true);
+ assert.equal(app.state.period,'5','o1 selects OT1');
+ assert.equal(app.state.followCurrent,false);
+ assert.equal(app.key('o'),true);
+ assert.equal(app.key('2'),true);
+ assert.equal(app.state.period,'6','o2 selects OT2');
+});
+test('o + number for nonexistent OT does not select a regulation quarter',()=>{
+ const app=setup();
+ app.setMaxPeriod(5);
+ app.key('o');
+ assert.equal(app.key('2'),true);
+ assert.equal(app.state.period,'3','OT2 unavailable: do not fall back to Q2');
+ assert.equal(app.key('2'),true);
+ assert.equal(app.state.period,'2','the prefix is consumed');
+});
+test('o prefix expires and other keys cancel it without blocking navigation',()=>{
+ const app=setup();
+ app.setMaxPeriod(5);
+ app.key('o');
+ app.state.pendingOT=Date.now()-2000;
+ app.key('1');
+ assert.equal(app.state.period,'1','expired prefix uses ordinary Q1 shortcut');
+ app.key('o');app.key('j');app.key('1');
+ assert.equal(app.state.period,'1','non-digit cancels prefix');
+ app.key('o');app.key('Tab');
+ assert.equal(app.state.pendingOT,0,'Tab cancels prefix');
+});
+test('OT shortcuts are inactive in other tables and modal contexts',()=>{
+ const app=setup();
+ app.setMaxPeriod(5);
+ app.state.active='away';
+ assert.equal(app.key('o'),false);
+ app.key('1');
+ assert.equal(app.state.period,'3');
+ app.state.active='teams';
+ app.state.inspector={};
+ app.key('o');
+ assert.equal(app.state.pendingOT,0);
+ app.state.inspector=null;
+ app.state.paletteOpen=true;
+ app.key('o');
+ assert.equal(app.state.pendingOT,0);
+ app.state.paletteOpen=false;
+ app.schedule.open=true;
+ app.key('o');
+ assert.equal(app.state.pendingOT,0);
 });

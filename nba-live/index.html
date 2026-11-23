@@ -316,7 +316,7 @@ var state={
  games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'1',followCurrent:true,
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
- lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both',onCourt:{away:new Set(),home:new Set()}
+ lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,pendingOT:0,fetching:false,serial:0,mobileView:'both',onCourt:{away:new Set(),home:new Set()}
 };
 var schedule={open:false,initialized:false,serial:0,busy:false,selected:'',moved:false,error:'',games:new Map(),weeks:new Map(),older:-1,newer:2};
 function $(id){return document.getElementById(id)}
@@ -1368,6 +1368,8 @@ function paletteRun(index){
 }
 document.addEventListener('keydown',function(e){
  var ctrl=e.ctrlKey||e.metaKey;
+ // An OT prefix never carries into other tables, dialogs or modified keys.
+ if(schedule.open||state.inspector||state.paletteOpen||ctrl||e.altKey||e.shiftKey||state.active!=='teams'||e.key==='Tab'||e.key==='Escape')state.pendingOT=0;
  if(schedule.open){
   if(e.key==='Escape'){e.preventDefault();closeSchedule();return}
   if(e.key==='j'||e.key==='ArrowDown'){e.preventDefault();moveSchedule(1);return}
@@ -1415,12 +1417,23 @@ document.addEventListener('keydown',function(e){
   e.preventDefault();var list=['teams','away','home'],idx=list.indexOf(state.active);
   focusRegion(list[(idx+(e.shiftKey?2:1))%3],true);return
  }
- if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.target.isContentEditable)return;
+ if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement||e.target.isContentEditable){state.pendingOT=0;return}
  if(ctrl||e.altKey)return;
- if(state.active==='teams'&&!e.shiftKey&&/^[0-5]$/.test(e.key)){
-  e.preventDefault();
-  periodSelect(e.key==='5'?'ALL':e.key==='0'?'CURRENT':e.key);
-  return;
+ if(state.active==='teams'&&!e.shiftKey){
+  if(e.key==='o'){e.preventDefault();state.pendingOT=Date.now();return}
+  var overtimeReady=state.pendingOT&&Date.now()-state.pendingOT<1200;
+  state.pendingOT=0;
+  if(overtimeReady&&/^[1-9]$/.test(e.key)){
+   e.preventDefault();
+   var ot=String(4+Number(e.key));
+   if(periodChoices().includes(ot))periodSelect(ot);
+   return;
+  }
+  if(/^[0-5]$/.test(e.key)){
+   e.preventDefault();
+   periodSelect(e.key==='5'?'ALL':e.key==='0'?'CURRENT':e.key);
+   return;
+  }
  }
  if(e.key==='/'){e.preventDefault();openPalette();return}
  var move={h:[0,-1],j:[1,0],k:[-1,0],l:[0,1],ArrowLeft:[0,-1],ArrowDown:[1,0],ArrowUp:[-1,0],ArrowRight:[0,1]};
