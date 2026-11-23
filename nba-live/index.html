@@ -139,7 +139,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
   </section>
   <div class="footer">
     <span><kbd>h j k l</kbd> / arrows move · <kbd>Tab</kbd> / <kbd>Shift Tab</kbd> team stats / away / home · <kbd>gg</kbd> / <kbd>G</kbd> edges · <kbd>s</kbd> sort</span>
-    <span><kbd>Ctrl K</kbd> / <kbd>/</kbd> search · <kbd>Enter</kbd> current-q · <kbd>Esc</kbd> close · Live ESPN data · <span id="updated">Not updated</span></span>
+    <span><kbd>Ctrl K</kbd> / <kbd>/</kbd> search · <kbd>Enter</kbd> player stats · <kbd>Esc</kbd> close · Live ESPN data · <span id="updated">Not updated</span></span>
   </div>
   <div id="nav-scroll-room" aria-hidden="true" style="height:0;min-height:0;pointer-events:none"></div>
 </main>
@@ -173,7 +173,7 @@ var state={
  games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
- lastSync:0,error:'',paletteOpen:false,palettePlayer:null,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0
+ lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0
 };
 function $(id){return document.getElementById(id)}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -239,7 +239,7 @@ function game(){return state.games.find(function(g){return g.id===state.id})||nu
 function selectGame(id){
  if(!state.games.some(function(g){return g.id===id}))return;
  var changed=state.id!==id||!state.raw;
- state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.inspector=null;state.palettePlayer=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};
+ state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.inspector=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};
  state.cursor.away.row='';state.cursor.home.row='';
  try{localStorage.setItem('nba-live-last-game',id)}catch(_){}
  updatePicker();render();
@@ -523,16 +523,6 @@ function closeInspector(){
  $('inspector-overlay').hidden=true;
  focusRegion(state.active,false);
 }
-function playerCommands(side,id){
- state.palettePlayer={side:side,id:id};
- state.paletteIndex=0;
- $('palette-input').value='';
- var p=allPlayers(side).find(function(x){return x.id===id});
- $('palette-input').placeholder=(p?p.name:'Player')+' · current-q';
- drawPalette();
- $('palette-input').focus();
-}
-
 function getTeamRows(){
  var g=game();if(!g)return [];
  var period=state.period==='ALL'?'ALL':state.period==='NOW'?Math.max(1,number((g.status||{}).period||1)):Number(state.period);
@@ -775,24 +765,11 @@ async function loadBox(){
 }
 function periodSelect(value){state.period=value;paintPeriods();renderTables();focusRegion('teams',false)}
 function paletteActions(){
- if(state.palettePlayer){
-  var context=state.palettePlayer,side=context.side,id=context.id;
-  var player=allPlayers(side).find(function(p){return p.id===id});
-  if(!player)return [];
-  return [
-   {label:'current-q · Current quarter stats',sub:periodLabel(Math.max(1,Number(((game()||{}).status||{}).period||1)))+' · Live player breakdown',kind:'PLAYER',
-    run:function(){openInspector(side,id)}},
-   {label:'Jump to player in table',sub:'Select '+player.name+' in the '+side+' table',kind:'GO',
-    run:function(){state.cursor[side].row=id;state.cursor[side].col='name';focusRegion(side,true)}},
-   {label:'Back to all commands',sub:'Find another player, game, or action',kind:'GO',keepOpen:true,
-    run:function(){state.palettePlayer=null;$('palette-input').value='';$('palette-input').placeholder='Search players, games, stats, commands…';state.paletteIndex=0;drawPalette()}}
-  ];
- }
  var actions=[];
  state.games.forEach(function(g){actions.push({label:gameLabel(g),sub:gameShort(g),kind:'GAME',run:function(){selectGame(g.id)}})});
  ['away','home'].forEach(function(side){
   allPlayers(side).forEach(function(p){actions.push({label:(p.jersey?'#'+p.jersey+' ':'')+p.name,sub:(game()?game()[side].abbr:'')+' · Jump to player',kind:'PLAYER',
-   keepOpen:true,run:function(){playerCommands(side,p.id)}})});
+   run:function(){state.cursor[side].row=p.id;state.cursor[side].col='name';focusRegion(side,true)}})});
  });
  PLAYER_COLS.forEach(function(col){if(col[0]==='name')return;actions.push({label:'Sort by '+col[1],sub:'Sort active player table',kind:'SORT',
   run:function(){var region=state.active==='teams'?'away':state.active;changeSort(region,col[0])}})});
@@ -806,13 +783,13 @@ function paletteActions(){
  return actions;
 }
 function openPalette(){
- state.paletteOpen=true;state.palettePlayer=null;
+ state.paletteOpen=true;
  $('palette-overlay').hidden=false;$('palette-input').value='';
  $('palette-input').placeholder='Search players, games, stats, commands…';
  state.paletteIndex=0;drawPalette();$('palette-input').focus();
 }
 function closePalette(){
- state.paletteOpen=false;state.palettePlayer=null;$('palette-overlay').hidden=true;$('palette-input').value='';
+ state.paletteOpen=false;$('palette-overlay').hidden=true;$('palette-input').value='';
  focusRegion(state.active,false);
 }
 function drawPalette(){
@@ -827,7 +804,6 @@ function drawPalette(){
 }
 function paletteRun(index){
  var item=state.paletteItems[index];if(!item)return;
- if(item.keepOpen){item.run();return}
  closePalette();item.run();
 }
 document.addEventListener('keydown',function(e){

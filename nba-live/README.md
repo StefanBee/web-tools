@@ -23,14 +23,14 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | `Ctrl+K` or `/` | dmenu-style search: players, games, periods, commands |
 | `Escape` | Close command menu or restore grid focus |
 | `Enter` on a selected player | Open that player’s current-quarter stats inspector; `Esc` returns to the same cell |
-| `Ctrl+K` → player → `Enter` → `current-q` → `Enter` | Open the current-quarter stats inspector from the command palette |
+| `Ctrl+K` → player → `Enter` → `Enter` | Jump straight to the player, then open their current-quarter inspector |
 
 The active cell is outlined in yellow. The entire active row and column have subtle highlights, and the active cell follows its *player ID* when sorting reshuffles rows. Team statistics is navigable, just like both player tables. When entering Team Statistics, the page scrolls to the top. The player-name column stays visible when a player table is scrolled horizontally.
 
 
 ## Current-quarter player inspector and scoring runs
 
-- The inspector is intentionally **not a permanent panel**. Find a player through Ctrl+K (or \`/\`), select that player, type \`current-q\`, and press Enter. Or press Enter with the cursor on a player in their team table.
+- The inspector is intentionally **not a permanent panel**. Find a player through Ctrl+K (or `/`), press Enter to jump directly to their row, then press Enter again for the quarter inspector. Or open the inspector with Enter from any selected player in their team table.
 - It displays that player's **current game period** statistics: PTS, REB, AST, FG, 3PT, FT, STL, BLK and turnovers, as reconstructed from ESPN's play-by-play event descriptions and athlete IDs. OT1/OT2 use their own periods. It updates as the same summary feed is refreshed every 12 seconds; the full-game tables are unchanged. An unavailable quarter feed shows an explicit message instead of invented values.
 - Player-specific **minutes and plus-minus are deliberately excluded**, since they cannot reliably be calculated just from event records. Event attribution can be imperfect, particularly for secondary assists, steals and blocks. Treat these live splits as a convenience, not an official verified stat ledger.
 - A compact **unanswered scoring run** appears beside the score at **8–0 or more**, including the team and run duration in *elapsed game-clock time* since the run's first basket. Runs may cross quarters and overtime periods. A basket by the opponent ends the streak; incomplete scoring events suppress the indicator.
