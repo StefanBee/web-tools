@@ -20,7 +20,7 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | `G` / `End` | Jump to last row |
 | `s` | Sort by the selected column; press again to reverse |
 | Click column header | Sort by that statistic |
-| `Ctrl+K` or `/` | dmenu-style search: players, games, periods, commands |
+| `Ctrl+K` or `/` | dmenu-style search: players, games, periods, commands. While open, `Tab` / `Shift+Tab` cycles results (wraps around); `Enter` selects |
 | `Escape` | Close command menu or restore grid focus |
 | `Enter` on a selected player | Open that player’s current-quarter stats inspector; `Esc` returns to the same cell |
 | `Ctrl+K` → player → `Enter` → `Enter` | Jump straight to the player, then open their current-quarter inspector |
