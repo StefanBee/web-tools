@@ -63,6 +63,14 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 - **Enter** / **View game** opens the selected game's box score. **Escape**, **Close**, or tapping outside the dialog dismisses it.
 - Data is only fetched **when the schedule opens**, with seven-day chunks cached per browser session. Browsing past the loaded dates fetches more, and failed multi-day ESPN requests fall back to individual dates. An older game remains selected when the main daily refresh runs.
 
+## Team statistics accuracy
+
+- **ALL now reads full-game FG, 3PT, FT, rebounds, turnovers, and fouls from ESPN's team box score**, not a play-by-play reconstruction. Shooting stats fall back to summed official player box-score rows only when team totals are unavailable.
+- **NOW is the current period only**, even at halftime: NOW means Q2 while player tables show the whole game. Select **ALL** to compare with the player table. The mobile hint and desktop period description make this explicit.
+- **Q1–Q4/OT shooting, rebounds, turnovers, and fouls still come from play-by-play** because ESPN does not supply those quarter totals in the game's standard summary. Before displaying them, the app compares the entire reconstructed game-to-date tally against the published team totals. Any category that does not reconcile is shown as **—** for that team and period, rather than an incorrect value. Passing the check is not an official certification of period splits.
+- Quarter points continue using ESPN's published linescores when available, including correct zero-point quarters.
+- Existing archived season quarter splits have not been recalculated by this change; those derived values still need validation before being used in historical analytics.
+
 ## Live data and performance
 
 - Direct browser calls to ESPN's unofficial `site.api.espn.com` endpoints; there are no tokens or API keys.

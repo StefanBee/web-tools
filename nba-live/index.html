@@ -236,7 +236,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <button class="mobile-tab" type="button" data-mobile-view="home" aria-pressed="false"><span id="mobile-home-label">HOME</span></button>
     <button class="mobile-tab active" type="button" data-mobile-view="both" aria-pressed="true">BOTH</button>
   </nav>
-  <div class="mobile-help">Tap a stat for the crosshair · Tap a player for Q stats · Swipe sideways for more columns</div>
+  <div class="mobile-help">TEAM: NOW = current quarter only, ALL = whole game · Tap a stat for the crosshair · Swipe sideways</div>
   <section id="section-away" class="section" aria-label="Away team player statistics">
     <div class="section-head"><span id="title-away" class="section-title">AWAY TEAM</span><span class="section-note">Click a header to sort · s sorts selected column</span></div>
     <div class="scroll" tabindex="0" data-region="away" aria-label="Away team players grid">
@@ -519,27 +519,101 @@ function liveStateLabel(g,raw){
  if(timeout)return {label:timeout+' · '+periodLabel(per)+' '+clock,isBreak:true};
  return {label:periodLabel(per)+' · '+clock,isBreak:false};
 }
+
+/* Official ESPN team box score (whole game). Do not reconstruct ALL from plays.
+   ESPN uses stat objects with names like threePointFieldGoalsMade-threePointFieldGoalsAttempted. */
+function madeAttempts(value){
+ var m=String(value==null?'':value).match(/^\s*(\d+)\s*[-/]\s*(\d+)(?:\s|$)/);
+ return m?{made:Number(m[1]),attempted:Number(m[2])}:null;
+}
+function teamBoxTotals(raw,teamId){
+ var team=((raw||{}).boxscore||{}).teams||[];
+ var found=team.find(function(entry){return String((entry.team||{}).id)===String(teamId)});
+ var by={};
+ if(found)(found.statistics||[]).forEach(function(stat){
+  var name=String(stat.name||stat.abbreviation||stat.label||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  var val=stat.displayValue!=null?stat.displayValue:stat.value;
+  if(name&&val!=null)by[name]=String(val);
+ });
+ function get(){for(var i=0;i<arguments.length;i++){if(by[arguments[i]]!=null)return by[arguments[i]]}return null}
+ function shots(pairNames,madeName,attemptedName){
+  var pair=madeAttempts(get.apply(null,pairNames));
+  if(pair)return pair;
+  var m=get(madeName),a=get(attemptedName);
+  return /^\d+$/.test(String(m))&&/^\d+$/.test(String(a))?{made:Number(m),attempted:Number(a)}:null;
+ }
+ var sides=['away','home'],side=sides.find(function(s){var g=game();return g&&g[s].id===String(teamId)})||'';
+ var active=side?(state.players[side]||[]).filter(function(p){return !p.dnp}):[];
+ function playersShots(key){
+  if(!active.length)return null;
+  var pairs=active.map(function(p){return madeAttempts(p[key])});
+  if(pairs.some(function(p){return !p}))return null;
+  return pairs.reduce(function(sum,p){sum.made+=p.made;sum.attempted+=p.attempted;return sum},{made:0,attempted:0});
+ }
+ function textPair(pair){return pair?pair.made+'-'+pair.attempted:null}
+ function single(){var v=get.apply(null,arguments);return v!=null&&/^\d+$/.test(String(v))?Number(v):null}
+ return {
+  fg:textPair(shots(['fieldgoalsmadefieldgoalsattempted','fieldgoals'],'fieldgoalsmade','fieldgoalsattempted')||playersShots('fg')),
+  three:textPair(shots(['threepointfieldgoalsmadethreepointfieldgoalsattempted','threepointfieldgoals','3pt'],'threepointfieldgoalsmade','threepointfieldgoalsattempted')||playersShots('three')),
+  ft:textPair(shots(['freethrowsmadefreethrowsattempted','freethrows'],'freethrowsmade','freethrowsattempted')||playersShots('ft')),
+  reb:single('totalrebounds','rebounds'),
+  to:single('totalturnovers','turnovers'),
+  pf:single('fouls','personalfouls')
+ };
+}
+function validateTeamPeriods(raw,g,allDerived){
+ var quality={};
+ [g.away,g.home].forEach(function(t){
+  var total=teamBoxTotals(raw,t.id),actual=allDerived.teams[t.id]||{};
+  var counts=allDerived.teamPlays||{};
+  var usable=Number(counts[t.id]||0)>0;
+  var compare=function(key,made,attempted){
+   var official=madeAttempts(total[key]);
+   return usable&&(!official||(actual[made]===official.made&&actual[attempted]===official.attempted));
+  };
+  var checkNum=function(key,derived){
+   return usable&&(total[key]===null||actual[derived]===total[key]);
+  };
+  quality[t.id]={
+   fg:compare('fg','fgm','fga'),
+   three:compare('three','tpm','tpa'),
+   ft:compare('ft','ftm','fta'),
+   reb:checkNum('reb','reb'),
+   to:checkNum('to','to'),
+   pf:checkNum('pf','pf')
+  };
+ });
+ return quality;
+}
+
 function derivePlays(raw,g,period){
- var plays=allPlays(raw);
- var teams={};[g.away,g.home].forEach(function(t){teams[t.id]={name:t.abbr,pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0}});
+ var plays=allPlays(raw),teams={},teamPlays={},seen=new Set();
+ [g.away,g.home].forEach(function(t){
+  teams[t.id]={name:t.abbr,pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0};
+  teamPlays[t.id]=0;
+ });
  var count=0;
  plays.forEach(function(p){
-  var per=readPeriod(p);if(period!=='ALL'&&per!==period)return;
-  var id=String((p.team||{}).id||p.teamId||'');var x=teams[id];if(!x)return;
-  var label=String(p.text||''),type=String((p.type||{}).text||'');
-  var free=/free.throw/i.test(label+' '+type);
-  var made=!!p.scoringPlay||/\b(makes|made)\b/i.test(label);
-  var three=/(?:\b3[\s-]?(?:pt|point)\b|three[\s-]?point)/i.test(label+' '+type);
-  var shot=!free&&(!!p.shootingPlay||three||/\b(jumper|jump shot|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(label));
+  var per=readPeriod(p);if(!per||(period!=='ALL'&&per!==period))return;
+  var uniq=p.id||p.playId||'';
+  if(uniq){var key=String(uniq);if(seen.has(key))return;seen.add(key)}
+  var id=String((p.team||{}).id||p.teamId||''),x=teams[id];
+  if(!x)return;
+  var label=String(p.text||''),type=playType(p),full=label+' '+type;
+  var free=/\bfree[\s-]?throws?\b/i.test(full);
+  var three=/\b3[\s-]?(?:pt|point|pointer)\b|\bthree[\s-]?(?:pt|point|pointer)\b/i.test(full);
+  var nonShot=/\b(?:rebound|turnover|steals?|blocks?|blocked|foul|substitut)\b/i.test(type);
+  var shot=!free&&(p.shootingPlay===true||(!nonShot&&three&&/\b(?:makes?|made|misses?|missed|jump(?:er| shot)?|shot)\b/i.test(full))||(!nonShot&&/\b(?:jump shot|jumper|layup|dunk|hook shot|tip shot|field goal|finger roll)\b/i.test(type)));
+  var made=!!p.scoringPlay||/\b(?:makes?|made)\b/i.test(label);
   if(free){x.fta++;if(made)x.ftm++}
   else if(shot){x.fga++;if(made)x.fgm++;if(three){x.tpa++;if(made)x.tpm++}}
   if(/\brebound\b/i.test(type+' '+label))x.reb++;
   if(/\bturnover\b/i.test(type+' '+label))x.to++;
   if(/\bfoul\b/i.test(type+' '+label)&&!/foul shot/i.test(type+' '+label))x.pf++;
   if(p.scoringPlay)x.pts+=number(p.scoreValue||0);
-  count++;
+  teamPlays[id]++;count++;
  });
- return {teams:teams,count:count};
+ return {teams:teams,teamPlays:teamPlays,count:count};
 }
 
 /* The summary already carries player-labelled events and scoring plays.
@@ -724,16 +798,25 @@ function reconstructOnCourt(raw,g,players){
 function getTeamRows(){
  var g=game();if(!g)return [];
  var period=state.period==='ALL'?'ALL':state.period==='NOW'?Math.max(1,number((g.status||{}).period||1)):Number(state.period);
- var d=derivePlays(state.raw||{},g,period);
- $('period-description').textContent=' · '+periodLabel(period)+' · '+(d.count?'From play-by-play':'Waiting for play-by-play');
+ var raw=state.raw||{},d=period==='ALL'?null:derivePlays(raw,g,period);
+ var quality=period==='ALL'?null:validateTeamPeriods(raw,g,derivePlays(raw,g,'ALL'));
+ $('period-description').textContent=period==='ALL'?' · FULL GAME · ESPN BOX SCORE':
+  ' · '+(state.period==='NOW'?'NOW = '+periodLabel(period)+' ONLY':periodLabel(period))+' · Play-by-play (checked against game totals)';
  return [g.away,g.home].map(function(t,i){
-  var x=d.teams[t.id]||{pts:0,fgm:0,fga:0,tpm:0,tpa:0,ftm:0,fta:0,reb:0,to:0,pf:0};
-  // Official line scores are more reliable for quarter point totals.
+  var id=i===0?'away':'home',official=teamBoxTotals(raw,t.id);
+  if(period==='ALL'){
+   return {id:id,name:t.abbr,pts:t.score,
+    fg:official.fg||'—',three:official.three||'—',ft:official.ft||'—',
+    reb:official.reb===null?'—':official.reb,to:official.to===null?'—':official.to,pf:official.pf===null?'—':official.pf};
+  }
+  var x=d.teams[t.id]||{},ok=quality[t.id]||{},hasPlays=d.teamPlays[t.id]>0;
   var line=(t.line||[])[Number(period)-1]||null;
-  var pts=period==='ALL'?t.score:line?line.value||line.displayValue||x.pts:x.pts;
-  return {id:i===0?'away':'home',name:t.abbr,pts:pts,
-   fg:d.count?x.fgm+'/'+x.fga:'—',three:d.count?x.tpm+'/'+x.tpa:'—',ft:d.count?x.ftm+'/'+x.fta:'—',
-   reb:d.count?x.reb:'—',to:d.count?x.to:'—',pf:d.count?x.pf:'—'};
+  var linePts=line&&(line.value!=null?line.value:line.displayValue);
+  var pts=linePts!=null?linePts:hasPlays?x.pts:'—';
+  return {id:id,name:t.abbr,pts:pts,
+   fg:hasPlays&&ok.fg?x.fgm+'/'+x.fga:'—',three:hasPlays&&ok.three?x.tpm+'/'+x.tpa:'—',
+   ft:hasPlays&&ok.ft?x.ftm+'/'+x.fta:'—',reb:hasPlays&&ok.reb?x.reb:'—',
+   to:hasPlays&&ok.to?x.to:'—',pf:hasPlays&&ok.pf?x.pf:'—'};
  });
 }
 function sortValue(row,key){
