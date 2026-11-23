@@ -28,6 +28,11 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 The active cell is outlined in yellow. The entire active row and column have subtle highlights, and the active cell follows its *player ID* when sorting reshuffles rows. Team statistics is navigable, just like both player tables. When entering Team Statistics, the page scrolls to the top. The player-name column stays visible when a player table is scrolled horizontally.
 
 
+
+## Live on-court indicator
+
+During an in-progress game, a yellow **`*`** appears immediately after a player's name when ESPN's starter list and substitution history establish that the player is among the current five on court. The lineup is recomputed from the existing 12-second ESPN summary feed; **there are no additional network requests**. The marker is hidden before tipoff, for final games and at detected breaks. If starters, play-by-play, or a substitution are missing or inconsistent, the affected team has no markers rather than showing a guessed lineup. ESPN's unofficial play feed may lag or miss lineup changes; these marks are best-effort, not authoritative live tracking.
+
 ## Current-quarter player inspector and scoring runs
 
 - The inspector is intentionally **not a permanent panel**. Find a player through Ctrl+K (or `/`), press Enter to jump directly to their row, then press Enter again for the quarter inspector. Or open the inspector with Enter from any selected player in their team table.
