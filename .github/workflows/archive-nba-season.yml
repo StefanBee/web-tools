@@ -88,6 +88,9 @@ jobs:
           result=$?
           echo "REPLAY_EXIT=$result" >> "$GITHUB_ENV"
           exit 0
+      - name: Diagnose mismatched shooting and foul events
+        shell: bash
+        run: python nba-live/archive/diagnose.py "$DATA_DIR"
       - name: Commit original source data and indexed SQLite season
         shell: bash
         run: |
