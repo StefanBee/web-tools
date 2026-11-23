@@ -1222,6 +1222,12 @@ function firstUpcoming(){
  if(next)schedule.selected=next.id;
  return rows.some(function(g){return statusOf(g)===1&&Date.parse(g.date)>=now});
 }
+/* Scroll only the schedule list, keeping the selected row below the sticky date heading. */
+function scheduleScrollDelta(position,rowTop,rowBottom,visibleTop,visibleBottom){
+ if(position==='start'||rowTop<visibleTop)return rowTop-visibleTop;
+ if(rowBottom>visibleBottom)return rowBottom-visibleBottom;
+ return 0;
+}
 function drawSchedule(position){
  if(!schedule.open)return;
  var list=$('schedule-list'),scroll=list.scrollTop,lastDay='',html='';
@@ -1237,7 +1243,11 @@ function drawSchedule(position){
  list.scrollTop=scroll;
  if(position){
   var active=Array.from(list.querySelectorAll('[data-schedule-id]')).find(function(el){return el.dataset.scheduleId===schedule.selected});
-  if(active)active.scrollIntoView({block:position,inline:'nearest'});
+  if(active){
+   var bounds=list.getBoundingClientRect(),row=active.getBoundingClientRect(),day=list.querySelector('.schedule-day');
+   var top=bounds.top+(day?day.offsetHeight:0)+6,bottom=bounds.bottom-6;
+   list.scrollTop+=scheduleScrollDelta(position,row.top,row.bottom,top,bottom);
+  }
  }
  $('schedule-status').textContent=schedule.busy?'Loading schedule…':schedule.error||scheduleRows().length+' games loaded · tap a row, then View game';
  $('schedule-status').classList.toggle('error',!!schedule.error);
