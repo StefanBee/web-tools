@@ -1,0 +1,98 @@
+name: Archive NBA 2026-27 Season
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/archive-nba-season.yml'
+      - 'nba-live/archive/**'
+  workflow_dispatch:
+  schedule:
+    # Twice daily, after the NBA's North American evening games.
+    - cron: '38 11,19 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-season-data-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Check out archive script from main
+        uses: actions/checkout@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline parser and database tests
+        run: python -m unittest discover -s nba-live/archive -v
+      - name: Prepare separate archive branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DATA_DIR="$RUNNER_TEMP/nba-season-data"
+          mkdir -p "$DATA_DIR"
+          cd "$DATA_DIR"
+          git init -q
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          # Token from this run is used for fetching and pushing the data branch only.
+          git config http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git ls-remote --exit-code origin 'refs/heads/nba-season-data' >/dev/null 2>&1; then
+            git fetch --depth=1 origin nba-season-data
+            git checkout -q -B nba-season-data FETCH_HEAD
+          else
+            git checkout -q --orphan nba-season-data
+            cat > README.md <<'EOF'
+          # NBA Season Data
+
+          Archived NBA game data. Source: ESPN (unofficial API). Managed by
+          [archive-nba-season.yml](https://github.com/StefanBee/web-tools/blob/main/.github/workflows/archive-nba-season.yml).
+          This branch is deliberately separate from GitHub Pages and does not slow down NBA Live.
+
+          - `2026-27/season.sqlite`: indexed game, team-quarter, player-quarter and box-score tables
+          - `2026-27/manifest.json`: ingestion counts and last run
+          - `2026-27/raw/scoreboards/*.json.gz`: original ESPN daily scoreboard JSON
+          - `2026-27/raw/games/*.json.gz`: original ESPN game summaries, including plays
+
+          **Accuracy:** Period points use ESPN linescores. Other period statistics are **derived**
+          from ESPN play-by-play and can be incomplete/inaccurate. Raw inputs are retained for
+          reprocessing. `quality='no_play_by_play'` and SQL `NULL` mean unavailable, not zero.
+          EOF
+          fi
+          echo "DATA_DIR=$DATA_DIR" >> "$GITHUB_ENV"
+      - name: Backfill missing games and collect newly finished games
+        id: collect
+        shell: bash
+        run: |
+          set +e
+          python nba-live/archive/collect.py --data-dir "$DATA_DIR" --delay 0.22
+          result=$?
+          echo "ARCHIVE_EXIT=$result" >> "$GITHUB_ENV"
+          echo "Collector exit code: $result"
+          exit 0
+      - name: Commit original source data and indexed SQLite season
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$DATA_DIR"
+          git add README.md 2026-27
+          if ! git diff --cached --quiet; then
+            git commit -m "Archive NBA 2026-27 games and indexed quarter statistics"
+            git push origin HEAD:refs/heads/nba-season-data
+          else
+            echo 'No changes to season archive.'
+          fi
+      - name: Surface incomplete collection as workflow failure
+        if: env.ARCHIVE_EXIT != '0'
+        run: |
+          echo 'Some games or scoreboards could not be collected. Successfully archived data was committed. The next scheduled run will retry.'
+          exit 1
