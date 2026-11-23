@@ -93,6 +93,8 @@ jobs:
         run: python nba-live/archive/diagnose.py "$DATA_DIR"
       - name: Audit timeout entries in BOS at GSW
         run: python nba-live/archive/timeout_audit.py "$DATA_DIR"
+      - name: Audit BOS-GSW FG, 3PT and FT game and period totals
+        run: python nba-live/archive/fg_audit.py "$DATA_DIR"
       - name: Commit original source data and indexed SQLite season
         shell: bash
         run: |
