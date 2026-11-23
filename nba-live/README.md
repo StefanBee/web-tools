@@ -65,7 +65,7 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 
 ## Team statistics accuracy
 
-- **ALL now reads full-game FG, 3PT, FT, rebounds, turnovers, and fouls from ESPN's team box score**, not a play-by-play reconstruction. Shooting stats fall back to summed official player box-score rows only when team totals are unavailable.
+- **ALL reads each team's own full-game FG, 3PT, FT, rebounds, turnovers, and fouls from ESPN's team box score**, not combined totals or a play-by-play reconstruction. **FG includes 2PT plus 3PT**, so a separate **2PT** column is derived as `FG − 3PT` (both makes and attempts). The same 2PT breakdown appears in Q1–Q4/OT, based on that team's play events. Shooting stats fall back to summed official player box-score rows only when team totals are unavailable.
 - The **NOW button has been removed**. Team Statistics opens on the actual current quarter (e.g. Q3 during Q3, Q4 during Q4) and follows quarter changes during live play unless you select a different period.
 - **`/ current`** jumps directly to that actual quarter and resumes automatic quarter-following. **`/ q3`** explicitly selects Q3 and stays there even if the game advances.
 - **ALL** stays selected across all refreshes and shows continuously updated full-game ESPN box-score totals (on the existing 12-second polling cycle). It never switches to another quarter automatically.
@@ -76,6 +76,8 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 
 - The current-quarter player popup now uses these same structured play events: `pointsAttempted` differentiates FT/2PT/3PT even for misses, primary athlete IDs credit shots, rebounds and turnovers, and second participant IDs credit assists, steals and blocks. An `≈` on a popup stat means its reconstructed full-game total disagrees with the main ESPN player box score. No extra requests are made.
 - Verified against a real 450-play ESPN fixture (TOR–ORL): all 12 team FG/3PT/FT/REB/TOV/PF values and 312 player box-score fields reconcile. The fixture is included as a test asset, not downloaded by the live page.
+
+- **Checked BOS @ GSW (2026-11-22, game 401910035):** The saved final ESPN team totals, all player box scores summed by team, and the four reconstructed quarter totals independently agree: Boston FG 32–83, 3PT 14–47, 2PT 18–36, FT 9–12; Golden State FG 33–83, 3PT 14–45, 2PT 19–38, FT 8–10. Boston's earlier reported 32–82 was not present in the saved final feed; the live-feed discrepancy cannot be reconstructed from that final snapshot.
 
 ## Live data and performance
 

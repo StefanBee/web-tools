@@ -1,0 +1,139 @@
+{
+  "game_id": "401910035",
+  "teams": {
+    "away": {
+      "id": "2",
+      "abbr": "BOS",
+      "pts": 87,
+      "fg": "32-83",
+      "three": "14-47",
+      "ft": "9-12",
+      "playerTotals": {
+        "fg": {
+          "made": 32,
+          "attempted": 83,
+          "missing_players": 0
+        },
+        "three": {
+          "made": 14,
+          "attempted": 47,
+          "missing_players": 0
+        },
+        "ft": {
+          "made": 9,
+          "attempted": 12,
+          "missing_players": 0
+        }
+      },
+      "quarters": [
+        {
+          "period": 1,
+          "pts": 20,
+          "fgm": 7,
+          "fga": 18,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 3,
+          "fta": 3
+        },
+        {
+          "period": 2,
+          "pts": 22,
+          "fgm": 9,
+          "fga": 24,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 1,
+          "fta": 2
+        },
+        {
+          "period": 3,
+          "pts": 33,
+          "fgm": 11,
+          "fga": 22,
+          "tpm": 7,
+          "tpa": 17,
+          "ftm": 4,
+          "fta": 5
+        },
+        {
+          "period": 4,
+          "pts": 12,
+          "fgm": 5,
+          "fga": 19,
+          "tpm": 1,
+          "tpa": 8,
+          "ftm": 1,
+          "fta": 2
+        }
+      ]
+    },
+    "home": {
+      "id": "9",
+      "abbr": "GS",
+      "pts": 88,
+      "fg": "33-83",
+      "three": "14-45",
+      "ft": "8-10",
+      "playerTotals": {
+        "fg": {
+          "made": 33,
+          "attempted": 83,
+          "missing_players": 0
+        },
+        "three": {
+          "made": 14,
+          "attempted": 45,
+          "missing_players": 0
+        },
+        "ft": {
+          "made": 8,
+          "attempted": 10,
+          "missing_players": 0
+        }
+      },
+      "quarters": [
+        {
+          "period": 1,
+          "pts": 27,
+          "fgm": 10,
+          "fga": 24,
+          "tpm": 5,
+          "tpa": 15,
+          "ftm": 2,
+          "fta": 2
+        },
+        {
+          "period": 2,
+          "pts": 17,
+          "fgm": 5,
+          "fga": 19,
+          "tpm": 3,
+          "tpa": 11,
+          "ftm": 4,
+          "fta": 6
+        },
+        {
+          "period": 3,
+          "pts": 25,
+          "fgm": 10,
+          "fga": 21,
+          "tpm": 3,
+          "tpa": 10,
+          "ftm": 2,
+          "fta": 2
+        },
+        {
+          "period": 4,
+          "pts": 19,
+          "fgm": 8,
+          "fga": 19,
+          "tpm": 3,
+          "tpa": 9,
+          "ftm": 0,
+          "fta": 0
+        }
+      ]
+    }
+  }
+}

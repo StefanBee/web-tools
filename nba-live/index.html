@@ -166,12 +166,12 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
  .data:not(.team-data) col:nth-child(8){width:60px!important}
  .data:not(.team-data) col:nth-child(9){width:48px!important}
  .data:not(.team-data) col:nth-child(n+10){width:41px!important}
- .data.team-data{width:397px;min-width:397px}
+ .data.team-data{width:453px;min-width:453px}
  .data.team-data col:nth-child(1){width:65px!important}
  .data.team-data col:nth-child(2){width:42px!important}
- .data.team-data col:nth-child(3),.data.team-data col:nth-child(4),.data.team-data col:nth-child(5){width:56px!important}
- .data.team-data col:nth-child(6){width:44px!important}
- .data.team-data col:nth-child(7),.data.team-data col:nth-child(8){width:39px!important}
+ .data.team-data col:nth-child(3),.data.team-data col:nth-child(4),.data.team-data col:nth-child(5),.data.team-data col:nth-child(6){width:56px!important}
+ .data.team-data col:nth-child(7){width:44px!important}
+ .data.team-data col:nth-child(8),.data.team-data col:nth-child(9){width:39px!important}
  /* Both team names stay visible as shooting statistics scroll horizontally. */
  .data.team-data th:first-child,.data.team-data td:first-child{position:sticky;left:0;border-right:1px solid var(--line)}
  .data.team-data th:first-child{z-index:3;background:var(--raised)}
@@ -244,7 +244,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <button class="mobile-tab" type="button" data-mobile-view="home" aria-pressed="false"><span id="mobile-home-label">HOME</span></button>
     <button class="mobile-tab active" type="button" data-mobile-view="both" aria-pressed="true">BOTH</button>
   </nav>
-  <div class="mobile-help">TEAM Q stats from plays · ≈ means totals differ · ALL = official live totals</div>
+  <div class="mobile-help">FG includes 3PT · 2PT = FG − 3PT · ALL uses team totals · ≈ means mismatch</div>
   <section id="section-away" class="section" aria-label="Away team player statistics">
     <div class="section-head"><span id="title-away" class="section-title">AWAY TEAM</span><span class="section-note">Click a header to sort · s sorts selected column</span></div>
     <div class="scroll" tabindex="0" data-region="away" aria-label="Away team players grid">
@@ -311,7 +311,7 @@ var PLAYER_COLS=[
  ['name','# PLAYER'],['min','MIN'],['pts','PTS'],['reb','REB'],['ast','AST'],
  ['fg','FG'],['three','3PT'],['ft','FT'],['pm','+/−'],['stl','STL'],['blk','BLK'],['to','TO'],['pf','PF']
 ];
-var TEAM_COLS=[['name','TEAM'],['pts','PTS'],['fg','FG'],['three','3PT'],['ft','FT'],['reb','REB'],['to','TO'],['pf','PF']];
+var TEAM_COLS=[['name','TEAM'],['pts','PTS'],['fg','FG'],['two','2PT'],['three','3PT'],['ft','FT'],['reb','REB'],['to','TO'],['pf','PF']];
 var state={
  games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'1',followCurrent:true,
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
@@ -542,6 +542,13 @@ function liveStateLabel(g,raw){
 function madeAttempts(value){
  var m=String(value==null?'':value).match(/^\s*(\d+)\s*[-/]\s*(\d+)(?:\s|$)/);
  return m?{made:Number(m[1]),attempted:Number(m[2])}:null;
+}
+// FG is each team's 2-point plus 3-point record. Show the 2PT subset
+// separately by subtracting that same team's three-pointers.
+function twoPointShots(fg,three,separator){
+ var all=madeAttempts(fg),threes=madeAttempts(three);
+ if(!all||!threes||all.made<threes.made||all.attempted<threes.attempted)return null;
+ return (all.made-threes.made)+(separator||'-')+(all.attempted-threes.attempted);
 }
 function teamBoxTotals(raw,teamId){
  var team=((raw||{}).boxscore||{}).teams||[];
@@ -879,13 +886,13 @@ function getTeamRows(){
  var period=state.period==='ALL'?'ALL':Number(state.period);
  var raw=state.raw||{},d=period==='ALL'?null:derivePlays(raw,g,period);
  var quality=period==='ALL'?null:validateTeamPeriods(raw,g,derivePlays(raw,g,'ALL'));
- $('period-description').textContent=period==='ALL'?' · FULL GAME · ESPN BOX SCORE':
+ $('period-description').textContent=period==='ALL'?' · FULL GAME · ESPN BOX SCORE · FG = 2PT + 3PT':
   ' · '+periodLabel(period)+(state.followCurrent?' · CURRENT':'')+' · Play-by-play estimates · ≈ means totals differ';
  return [g.away,g.home].map(function(t,i){
   var id=i===0?'away':'home',official=teamBoxTotals(raw,t.id);
   if(period==='ALL'){
    return {id:id,name:t.abbr,pts:t.score,
-    fg:official.fg||'—',three:official.three||'—',ft:official.ft||'—',
+    fg:official.fg||'—',two:twoPointShots(official.fg,official.three,'-')||'—',three:official.three||'—',ft:official.ft||'—',
     reb:official.reb===null?'—':official.reb,to:official.to===null?'—':official.to,pf:official.pf===null?'—':official.pf};
   }
   var x=d.teams[t.id]||{},ok=quality[t.id]||{},hasPlays=d.teamPlays[t.id]>0;
@@ -896,8 +903,9 @@ function getTeamRows(){
   // category as approximate instead of hiding useful per-period information.
   var approx={};
   ['fg','three','ft','reb','to','pf'].forEach(function(k){approx[k]=hasPlays&&!ok[k]});
+  approx.two=approx.fg||approx.three;
   return {id:id,name:t.abbr,pts:pts,fromPlays:true,approx:approx,
-   fg:hasPlays?x.fgm+'/'+x.fga:'—',three:hasPlays?x.tpm+'/'+x.tpa:'—',
+   fg:hasPlays?x.fgm+'/'+x.fga:'—',two:hasPlays?twoPointShots(x.fgm+'/'+x.fga,x.tpm+'/'+x.tpa,'/')||'—':'—',three:hasPlays?x.tpm+'/'+x.tpa:'—',
    ft:hasPlays?x.ftm+'/'+x.fta:'—',reb:hasPlays?x.reb:'—',
    to:hasPlays?x.to:'—',pf:hasPlays?x.pf:'—'};
  });
@@ -905,7 +913,7 @@ function getTeamRows(){
 function sortValue(row,key){
  if(key==='name')return String(row.name||'').toLowerCase();
  if(key==='min')return duration(row.min);
- if(key==='fg'||key==='three'||key==='ft'){
+ if(key==='fg'||key==='two'||key==='three'||key==='ft'){
   var x=String(row[key]||'').split('-');if(x.length===1)x=String(row[key]||'').split('/');
   return x.length===2&&Number(x[1])>0?Number(x[0])/Number(x[1]):0;
  }
@@ -933,11 +941,12 @@ function display(row,col){
 }
 function tableHtml(region,rows){
  var cols=colsFor(region),isTeam=region==='teams';
- var widths=isTeam?['27%','10%','13%','13%','13%','8%','8%','8%']:['22%','5%','5%','5%','5%','11%','11%','10%','6%','5%','5%','5%','5%'];
+ var widths=isTeam?['22%','8%','12%','12%','12%','12%','8%','7%','7%']:['22%','5%','5%','5%','5%','11%','11%','10%','6%','5%','5%','5%','5%'];
  var html='<colgroup>'+widths.map(function(w){return '<col style="width:'+w+'">'}).join('')+'</colgroup><thead><tr>';
  cols.forEach(function(col){
   var key=col[0],info=state.sort[region],order=info.key===key?(info.asc?' ▲':' ▼'):'';
-  html+='<th scope="col" data-col="'+key+'" data-region="'+region+'" class="'+(info.key===key?'sorting':'')+'" title="Sort by '+esc(col[1])+'">'+esc(col[1])+order+'</th>';
+  var shotHint=isTeam&&key==='fg'?' (this team, all 2PT and 3PT attempts)':isTeam&&key==='two'?' (this team, FG minus 3PT)':'';
+  html+='<th scope="col" data-col="'+key+'" data-region="'+region+'" class="'+(info.key===key?'sorting':'')+'" title="Sort by '+esc(col[1]+shotHint)+'">'+esc(col[1])+order+'</th>';
  });
  html+='</tr></thead><tbody>';
  if(!rows.length)html+='<tr><td class="no-data" colspan="'+cols.length+'">'+(isTeam?'Waiting for game data…':'Player stats will appear when available.')+'</td></tr>';
