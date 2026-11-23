@@ -236,7 +236,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <button class="mobile-tab" type="button" data-mobile-view="home" aria-pressed="false"><span id="mobile-home-label">HOME</span></button>
     <button class="mobile-tab active" type="button" data-mobile-view="both" aria-pressed="true">BOTH</button>
   </nav>
-  <div class="mobile-help">TEAM: NOW = current quarter only, ALL = whole game · Tap a stat for the crosshair · Swipe sideways</div>
+  <div class="mobile-help">TEAM: starts on current quarter · ALL = live full-game totals · Tap stats for the crosshair</div>
   <section id="section-away" class="section" aria-label="Away team player statistics">
     <div class="section-head"><span id="title-away" class="section-title">AWAY TEAM</span><span class="section-note">Click a header to sort · s sorts selected column</span></div>
     <div class="scroll" tabindex="0" data-region="away" aria-label="Away team players grid">
@@ -304,7 +304,7 @@ var PLAYER_COLS=[
 ];
 var TEAM_COLS=[['name','TEAM'],['pts','PTS'],['fg','FG'],['three','3PT'],['ft','FT'],['reb','REB'],['to','TO'],['pf','PF']];
 var state={
- games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'NOW',
+ games:[],id:'',raw:null,timeoutData:null,players:{away:[],home:[]},extras:{away:[],home:[]},period:'1',followCurrent:true,
  active:'teams',cursor:{teams:{row:'away',col:'three'},away:{row:'',col:'pts'},home:{row:'',col:'pts'}},
  sort:{teams:{key:null,asc:false},away:{key:'pts',asc:false},home:{key:'pts',asc:false}},
  lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,fetching:false,serial:0,mobileView:'both',onCourt:{away:new Set(),home:new Set()}
@@ -377,7 +377,7 @@ function game(){return state.games.find(function(g){return g.id===state.id})||nu
 function selectGame(id){
  if(!state.games.some(function(g){return g.id===id}))return;
  var changed=state.id!==id||!state.raw;
- state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.period='NOW';state.inspector=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};state.onCourt={away:new Set(),home:new Set()};
+ state.id=id;state.serial++;state.fetching=false;state.raw=null;state.timeoutData=null;state.followCurrent=true;state.period=currentPeriod();state.inspector=null;$('inspector-overlay').hidden=true;state.lastSync=0;state.error='';state.players={away:[],home:[]};state.extras={away:[],home:[]};state.onCourt={away:new Set(),home:new Set()};
  state.cursor.away.row='';state.cursor.home.row='';
  try{localStorage.setItem('nba-live-last-game',id)}catch(_){}
  updatePicker();render();
@@ -444,6 +444,10 @@ function allPlayers(side){
 function readPeriod(p){return Number((p.period||{}).number||p.period||0)}
 function allPlays(raw){return Array.isArray(raw&&raw.plays)?raw.plays:Array.isArray((raw&&raw.plays||{}).plays)?raw.plays.plays:[]}
 function periodLabel(period){return period==='ALL'?'Full game':period>4?'OT'+(period-4):'Q'+period}
+function currentPeriod(){
+ var g=game(),p=g?Number((g.status||{}).period||0):0;
+ return String(Math.max(1,Math.min(20,Number.isFinite(p)?p:1)));
+}
 function periodChoices(){
  var g=game(),max=4;
  if(g){
@@ -451,7 +455,7 @@ function periodChoices(){
   allPlays(state.raw).forEach(function(p){max=Math.max(max,readPeriod(p))});
  }
  max=Math.min(20,max);
- return ['NOW'].concat(Array.from({length:max},function(_,i){return String(i+1)}),['ALL']);
+ return Array.from({length:max},function(_,i){return String(i+1)}).concat(['ALL']);
 }
 function playType(p){return String((p.type||{}).text||(p.type||{}).name||'')}
 function timeoutPlay(p){
@@ -797,11 +801,11 @@ function reconstructOnCourt(raw,g,players){
 
 function getTeamRows(){
  var g=game();if(!g)return [];
- var period=state.period==='ALL'?'ALL':state.period==='NOW'?Math.max(1,number((g.status||{}).period||1)):Number(state.period);
+ var period=state.period==='ALL'?'ALL':Number(state.period);
  var raw=state.raw||{},d=period==='ALL'?null:derivePlays(raw,g,period);
  var quality=period==='ALL'?null:validateTeamPeriods(raw,g,derivePlays(raw,g,'ALL'));
  $('period-description').textContent=period==='ALL'?' · FULL GAME · ESPN BOX SCORE':
-  ' · '+(state.period==='NOW'?'NOW = '+periodLabel(period)+' ONLY':periodLabel(period))+' · Play-by-play (checked against game totals)';
+  ' · '+periodLabel(period)+(state.followCurrent?' · CURRENT':'')+' · Play-by-play (checked against game totals)';
  return [g.away,g.home].map(function(t,i){
   var id=i===0?'away':'home',official=teamBoxTotals(raw,t.id);
   if(period==='ALL'){
@@ -1023,7 +1027,7 @@ function paintPeriods(){
  var values=periodChoices(),bar=$('period-buttons'),key=values.join(',');
  if(bar.dataset.periods!==key){
   bar.innerHTML=values.map(function(v){
-   return '<button type="button" class="period" data-period="'+v+'">'+(v==='NOW'||v==='ALL'?v:periodLabel(Number(v)))+'</button>';
+   return '<button type="button" class="period" data-period="'+v+'">'+(v==='ALL'?v:periodLabel(Number(v)))+'</button>';
   }).join('');
   bar.dataset.periods=key;
  }
@@ -1047,6 +1051,9 @@ async function loadBox(){
    });
    if(comp.status)g.status=comp.status;
   }
+  // Follow the live quarter only while the user is in CURRENT mode.
+  // A manually selected quarter or ALL must survive every 12s refresh.
+  if(state.followCurrent)state.period=currentPeriod();
   state.timeoutData=g?calculateTimeouts(raw,g):null;
   state.players.away=parsePlayers(raw,g?g.away.id:'');
   state.players.home=parsePlayers(raw,g?g.home.id:'');
@@ -1059,7 +1066,12 @@ async function loadBox(){
   state.onCourt={away:new Set(),home:new Set()};renderTables();renderScore();
  }finally{if(serial===state.serial)state.fetching=false}
 }
-function periodSelect(value){state.period=value;paintPeriods();renderTables();focusRegion('teams',false)}
+function periodSelect(value){
+ state.followCurrent=value==='CURRENT';
+ state.period=state.followCurrent?currentPeriod():String(value);
+ paintPeriods();renderTables();focusRegion('teams',false);
+ scrollToRegion('teams');
+}
 
 /* Lightweight, lazy 7-day ESPN schedule. Times are formatted in device timezone. */
 var S_DAY=86400000,S_WEEK=7*S_DAY;
@@ -1209,7 +1221,8 @@ function viewScheduledGame(){
 
 function paletteActions(){
  var actions=[
-  {label:'All quarters · ALL',sub:'Team statistics · full game · all-q',kind:'PERIOD',run:function(){periodSelect('ALL')}},
+  {label:'All quarters · ALL',sub:'Team statistics · live full game · all-q',kind:'PERIOD',run:function(){periodSelect('ALL')}},
+  {label:'Current quarter',sub:'Team statistics · current period · follow live game',kind:'PERIOD',run:function(){periodSelect('CURRENT')}},
   {label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule}
  ];
  state.games.forEach(function(g){actions.push({label:gameLabel(g),sub:gameShort(g),kind:'GAME',run:function(){selectGame(g.id)}})});
@@ -1223,7 +1236,7 @@ function paletteActions(){
   actions.push({label:'Go to '+x.name,sub:'Move keyboard focus',kind:'GO',run:function(){focusRegion(x.id,true)}})
  });
  periodChoices().filter(function(p){return p!=='ALL'}).forEach(function(p){
-  actions.push({label:'Team stats · '+(p==='NOW'?'Current quarter':periodLabel(Number(p))),sub:'Select period',kind:'PERIOD',run:function(){periodSelect(p)}})
+  actions.push({label:'Team stats · '+periodLabel(Number(p)),sub:'Select specific quarter',kind:'PERIOD',run:function(){periodSelect(p)}})
  });
  actions.push({label:'Refresh box score',sub:'Get the latest player stats',kind:'ACTION',run:function(){loadBox()}});
  return actions;
