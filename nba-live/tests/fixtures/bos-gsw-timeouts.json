@@ -1,0 +1,287 @@
+{
+  "game_id": "401910035",
+  "teams": {
+    "away": {
+      "id": "2",
+      "abbr": "BOS",
+      "name": "Celtics"
+    },
+    "home": {
+      "id": "9",
+      "abbr": "GS",
+      "name": "Warriors"
+    }
+  },
+  "plays": [
+    {
+      "id": "40191003559",
+      "sequenceNumber": "59",
+      "period": {
+        "number": 1
+      },
+      "clock": {
+        "displayValue": "6:38"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "40191003595",
+      "sequenceNumber": "95",
+      "period": {
+        "number": 1
+      },
+      "clock": {
+        "displayValue": "3:51"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    },
+    {
+      "id": "401910035196",
+      "sequenceNumber": "196",
+      "period": {
+        "number": 2
+      },
+      "clock": {
+        "displayValue": "9:24"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "401910035215",
+      "sequenceNumber": "215",
+      "period": {
+        "number": 2
+      },
+      "clock": {
+        "displayValue": "7:41"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    },
+    {
+      "id": "401910035355",
+      "sequenceNumber": "355",
+      "period": {
+        "number": 3
+      },
+      "clock": {
+        "displayValue": "10:25"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "401910035410",
+      "sequenceNumber": "410",
+      "period": {
+        "number": 3
+      },
+      "clock": {
+        "displayValue": "6:21"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    },
+    {
+      "id": "401910035565",
+      "sequenceNumber": "565",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "8:13"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    },
+    {
+      "id": "401910035606",
+      "sequenceNumber": "606",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "5:34"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "215",
+        "text": "Coach's Challenge (Overturned)"
+      },
+      "text": "(05:34) [Warriors] COACH'S CHALLENGE (CALL OVERTURNED) [Warriors] retain their timeout"
+    },
+    {
+      "id": "401910035628",
+      "sequenceNumber": "628",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "3:44"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "401910035657",
+      "sequenceNumber": "657",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "1:18"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "401910035658",
+      "sequenceNumber": "658",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "1:18"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "215",
+        "text": "Coach's Challenge (Overturned)"
+      },
+      "text": "(01:18) [Warriors] COACH'S CHALLENGE (CALL OVERTURNED) [Warriors] retain their timeout"
+    },
+    {
+      "id": "401910035670",
+      "sequenceNumber": "670",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "1:07"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "215",
+        "text": "Coach's Challenge (Overturned)"
+      },
+      "text": "(01:07) [Celtics] COACH'S CHALLENGE (CALL OVERTURNED) [Celtics] retain their timeout"
+    },
+    {
+      "id": "401910035681",
+      "sequenceNumber": "681",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "31.5"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    },
+    {
+      "id": "401910035690",
+      "sequenceNumber": "690",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "19.7"
+      },
+      "team": {
+        "id": "9"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Warriors Full timeout"
+    },
+    {
+      "id": "401910035699",
+      "sequenceNumber": "699",
+      "period": {
+        "number": 4
+      },
+      "clock": {
+        "displayValue": "8.2"
+      },
+      "team": {
+        "id": "2"
+      },
+      "type": {
+        "id": "16",
+        "text": "Full Timeout"
+      },
+      "text": "Celtics Full timeout"
+    }
+  ]
+}

@@ -468,8 +468,12 @@ function periodChoices(){
 }
 function playType(p){return String((p.type||{}).text||(p.type||{}).name||'')}
 function timeoutPlay(p){
- var txt=String(p.text||''),type=playType(p);
- return /time[\s-]?out/i.test(txt+' '+type);
+ // ESPN coach challenges and replay reviews may contain "retain their timeout"
+ // in the description. Only a dedicated charged-timeout event is countable.
+ var type=playType(p).trim();
+ if(type)return /^(?:(?:full|short|regular|team|20[\s-]?(?:second|sec)?|30[\s-]?(?:second|sec)?|60[\s-]?(?:second|sec)?)\s+)?time[\s-]?out$/i.test(type);
+ // For feeds with no type, only accept clearly labeled timeout events.
+ return /\b(?:full|short|regular|team)\s+time[\s-]?out\s*$/i.test(String(p.text||''));
 }
 function nonTeamTimeout(p){
  return /(?:official|mandatory|media|television|tv|referee|commercial)[\s-]*(?:team[\s-]*)?time[\s-]?out|time[\s-]?out[\s-]*(?:official|mandatory|media|tv)/i.test(String(p.text||'')+' '+playType(p));
