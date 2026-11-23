@@ -1125,7 +1125,10 @@ function viewScheduledGame(){
 }
 
 function paletteActions(){
- var actions=[{label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule}];
+ var actions=[
+  {label:'All quarters · ALL',sub:'Team statistics · full game · all-q',kind:'PERIOD',run:function(){periodSelect('ALL')}},
+  {label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule}
+ ];
  state.games.forEach(function(g){actions.push({label:gameLabel(g),sub:gameShort(g),kind:'GAME',run:function(){selectGame(g.id)}})});
  ['away','home'].forEach(function(side){
   allPlayers(side).forEach(function(p){actions.push({label:(p.jersey?'#'+p.jersey+' ':'')+p.name,sub:(game()?game()[side].abbr:'')+' · Jump to player',kind:'PLAYER',
@@ -1136,8 +1139,8 @@ function paletteActions(){
  [{name:'Team statistics',id:'teams'},{name:'Away team',id:'away'},{name:'Home team',id:'home'}].forEach(function(x){
   actions.push({label:'Go to '+x.name,sub:'Move keyboard focus',kind:'GO',run:function(){focusRegion(x.id,true)}})
  });
- periodChoices().forEach(function(p){
-  actions.push({label:'Team stats · '+(p==='NOW'?'Current quarter':p==='ALL'?'Whole game':periodLabel(Number(p))),sub:'Select period',kind:'PERIOD',run:function(){periodSelect(p)}})
+ periodChoices().filter(function(p){return p!=='ALL'}).forEach(function(p){
+  actions.push({label:'Team stats · '+(p==='NOW'?'Current quarter':periodLabel(Number(p))),sub:'Select period',kind:'PERIOD',run:function(){periodSelect(p)}})
  });
  actions.push({label:'Refresh box score',sub:'Get the latest player stats',kind:'ACTION',run:function(){loadBox()}});
  return actions;

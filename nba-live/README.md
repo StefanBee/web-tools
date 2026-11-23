@@ -55,6 +55,8 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 
 ## Schedule command
 
+- The **`all`** command (alias **`all-q`**) in the palette switches Team Statistics to **ALL** (the whole game). It is placed first in results for quick selection; `q1`, `q2`, `current`, etc. still work.
+
 - Open **`/`** (or **`Ctrl+K`**) and type **`schedule`**; press Enter or tap the result.
 - The overlay starts on the **next future game**, showing local dates and tipoff times according to your phone/computer's timezone. Earlier games appear above the selection, with final scores.
 - **`j` / ↓** moves to the next game, **`k` / ↑** to the previous game. On phones use **↑ Older** and **↓ Newer**, swipe vertically, or tap a game to highlight it.
