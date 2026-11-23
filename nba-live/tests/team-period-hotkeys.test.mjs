@@ -22,7 +22,7 @@ function setup(){
  const document={addEventListener(type,listener){if(type==='keydown')keydown=listener}};
  const env={document,state,schedule,HTMLInputElement,HTMLSelectElement,
   currentPeriod(){return current},periodChoices(){return Array.from({length:maxPeriod},(_,i)=>String(i+1)).concat(['ALL'])},paintPeriods(){},renderTables(){},focusRegion(){},scrollToRegion(){},
-  selectInspectorPeriod(n){inspectorKeys.push(n)},closeInspector(){},openPalette(){},closePalette(){},
+  selectInspectorPeriod(n){if(n>=1&&n<=maxPeriod){inspectorKeys.push(n);if(state.inspector){state.inspector.period=n;state.inspector.followCurrent=false}}},closeInspector(){},openPalette(){},closePalette(){},
   closeSchedule(){},moveSchedule(){},viewScheduledGame(){},paletteRun(){},drawPalette(){},
   moveCursor(){},changeSort(){},allPlayers(){return []},openInspector(){},
   $(){return {focus(){},querySelector(){return null}}}
@@ -129,7 +129,7 @@ test('o prefix expires and other keys cancel it without blocking navigation',()=
  app.key('o');app.key('Tab');
  assert.equal(app.state.pendingOT,0,'Tab cancels prefix');
 });
-test('OT shortcuts are inactive in other tables and modal contexts',()=>{
+test('OT shortcuts stay inactive outside Team Statistics and player inspector',()=>{
  const app=setup();
  app.setMaxPeriod(5);
  app.state.active='away';
@@ -137,10 +137,6 @@ test('OT shortcuts are inactive in other tables and modal contexts',()=>{
  app.key('1');
  assert.equal(app.state.period,'3');
  app.state.active='teams';
- app.state.inspector={};
- app.key('o');
- assert.equal(app.state.pendingOT,0);
- app.state.inspector=null;
  app.state.paletteOpen=true;
  app.key('o');
  assert.equal(app.state.pendingOT,0);
@@ -149,3 +145,42 @@ test('OT shortcuts are inactive in other tables and modal contexts',()=>{
  app.key('o');
  assert.equal(app.state.pendingOT,0);
 });
+test('o1 and o2 select player OT1 and OT2 without changing Team Statistics',()=>{
+ const app=setup();
+ app.setMaxPeriod(6);
+ app.state.active='away';
+ app.state.inspector={period:3,followCurrent:true};
+ assert.equal(app.key('o'),true);
+ assert.equal(app.state.inspector.period,3);
+ assert.equal(app.key('1'),true);
+ assert.equal(app.state.inspector.period,5);
+ assert.equal(app.state.inspector.followCurrent,false);
+ assert.deepEqual(app.inspectorKeys,[5]);
+ app.key('o');app.key('2');
+ assert.equal(app.state.inspector.period,6);
+ assert.equal(app.state.period,'3');
+});
+test('unavailable popup overtime is ignored, and plain digits still work',()=>{
+ const app=setup();
+ app.setMaxPeriod(5);
+ app.state.inspector={period:3,followCurrent:true};
+ app.key('o');app.key('2');
+ assert.equal(app.state.inspector.period,3);
+ assert.equal(app.state.inspector.followCurrent,true);
+ app.key('2');
+ assert.equal(app.state.inspector.period,2);
+});
+test('popup overtime prefix expires or cancels on other keys',()=>{
+ const app=setup();
+ app.setMaxPeriod(6);
+ app.state.inspector={period:3,followCurrent:true};
+ app.key('o');app.state.pendingOT=Date.now()-2000;app.key('1');
+ assert.equal(app.state.inspector.period,1);
+ app.key('o');app.key('j');app.key('2');
+ assert.equal(app.state.inspector.period,2);
+ app.key('o');app.key('Tab');
+ assert.equal(app.state.pendingOT,0);
+ app.key('o');app.key('2',{ctrlKey:true});
+ assert.equal(app.state.pendingOT,0);
+});
+

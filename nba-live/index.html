@@ -804,6 +804,7 @@ function renderInspector(){
  }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. Quarter minutes and +/− are not available reliably.</div>';
 }
 function openInspector(side,id){
+ state.pendingOT=0;
  state.inspector={side:side,id:id,period:Number(currentPeriod()),followCurrent:true};
  $('inspector-overlay').hidden=false;
  renderInspector();
@@ -818,6 +819,7 @@ function selectInspectorPeriod(period){
  renderInspector();
 }
 function closeInspector(){
+ state.pendingOT=0;
  state.inspector=null;
  $('inspector-overlay').hidden=true;
  focusRegion(state.active,false);
@@ -1368,8 +1370,8 @@ function paletteRun(index){
 }
 document.addEventListener('keydown',function(e){
  var ctrl=e.ctrlKey||e.metaKey;
- // An OT prefix never carries into other tables, dialogs or modified keys.
- if(schedule.open||state.inspector||state.paletteOpen||ctrl||e.altKey||e.shiftKey||state.active!=='teams'||e.key==='Tab'||e.key==='Escape')state.pendingOT=0;
+ // Keep the OT prefix in Team Statistics or a player inspector, never in other controls.
+ if(schedule.open||state.paletteOpen||ctrl||e.altKey||e.shiftKey||e.key==='Tab'||e.key==='Escape'||(!state.inspector&&state.active!=='teams'))state.pendingOT=0;
  if(schedule.open){
   if(e.key==='Escape'){e.preventDefault();closeSchedule();return}
   if(e.key==='j'||e.key==='ArrowDown'){e.preventDefault();moveSchedule(1);return}
@@ -1381,8 +1383,16 @@ document.addEventListener('keydown',function(e){
  if(state.inspector){
   if(e.key==='Escape'){e.preventDefault();closeInspector();return}
   if(ctrl&&e.key.toLowerCase()==='k'){e.preventDefault();closeInspector();openPalette();return}
-  if(!ctrl&&!e.altKey&&!e.metaKey&&/^[1-9]$/.test(e.key)){
-   e.preventDefault();selectInspectorPeriod(Number(e.key));return
+  if(!ctrl&&!e.altKey&&!e.metaKey&&!e.shiftKey){
+   if(e.key==='o'){e.preventDefault();state.pendingOT=Date.now();return}
+   var playerOTReady=state.pendingOT&&Date.now()-state.pendingOT<1200;
+   state.pendingOT=0;
+   if(playerOTReady&&/^[1-9]$/.test(e.key)){
+    e.preventDefault();selectInspectorPeriod(4+Number(e.key));return
+   }
+   if(/^[1-9]$/.test(e.key)){
+    e.preventDefault();selectInspectorPeriod(Number(e.key));return
+   }
   }
   if(e.key==='Tab'){
    var controls=Array.from($('inspector-overlay').querySelectorAll('button:not([disabled])'));
