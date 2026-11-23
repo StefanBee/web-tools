@@ -201,9 +201,14 @@ def event_stats(play: dict) -> dict[str, int]:
     scoring = play.get('scoringPlay')
     value = numeric(play.get('scoreValue')) or 0
     made = bool(scoring and value > 0) if scoring is not None else bool(re.search(r'\b(?:makes?|made)\b', txt, re.I))
+    # ESPN's team/player box-score feeds omit missed end-of-period heaves
+    # from the standard FGA/3PA columns. Keep scoring heaves as made shots.
+    heave_miss = bool(re.search(r'\bheave\b', full, re.I)) and not made
+    if heave_miss:
+        shot = False
     three = (attempt == 3 if structured else shot and (
         (scoring is True and value == 3) or bool(re.search(
-            r'\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b', full, re.I))))
+            r'\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b', full, re.I)))) and shot
     primary = actor_id(play, 0)
     secondary = actor_id(play, 1)
     turnover = bool(re.search(r'\b(?:turnover|traveling|travelling)\b', typ, re.I))
@@ -304,6 +309,17 @@ def derive_periods(event: dict, raw: dict, players: list[dict]) -> tuple[list[di
     players_by_id = {p['athlete_id']: p for p in players}
     opposing = {str(teams['away']['team']['id']): str(teams['home']['team']['id']),
                 str(teams['home']['team']['id']): str(teams['away']['team']['id'])}
+    # Some ESPN games omit the standalone offensive-foul event and only
+    # emit "Offensive Foul Turnover". Treat it as a foul once, unless a
+    # corresponding explicit foul by that player already exists at that clock.
+    explicit_fouls = set()
+    for p in plays:
+        typ = event_type(p)
+        if re.search(r'\bfoul\b', typ, re.I) and not re.search(r'\b(?:turnover|technical)\b', typ, re.I):
+            clock = (p.get('clock') or {})
+            timestamp = clock.get('displayValue') if isinstance(clock, dict) else str(clock)
+            explicit_fouls.add((period_of(p), timestamp, actor_id(p),
+                                str((p.get('team') or {}).get('id') or p.get('teamId') or '')))
     seen = set()
     for play in plays:
         period = period_of(play)
@@ -318,6 +334,13 @@ def derive_periods(event: dict, raw: dict, players: list[dict]) -> tuple[list[di
         if team_id not in valid_team_ids and primary in players_by_id:
             team_id = players_by_id[primary]['team_id']
         stat = event_stats(play)
+        kind = event_type(play)
+        if re.search(r'\bfoul\b', kind, re.I) and re.search(r'\bturnover\b', kind, re.I):
+            clock = (play.get('clock') or {})
+            timestamp = clock.get('displayValue') if isinstance(clock, dict) else str(clock)
+            key = (period, timestamp, primary, team_id)
+            if key not in explicit_fouls:
+                stat['pf'] = 1
         if team_id in valid_team_ids:
             per_team_plays[(team_id, period)] += 1
             # A steal or block is credited to the DEFENDING team, not the

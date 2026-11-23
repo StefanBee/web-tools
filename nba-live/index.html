@@ -608,6 +608,8 @@ function playFacts(p){
   /\b(?:3|three)[\s-]?(?:pt|point|pointer)s?\b/i.test(type+' '+text)));
  var made=(free||shot)&&(p.scoringPlay===true&&value>0||
   p.scoringPlay==null&&/\b(?:makes?|made)\b/i.test(text));
+ // Keep ESPN box-score FGA/3PA consistent by excluding missed heaves.
+ if(shot&&!made&&/\bheave\b/i.test(type+' '+text)){shot=false;three=false}
  var turnover=/\bturnover\b|\btravelling\b|\btraveling\b/i.test(type);
  var rebound=/\brebound\b/i.test(type)&&!!primary; // exclude team-only rebounds
  var foul=/\bfoul\b/i.test(type)&&!turnover&&!/\btechnical\b/i.test(type);
@@ -629,6 +631,13 @@ function derivePlays(raw,g,period){
   teamPlays[t.id]=0;
   (state.players[side]||[]).forEach(function(p){if(p.id)actorTeams.set(String(p.id),t.id)});
  });
+ var foulEvents=new Set();
+ plays.forEach(function(p){
+  var kind=playType(p),c=(p.clock||{}),clock=c.displayValue||String(c||'');
+  if(/\bfoul\b/i.test(kind)&&!/\b(?:turnover|technical)\b/i.test(kind)){
+   foulEvents.add([readPeriod(p),clock,playFacts(p).primary,String((p.team||{}).id||p.teamId||'')].join(':'));
+  }
+ });
  var count=0;
  plays.forEach(function(p){
   var per=readPeriod(p);if(!per||(period!=='ALL'&&per!==period))return;
@@ -641,7 +650,10 @@ function derivePlays(raw,g,period){
   else if(facts.shot){x.fga++;if(facts.made)x.fgm++;if(facts.three){x.tpa++;if(facts.made)x.tpm++}}
   if(facts.rebound)x.reb++;
   if(facts.turnover)x.to++;
-  if(facts.foul)x.pf++;
+  var c=p.clock||{},clock=c.displayValue||String(c||'');
+  var foulTurnover=/\bfoul\b/i.test(playType(p))&&facts.turnover&&
+   !foulEvents.has([per,clock,facts.primary,id].join(':'));
+  if(facts.foul||foulTurnover)x.pf++;
   x.pts+=facts.pts;
   teamPlays[id]++;count++;
  });

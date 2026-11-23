@@ -81,6 +81,34 @@ class ReplayTests(unittest.TestCase):
             self.assertEqual(report['games_validated'],1)
             self.assertEqual(report['games_with_mismatches'],0)
 
+    def test_heave_miss_is_not_counted_in_espn_box_score_attempts(self):
+        shot = dict(id='h',period={'number':1},team={'id':'1'},type={'text':'Jump Shot'},
+                    text='Example misses heave jump shot',shootingPlay=True,
+                    scoringPlay=False,pointsAttempted=3,scoreValue=0,
+                    participants=[{'athlete':{'id':'11'}}])
+        self.assertEqual(collect.event_stats(shot)['fga'],0)
+        self.assertEqual(collect.event_stats(shot)['tpa'],0)
+        shot.update(text='Example makes heave jump shot',scoringPlay=True,scoreValue=3)
+        self.assertEqual(collect.event_stats(shot)['fga'],1)
+        self.assertEqual(collect.event_stats(shot)['tpm'],1)
+
+    def test_offensive_foul_turnover_is_counted_once(self):
+        raw=sample()
+        e=event(raw)
+        p=collect.parse_player_games(raw,collect.teams_for(e))
+        event1=dict(id='a',period={'number':1},team={'id':'19'},clock={'displayValue':'3:00'},
+                    type={'text':'Offensive Foul Turnover'},text='Player offensive foul turnover',
+                    participants=[{'athlete':{'id':'4432573'}}])
+        raw['plays']=[event1]
+        teams,players,_=collect.derive_periods(e,raw,p)
+        self.assertEqual(next(t for t in teams if t['team_id']=='19' and t['period']==1)['pf'],1)
+        self.assertEqual(next(t for t in teams if t['team_id']=='19' and t['period']==1)['tov'],1)
+        raw['plays'].append(dict(id='b',period={'number':1},team={'id':'19'},clock={'displayValue':'3:00'},
+                                 type={'text':'Offensive Foul'},text='Player offensive foul',
+                                 participants=[{'athlete':{'id':'4432573'}}]))
+        teams,players,_=collect.derive_periods(e,raw,p)
+        self.assertEqual(next(t for t in teams if t['team_id']=='19' and t['period']==1)['pf'],1)
+
     def test_missing_raw_is_reported_without_damaging_database(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)/collect.SEASON

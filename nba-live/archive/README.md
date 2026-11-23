@@ -96,4 +96,8 @@ totals against ESPN's own final box score, storing per-stat matches/mismatches
 in `stat_validations` and a searchable `validation.json` report. The process
 runs automatically after each regular archive update. A 450-play real ESPN
 fixture tests complete team and player reconciliation before any archive
-write. Mismatches remain visible rather than silently repaired or hidden.
+write. Mismatches remain visible rather than silently repaired or hidden. The parser also excludes *missed heaves* from
+ESPN's ordinary FG/3PT attempt columns and handles offensive-foul turnover
+events that lack a separate foul record. Those rules are regression-tested.
+The NBA's separate team-only heave bookkeeping can differ from the ordinary
+ESPN box-score totals we use as our reconciliation reference.

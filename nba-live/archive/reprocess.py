@@ -24,7 +24,7 @@ from collect import (
 )
 
 LOG = logging.getLogger('nba.archive.replay')
-PARSER_VERSION = 'structured-2026-11-23-v1'
+PARSER_VERSION = 'structured-2026-11-23-v2-heaves-fouls'
 TEAM_METRICS = ('fgm', 'fga', 'tpm', 'tpa', 'ftm', 'fta',
                 'reb', 'ast', 'to', 'pf', 'stl', 'blk')
 PLAYER_METRICS = STATS
