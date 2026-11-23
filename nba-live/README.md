@@ -13,9 +13,9 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | Input | Effect |
 | --- | --- |
 | `h` / `←`, `l` / `→` | Move one statistic left/right |
-| `j` / `↓`, `k` / `↑` | Move one player down/up |
-| `Tab` | Switch grid: Team Statistics → Away → Home → Team Statistics |
-| `Shift+Tab` | Switch grids in reverse order |
+| `j` / `↓`, `k` / `↑` | Move a row down/up; crossing a table boundary continues in the next/previous table |
+| `Tab` | Switch grid: Team Statistics → Away → Home → Team Statistics; scroll the table heading into view |
+| `Shift+Tab` | Switch grids in reverse order with the same automatic scrolling |
 | `gg` / `Home` | Jump to first row |
 | `G` / `End` | Jump to last row |
 | `s` | Sort by the selected column; press again to reverse |
@@ -24,7 +24,7 @@ The repository homepage discovers `nba-live/meta.json` automatically.
 | `Escape` | Close command menu or restore grid focus |
 | `Enter` on a player | Search / jump to that player |
 
-The active cell is outlined in yellow. The entire active row and column have subtle highlights, and the active cell follows its *player ID* when sorting reshuffles rows. Team statistics is navigable, just like both player tables.
+The active cell is outlined in yellow. The entire active row and column have subtle highlights, and the active cell follows its *player ID* when sorting reshuffles rows. Team statistics is navigable, just like both player tables. When entering Team Statistics, the page scrolls to the top. The player-name column stays visible when a player table is scrolled horizontally.
 
 ## Live data and performance
 

@@ -45,6 +45,12 @@ button:focus:not(:focus-visible),.scroll:focus:not(:focus-visible){outline:none}
 .scroll{width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:var(--line) var(--pane)}
 .data{width:100%;border-collapse:collapse;table-layout:fixed;min-width:800px}
 .data.team-data{min-width:560px}
+/* Keep player names and jersey numbers visible while stats scroll sideways. */
+.data:not(.team-data) th:first-child,.data:not(.team-data) td:first-child{position:sticky;left:0;border-right:1px solid var(--line)}
+.data:not(.team-data) th:first-child{z-index:3;background:var(--raised)}
+.data:not(.team-data) td:first-child{z-index:2;background:var(--pane)}
+.data:not(.team-data) td:first-child.focus-cell{z-index:4}
+.data:not(.team-data) th:first-child.focus-col{background:#45443d}
 .data th{height:28px;background:var(--raised);font-size:10px;letter-spacing:.025em;color:var(--muted);padding:4px 5px;cursor:pointer;white-space:nowrap;text-align:right;font-weight:750;user-select:none}
 .data th:first-child{text-align:left}
 .data th.sorting{color:var(--yellow)}
@@ -123,6 +129,7 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <span><kbd>h j k l</kbd> / arrows move · <kbd>Tab</kbd> / <kbd>Shift Tab</kbd> team stats / away / home · <kbd>gg</kbd> / <kbd>G</kbd> edges · <kbd>s</kbd> sort</span>
     <span><kbd>Ctrl K</kbd> or <kbd>/</kbd> search · <kbd>Esc</kbd> close · Live ESPN data · <span id="updated">Not updated</span></span>
   </div>
+  <div id="nav-scroll-room" aria-hidden="true" style="height:0;min-height:0;pointer-events:none"></div>
 </main>
 <div id="palette-overlay" class="overlay" hidden>
   <div class="palette" role="dialog" aria-modal="true" aria-label="Search players, games and actions">
@@ -387,18 +394,49 @@ function paintCursor(ensureVisible){
   if(ensureVisible&&target)target.scrollIntoView({block:'nearest',inline:'nearest'});
  });
 }
+function regionRows(region){
+ return sortedRows(region==='teams'?getTeamRows():allPlayers(region),region);
+}
+function scrollToRegion(region){
+ // A little temporary space after the last table lets even the home table
+ // align at the top of a short split-screen viewport.
+ var tail=$('nav-scroll-room');
+ tail.style.height='0px';
+ if(region==='teams'){window.scrollTo(0,0);return}
+ var section=$('section-'+region);
+ var top=Math.max(0,window.scrollY+section.getBoundingClientRect().top-8);
+ var needed=Math.max(0,Math.ceil(top+window.innerHeight-document.documentElement.scrollHeight));
+ tail.style.height=needed+'px';
+ window.scrollTo(0,top);
+}
 function focusRegion(region,scroll){
+ var changed=state.active!==region;
  state.active=region;
  var wrap=document.querySelector('[data-region="'+region+'"].scroll');
  if(wrap)wrap.focus({preventScroll:true});
+ if(changed&&scroll!==false)scrollToRegion(region);
  paintCursor(scroll!==false);
 }
 function moveCursor(dr,dc,edge){
  var region=state.active,cols=colsFor(region).map(function(c){return c[0]});
- var data=region==='teams'?sortedRows(getTeamRows(),region):sortedRows(allPlayers(region),region);
+ var data=regionRows(region);
  if(!data.length)return;
  var cur=state.cursor[region],ri=data.findIndex(function(x){return x.id===cur.row}),ci=cols.indexOf(cur.col);
  if(ri<0)ri=0;if(ci<0)ci=0;
+ // j/k (and the arrow keys) continue into the adjacent table at its edge.
+ if(!edge&&dr&&ri+dr!==Math.max(0,Math.min(data.length-1,ri+dr))){
+  var regions=['teams','away','home'],index=regions.indexOf(region);
+  for(var step=1;step<=regions.length;step++){
+   var next=regions[(index+(dr>0?step:regions.length-step))%regions.length];
+   var nextRows=regionRows(next);
+   if(!nextRows.length)continue;
+   var nextCols=colsFor(next).map(function(c){return c[0]});
+   state.cursor[next].row=dr>0?nextRows[0].id:nextRows[nextRows.length-1].id;
+   if(nextCols.includes(cur.col))state.cursor[next].col=cur.col;
+   focusRegion(next,true);
+   return;
+  }
+ }
  if(edge==='first')ri=0;else if(edge==='last')ri=data.length-1;
  else {ri=Math.max(0,Math.min(data.length-1,ri+dr));ci=Math.max(0,Math.min(cols.length-1,ci+dc))}
  cur.row=data[ri].id;cur.col=cols[ci];
