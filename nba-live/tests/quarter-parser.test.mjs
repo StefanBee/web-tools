@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/espn-tor-orl.json',import.meta.url),'utf8'));
-const code=html.match(/<script>([\\s\\S]*?)<\\/script>/)?.[1];
+const code=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert.ok(code,'Inline app script present');
 new Function(code);
 function extract(from,to){
@@ -54,7 +54,7 @@ test('real ESPN plays reproduce official player box scores',()=>{
      assert.equal(s[v],Number(o[k]),row.athlete.displayName+' '+k);checked++;
     }
     for(const [k,m,a] of [['FG','fgm','fga'],['3PT','tpm','tpa'],['FT','ftm','fta']]){
-     const x=String(o[k]||'').match(/^(\\d+)-(\\d+)$/);if(!x)continue;
+     const x=String(o[k]||'').match(/^(\d+)-(\d+)$/);if(!x)continue;
      assert.equal(s[m],Number(x[1]),row.athlete.displayName+' '+k+' made');
      assert.equal(s[a],Number(x[2]),row.athlete.displayName+' '+k+' attempted');checked+=2;
     }
