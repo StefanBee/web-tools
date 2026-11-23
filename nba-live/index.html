@@ -40,6 +40,11 @@ button:focus:not(:focus-visible),.scroll:focus:not(:focus-visible){outline:none}
 .inspector-title{font-size:15px;font-weight:850}
 .inspector-sub{font-size:11px;color:var(--muted);margin-top:3px}
 .inspector-exit{border:1px solid var(--line);background:var(--raised);border-radius:5px;padding:4px 8px;color:var(--muted)}
+.inspector-periods{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:10px 16px 0}
+.inspector-quarter{min-width:0;min-height:34px;border:1px solid var(--line);border-radius:5px;background:var(--raised);color:var(--muted);font-size:11px;font-weight:800;cursor:pointer}
+.inspector-quarter:hover{border-color:var(--yellow);color:var(--ink)}
+.inspector-quarter.active{border-color:var(--yellow);background:var(--yellow);color:var(--bg)}
+.inspector-quarter:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
 .inspector-body{padding:14px 16px}
 .inspector-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .inspector-stat{background:var(--raised);padding:11px 9px;border-radius:6px;min-width:0}
@@ -192,6 +197,8 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
  .inspector-grid{gap:5px}
  .inspector-stat{padding:9px 7px}
  .inspector-body{padding:10px 12px}
+ .inspector-periods{padding:9px 12px 0;gap:5px}
+ .inspector-quarter{min-height:41px;font-size:12px}
  .inspector-head{padding:11px 12px}
  .schedule{max-height:calc(100dvh - 24px)}
  .schedule-list{max-height:calc(100dvh - 190px);padding:3px 5px}
@@ -260,13 +267,14 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
   <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.7"></circle><path d="m16 16 5 5"></path></svg>
 </button>
 <div id="inspector-overlay" class="overlay" hidden>
-  <div class="palette inspector" role="dialog" aria-modal="true" aria-label="Current quarter player statistics">
+  <div class="palette inspector" role="dialog" aria-modal="true" aria-label="Player quarter statistics">
     <div class="inspector-head">
       <div><div id="inspector-name" class="inspector-title"></div><div id="inspector-context" class="inspector-sub"></div></div>
       <button id="inspector-close" class="inspector-exit" type="button">✕ Close</button>
     </div>
+    <div id="inspector-periods" class="inspector-periods" role="group" aria-label="Player statistics quarter"></div>
     <div id="inspector-body" class="inspector-body"></div>
-    <div class="palette-help">Play-by-play quarter totals · Refreshes with the live feed · Esc returns to your selected cell</div>
+    <div class="palette-help">1–4 select quarter · Tap Q1–Q4 on phone · Live updates every 12s · Esc closes</div>
   </div>
 </div>
 <div id="schedule-overlay" class="overlay" hidden>
@@ -713,8 +721,8 @@ function playerQuarterAccuracy(player,full){
  });
  return result;
 }
-function currentQuarterStats(raw,g,player){
- var period=Math.max(1,Number((g.status||{}).period||1));
+function currentQuarterStats(raw,g,player,period){
+ period=Math.max(1,Number(period)||1);
  var stats=playerPeriodTotals(raw,player.id,period);
  if(!stats)return null;
  return {period:period,stats:stats,verified:playerQuarterAccuracy(player,playerPeriodTotals(raw,player.id,'ALL'))};
@@ -755,9 +763,24 @@ function renderInspector(){
  var context=state.inspector;if(!context)return;
  var g=game(),player=allPlayers(context.side).find(function(p){return p.id===context.id});
  if(!g||!player){closeInspector();return}
- var res=currentQuarterStats(state.raw||{},g,player);
+ if(context.followCurrent)context.period=Number(currentPeriod());
+ var selected=context.period;
+ var bar=$('inspector-periods'),choices=periodChoices().filter(function(v){return v!=='ALL'});
+ var key=choices.join(',');
+ if(bar.dataset.periods!==key){
+  bar.innerHTML=choices.map(function(p){
+   return '<button type="button" class="inspector-quarter" data-inspector-period="'+p+'" aria-label="Show '+periodLabel(Number(p))+' player statistics">'+periodLabel(Number(p))+'</button>';
+  }).join('');
+  bar.dataset.periods=key;
+ }
+ bar.querySelectorAll('[data-inspector-period]').forEach(function(button){
+  var active=Number(button.dataset.inspectorPeriod)===selected;
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-pressed',String(active));
+ });
+ var res=currentQuarterStats(state.raw||{},g,player,selected);
  $('inspector-name').textContent=(player.jersey?'#'+player.jersey+' ':'')+player.name;
- $('inspector-context').textContent=g[context.side].abbr+' · '+periodLabel(res?res.period:Math.max(1,Number((g.status||{}).period||1)))+' only';
+ $('inspector-context').textContent=g[context.side].abbr+' · '+periodLabel(selected)+(context.followCurrent?' · CURRENT':'')+' only';
  if(!res){
   $('inspector-body').innerHTML='<div class="inspector-empty">Quarter play-by-play is unavailable. No stats have been guessed.</div>';
   return;
@@ -770,10 +793,18 @@ function renderInspector(){
  }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. Quarter minutes and +/− are not available reliably.</div>';
 }
 function openInspector(side,id){
- state.inspector={side:side,id:id};
+ state.inspector={side:side,id:id,period:Number(currentPeriod()),followCurrent:true};
  $('inspector-overlay').hidden=false;
  renderInspector();
  $('inspector-close').focus({preventScroll:true});
+}
+function selectInspectorPeriod(period){
+ if(!state.inspector)return;
+ var value=Number(period);
+ if(!Number.isInteger(value)||!periodChoices().includes(String(value)))return;
+ state.inspector.period=value;
+ state.inspector.followCurrent=false;
+ renderInspector();
 }
 function closeInspector(){
  state.inspector=null;
@@ -1325,7 +1356,18 @@ document.addEventListener('keydown',function(e){
  if(state.inspector){
   if(e.key==='Escape'){e.preventDefault();closeInspector();return}
   if(ctrl&&e.key.toLowerCase()==='k'){e.preventDefault();closeInspector();openPalette();return}
-  if(e.key==='Tab'){e.preventDefault();$('inspector-close').focus();return}
+  if(!ctrl&&!e.altKey&&!e.metaKey&&/^[1-9]$/.test(e.key)){
+   e.preventDefault();selectInspectorPeriod(Number(e.key));return
+  }
+  if(e.key==='Tab'){
+   var controls=Array.from($('inspector-overlay').querySelectorAll('button:not([disabled])'));
+   if(controls.length){
+    e.preventDefault();
+    var at=controls.indexOf(document.activeElement);
+    controls[(at+(e.shiftKey?-1:1)+controls.length)%controls.length].focus({preventScroll:true});
+   }
+   return;
+  }
   return;
  }
  if(ctrl&&e.key.toLowerCase()==='k'){e.preventDefault();state.paletteOpen?closePalette():openPalette();return}
@@ -1404,6 +1446,10 @@ $('schedule-list').addEventListener('click',function(e){
 });
 $('schedule-overlay').addEventListener('click',function(e){if(e.target===$('schedule-overlay'))closeSchedule()});
 $('inspector-close').addEventListener('click',closeInspector);
+$('inspector-periods').addEventListener('click',function(e){
+ var button=e.target.closest('[data-inspector-period]');
+ if(button)selectInspectorPeriod(button.dataset.inspectorPeriod);
+});
 $('inspector-overlay').addEventListener('click',function(e){if(e.target===$('inspector-overlay'))closeInspector()});
 document.querySelectorAll('.scroll').forEach(function(w){w.addEventListener('focus',function(){state.active=w.dataset.region;paintCursor(false)})});
 document.addEventListener('visibilitychange',function(){if(!document.hidden){loadGames();loadBox()}});
