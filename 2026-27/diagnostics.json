@@ -1,0 +1,2980 @@
+{
+  "summary": {
+    "teams_with_fga_mismatch": 194,
+    "total_extra_fga": 219,
+    "missed_shots_with_fouls_at_same_clock": 128,
+    "teams_with_possible_fouled_shots": 78
+  },
+  "examples": [
+    {
+      "id": "401909089",
+      "teams": {
+        "20": {
+          "observed_fga": 90,
+          "official_fga": 89,
+          "delta": 1,
+          "same_clock_fouled_shots": 0,
+          "foul_delta": -1
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "9:06",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Karl-Anthony Towns personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "8:46",
+          "team": "18",
+          "type": "Offensive Foul",
+          "text": "Karl-Anthony Towns offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "8:46",
+          "team": "18",
+          "type": "Offensive Foul Turnover",
+          "text": "Karl-Anthony Towns offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "8:29",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Josh Hart shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:15",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "LeBron James shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:28",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "OG Anunoby personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:14",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Kentavious Caldwell-Pope personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:18",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "OG Anunoby personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:56",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Anfernee Simons shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:00",
+          "team": "20",
+          "type": "Loose Ball Foul",
+          "text": "Adem Bona loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "14.4",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Jose Alvarado personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:46",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Jose Alvarado personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:02",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Andre Drummond shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:17",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Mikal Bridges shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:10",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Jabari Walker personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:53",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Jordan Clarkson personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:40",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "VJ Edgecombe shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:03",
+          "team": "18",
+          "type": "Loose Ball Foul",
+          "text": "Josh Hart loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "6:28",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Joel Embiid shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:47",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "VJ Edgecombe shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:31",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Kentavious Caldwell-Pope shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "4:27",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Josh Hart personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "4:12",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Joel Embiid shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:59",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Karl-Anthony Towns shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:51",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Anfernee Simons personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:13",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Joel Embiid personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:27",
+          "team": "20",
+          "type": "Offensive Foul Turnover",
+          "text": "Tyrese Maxey offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "54.8",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Jaylen Brown shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "29.8",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Jalen Brunson shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:54",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "LeBron James personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:20",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "Tyrese Maxey shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:59",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "LeBron James personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:59",
+          "team": "18",
+          "type": "Personal Foul",
+          "text": "Landry Shamet personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:49",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "VJ Edgecombe shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:39",
+          "team": "20",
+          "type": "Shooting Foul",
+          "text": "VJ Edgecombe shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "11:22",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "LeBron James personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:47",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Andre Drummond shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:26",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "OG Anunoby shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:13",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Kentavious Caldwell-Pope personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:54",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Andre Drummond shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:19",
+          "team": "18",
+          "type": "Loose Ball Foul",
+          "text": "Karl-Anthony Towns loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:52",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "Jordan Clarkson shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:30",
+          "team": "20",
+          "type": "Loose Ball Foul",
+          "text": "Adem Bona loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:57",
+          "team": "18",
+          "type": "Shooting Foul",
+          "text": "OG Anunoby shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "7.7",
+          "team": "18",
+          "type": "Personal Take Foul",
+          "text": "OG Anunoby personal take foul"
+        },
+        {
+          "period": 4,
+          "clock": "6.3",
+          "team": "20",
+          "type": "Personal Foul",
+          "text": "Tyrese Maxey personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909090",
+      "teams": {
+        "24": {
+          "observed_fga": 94,
+          "official_fga": 93,
+          "delta": 1,
+          "same_clock_fouled_shots": 0
+        },
+        "25": {
+          "foul_delta": 3
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "8:16",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Cason Wallace shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:42",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Devin Vassell shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:20",
+          "team": "25",
+          "type": "Offensive Foul",
+          "text": "Isaiah Hartenstein offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:20",
+          "team": "25",
+          "type": "Offensive Foul Turnover",
+          "text": "Isaiah Hartenstein offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "5:39",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Isaiah Hartenstein shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:03",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Victor Wembanyama shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:44",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Ajay Mitchell shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:16",
+          "team": "25",
+          "type": "Offensive Foul",
+          "text": "Jaylin Williams offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:16",
+          "team": "25",
+          "type": "Offensive Foul Turnover",
+          "text": "Jaylin Williams offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "11:00",
+          "team": "24",
+          "type": "Loose Ball Foul",
+          "text": "Victor Wembanyama loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:38",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Kenrich Williams personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:21",
+          "team": "24",
+          "type": "Flagrant Foul Type 1",
+          "text": "De'Aaron Fox flagrant foul type 1"
+        },
+        {
+          "period": 2,
+          "clock": "9:21",
+          "team": "25",
+          "type": "Double Technical Foul",
+          "text": "Double technical foul: Kenrich Williams and "
+        },
+        {
+          "period": 2,
+          "clock": "9:21",
+          "team": "25",
+          "type": "Technical Foul",
+          "text": "Jaylin Williams technical foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:21",
+          "team": "25",
+          "type": "Technical Foul",
+          "text": "Jalen Williams technical foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:26",
+          "team": "24",
+          "type": "Loose Ball Foul",
+          "text": "Harrison Barnes loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:12",
+          "team": "25",
+          "type": "Offensive Foul",
+          "text": "Jared McCain offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:12",
+          "team": "25",
+          "type": "Offensive Foul Turnover",
+          "text": "Jared McCain offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "4:01",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Cason Wallace personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:15",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Isaiah Hartenstein shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:38",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Julian Champagnie personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:31",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Dylan Harper shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:23",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Ajay Mitchell shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "59.7",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Dylan Harper shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "49.8",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Jalen Williams personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "11:20",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Isaiah Hartenstein personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "11:15",
+          "team": "24",
+          "type": "Offensive Foul",
+          "text": "Stephon Castle offensive foul"
+        },
+        {
+          "period": 3,
+          "clock": "11:15",
+          "team": "24",
+          "type": "Offensive Foul Turnover",
+          "text": "Stephon Castle offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "10:00",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Shai Gilgeous-Alexander personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:00",
+          "team": "25",
+          "type": "Offensive Foul Turnover",
+          "text": "Shai Gilgeous-Alexander offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "9:37",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Devin Vassell personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:26",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Devin Vassell personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:59",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Shai Gilgeous-Alexander shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:24",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Devin Vassell shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "7:40",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Stephon Castle personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:49",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Julian Champagnie shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:11",
+          "team": "24",
+          "type": "Offensive Foul",
+          "text": "Dylan Harper offensive foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:11",
+          "team": "24",
+          "type": "Offensive Foul Turnover",
+          "text": "Dylan Harper offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "5:05",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Carter Bryant shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:51",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Ajay Mitchell shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:53",
+          "team": "24",
+          "type": "Loose Ball Foul",
+          "text": "Keldon Johnson loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:11",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Alex Caruso shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "31.3",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Aday Mara shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "10.3",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Stephon Castle shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:52",
+          "team": "24",
+          "type": "Personal Take Foul",
+          "text": "Dylan Harper personal take foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:24",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Jalen Williams personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:18",
+          "team": "24",
+          "type": "Offensive Foul",
+          "text": "Victor Wembanyama offensive foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:18",
+          "team": "24",
+          "type": "Offensive Foul Turnover",
+          "text": "Victor Wembanyama offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "8:41",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Julian Champagnie personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:18",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Jalen Williams shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:36",
+          "team": "25",
+          "type": "Loose Ball Foul",
+          "text": "Isaiah Hartenstein loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:25",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Cason Wallace shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:06",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Keldon Johnson personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:22",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Stephon Castle personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "1:56",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Dylan Harper personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909092",
+      "teams": {
+        "9": {
+          "observed_fga": 93,
+          "official_fga": 92,
+          "delta": 1,
+          "same_clock_fouled_shots": 0,
+          "foul_delta": 1
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "11:26",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Luka Doncic personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "9:40",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Stephen Curry personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:50",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Ziaire Williams personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:21",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Draymond Green shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:38",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "De'Anthony Melton shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:24",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Stephen Curry shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:35",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Brandon Williams personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:24",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Kevon Looney shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "44.3",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Jake LaRavia shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:56",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Matisse Thybulle shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:32",
+          "team": "9",
+          "type": "Loose Ball Foul",
+          "text": "Draymond Green loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:21",
+          "team": "9",
+          "type": "Offensive Foul",
+          "text": "Draymond Green offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:21",
+          "team": "9",
+          "type": "Offensive Foul Turnover",
+          "text": "Draymond Green offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "6:57",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Austin Reaves personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:28",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Yaxel Lendeborg shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:18",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Ziaire Williams personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:11",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Sandro Mamukelashvili personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:27",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Will Richard shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:12",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Yaxel Lendeborg personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "45.4",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Ziaire Williams personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "22.4",
+          "team": "9",
+          "type": "Technical Foul",
+          "text": "Yaxel Lendeborg technical foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:45",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Ziaire Williams shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:33",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Yaxel Lendeborg shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "7:27",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Matisse Thybulle personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:42",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Yaxel Lendeborg shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:44",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Gary Payton II shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:34",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Quentin Grimes personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:17",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Sandro Mamukelashvili personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:00",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Austin Reaves shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "2:16",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Quentin Grimes personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:14",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Will Richard personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "28.7",
+          "team": "9",
+          "type": "Loose Ball Foul",
+          "text": "Will Richard loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "20.0",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Jake LaRavia shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:09",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Matisse Thybulle shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:57",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Gui Santos personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:53",
+          "team": "9",
+          "type": "Personal Foul",
+          "text": "Will Richard personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:57",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Jake LaRavia shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:41",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Graham Ike shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:25",
+          "team": "13",
+          "type": "Loose Ball Foul",
+          "text": "Walker Kessler loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:46",
+          "team": "9",
+          "type": "Shooting Foul",
+          "text": "Graham Ike shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:34",
+          "team": "13",
+          "type": "Personal Take Foul",
+          "text": "Bronny James personal take foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:56",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Chris Manon shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:33",
+          "team": "13",
+          "type": "Loose Ball Foul",
+          "text": "Jaden Hardy loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "3:08",
+          "team": "13",
+          "type": "Shooting Foul",
+          "text": "Sandro Mamukelashvili shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:10",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Kevon Looney personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "1:21",
+          "team": "13",
+          "type": "Personal Foul",
+          "text": "Bronny James personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909094",
+      "teams": {
+        "7": {
+          "observed_fga": 84,
+          "official_fga": 82,
+          "delta": 2,
+          "same_clock_fouled_shots": 0
+        },
+        "25": {
+          "foul_delta": -1
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "10:35",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Cason Wallace shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "8:41",
+          "team": "7",
+          "type": "Shooting Foul",
+          "text": "Cameron Johnson shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:16",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Chet Holmgren personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:39",
+          "team": "25",
+          "type": "Loose Ball Foul",
+          "text": "Jalen Williams loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:53",
+          "team": "7",
+          "type": "Loose Ball Foul",
+          "text": "Trevon Brazile loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:52",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Jaylin Williams shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "8.8",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Alpha Diallo personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:48",
+          "team": "7",
+          "type": "Offensive Foul",
+          "text": "Marvin Bagley III offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:48",
+          "team": "7",
+          "type": "Offensive Foul Turnover",
+          "text": "Marvin Bagley III offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "11:20",
+          "team": "7",
+          "type": "Loose Ball Foul",
+          "text": "Tyus Jones loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:13",
+          "team": "7",
+          "type": "Offensive Foul",
+          "text": "Aaron Gordon offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:13",
+          "team": "7",
+          "type": "Offensive Foul Turnover",
+          "text": "Aaron Gordon offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "10:06",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Aaron Gordon personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:29",
+          "team": "25",
+          "type": "Loose Ball Foul",
+          "text": "Aday Mara loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:12",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Ajay Mitchell shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:06",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Kenrich Williams personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:47",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Jalen Williams shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:14",
+          "team": "7",
+          "type": "Offensive Foul",
+          "text": "Trevon Brazile offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:14",
+          "team": "7",
+          "type": "Offensive Foul Turnover",
+          "text": "Trevon Brazile offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "5:50",
+          "team": "7",
+          "type": "Loose Ball Foul",
+          "text": "DeMar DeRozan loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:08",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Alex Caruso shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:41",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Nikola Jokic personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:30",
+          "team": "7",
+          "type": "Shooting Foul",
+          "text": "Cameron Johnson shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:06",
+          "team": "25",
+          "type": "Loose Ball Foul",
+          "text": "Isaiah Hartenstein loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:46",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Jamal Murray personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:26",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Chet Holmgren shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:40",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Christian Braun personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "4.8",
+          "team": "7",
+          "type": "Offensive Foul",
+          "text": "Christian Braun offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "4.8",
+          "team": "7",
+          "type": "Offensive Foul Turnover",
+          "text": "Christian Braun offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "7:17",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Isaiah Hartenstein personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "7:13",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Cason Wallace personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "7:04",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Christian Braun personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:51",
+          "team": "7",
+          "type": "Offensive Foul",
+          "text": "Nikola Jokic offensive foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:51",
+          "team": "7",
+          "type": "Offensive Foul Turnover",
+          "text": "Nikola Jokic offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "5:34",
+          "team": "7",
+          "type": "Shooting Foul",
+          "text": "Jamal Murray shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:23",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Chet Holmgren personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:25",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Jaylin Williams personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:12",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Aaron Gordon personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "11:29",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Jalen Williams personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:45",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Alpha Diallo personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:42",
+          "team": "25",
+          "type": "Offensive Foul Turnover",
+          "text": "Jared McCain offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "9:49",
+          "team": "7",
+          "type": "Loose Ball Foul",
+          "text": "DeMar DeRozan loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:35",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "DeMar DeRozan personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:54",
+          "team": "7",
+          "type": "Shooting Foul",
+          "text": "Marvin Bagley III shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:12",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Chet Holmgren shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:26",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Cason Wallace personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:18",
+          "team": "25",
+          "type": "Shooting Foul",
+          "text": "Ajay Mitchell shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:41",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Cason Wallace personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:08",
+          "team": "7",
+          "type": "Personal Foul",
+          "text": "Nikola Jokic personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "3:28",
+          "team": "25",
+          "type": "Personal Foul",
+          "text": "Alex Caruso personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909096",
+      "teams": {
+        "24": {
+          "observed_fga": 88,
+          "official_fga": 87,
+          "delta": 1,
+          "same_clock_fouled_shots": 1,
+          "foul_delta": -1
+        }
+      },
+      "shots_near_fouls": [
+        {
+          "team": "24",
+          "period": 3,
+          "clock": "7:27",
+          "type": "Driving Floating Jump Shot",
+          "text": "Jabari Smith Jr. blocks Keldon Johnson's driving floating jump shot",
+          "pointsAttempted": 2,
+          "neighbors": [
+            {
+              "offset": 2,
+              "type": "Loose Ball Foul",
+              "text": "Keldon Johnson loose ball foul",
+              "foul_team": "24"
+            }
+          ]
+        }
+      ],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "11:32",
+          "team": "10",
+          "type": "Loose Ball Foul",
+          "text": "Jabari Smith Jr. loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:52",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Fred VanVleet shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:34",
+          "team": "10",
+          "type": "Offensive Foul",
+          "text": "Alperen Sengun offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:34",
+          "team": "10",
+          "type": "Offensive Foul Turnover",
+          "text": "Alperen Sengun offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "6:12",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Devin Vassell personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:21",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Devin Vassell personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:54",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Kevin Durant shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:24",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Steven Adams shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:46",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Luke Kornet shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:55",
+          "team": "10",
+          "type": "Personal Foul",
+          "text": "Steven Adams personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:45",
+          "team": "10",
+          "type": "Offensive Foul",
+          "text": "Jabari Smith Jr. offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:45",
+          "team": "10",
+          "type": "Offensive Foul Turnover",
+          "text": "Jabari Smith Jr. offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "2:06",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Keldon Johnson shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:45",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Stephon Castle shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:43",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Stephon Castle personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:04",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Harrison Barnes shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:59",
+          "team": "10",
+          "type": "Personal Foul",
+          "text": "Jabari Smith Jr. personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:09",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Victor Wembanyama shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "6:54",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Kevin Durant shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:07",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Julian Champagnie shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:57",
+          "team": "10",
+          "type": "Personal Foul",
+          "text": "Amen Thompson personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:43",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Keldon Johnson shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:15",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Devin Vassell shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:21",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Tari Eason shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "23.3",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Marcus Smart shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "11:28",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Amen Thompson shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:43",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Devin Vassell shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:48",
+          "team": "24",
+          "type": "Offensive Foul Turnover",
+          "text": "De'Aaron Fox offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "7:27",
+          "team": "24",
+          "type": "Loose Ball Foul",
+          "text": "Keldon Johnson loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:39",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Keldon Johnson personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:50",
+          "team": "24",
+          "type": "Loose Ball Foul",
+          "text": "Carter Bryant loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:15",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Stephon Castle shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:41",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Steven Adams shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "2:42",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Steven Adams shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:45",
+          "team": "10",
+          "type": "Personal Foul",
+          "text": "Tari Eason personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:13",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Victor Wembanyama shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "46.1",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Amen Thompson shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:59",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Victor Wembanyama shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:38",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Dylan Harper shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:31",
+          "team": "10",
+          "type": "Personal Foul",
+          "text": "Alperen Sengun personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:19",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Marcus Smart shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:20",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Stephon Castle personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:08",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Fred VanVleet shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:51",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Luke Kornet shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:58",
+          "team": "10",
+          "type": "Loose Ball Foul",
+          "text": "Tari Eason loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "4:36",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Luke Kornet shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "3:14",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Victor Wembanyama shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:42",
+          "team": "24",
+          "type": "Shooting Foul",
+          "text": "Stephon Castle shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:27",
+          "team": "10",
+          "type": "Shooting Foul",
+          "text": "Jabari Smith Jr. shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "0.6",
+          "team": "24",
+          "type": "Personal Foul",
+          "text": "Dylan Harper personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909277",
+      "teams": {
+        "27": {
+          "observed_fga": 74,
+          "official_fga": 72,
+          "delta": 2,
+          "same_clock_fouled_shots": 0
+        },
+        "30": {
+          "foul_delta": 1
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "11:40",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Kyshawn George personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "8:50",
+          "team": "27",
+          "type": "Loose Ball Foul",
+          "text": "Kyshawn George loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "8:22",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Sion James personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "6:37",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Moussa Diabate shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "6:22",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Naz Reid shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:46",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Grayson Allen shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:28",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Christian Anderson shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:20",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Bilal Coulibaly personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:59",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Royce O'Neale personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "17.9",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Bilal Coulibaly personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:29",
+          "team": "27",
+          "type": "Loose Ball Foul",
+          "text": "Deandre Ayton loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "11:04",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Tidjane Salaun shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:58",
+          "team": "27",
+          "type": "Shooting Foul",
+          "text": "Bub Carrington shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:26",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Khris Middleton personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:34",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Dennis Schroder shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:27",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Sion James personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "6:12",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Bilal Coulibaly personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:57",
+          "team": "30",
+          "type": "Loose Ball Foul",
+          "text": "Moussa Diabate loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "4:03",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Naz Reid shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:46",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "AJ Dybantsa personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:30",
+          "team": "30",
+          "type": "Loose Ball Foul",
+          "text": "Moussa Diabate loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "55.2",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Naz Reid shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "2.9",
+          "team": "27",
+          "type": "Shooting Foul",
+          "text": "AJ Dybantsa shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "12:00",
+          "team": "30",
+          "type": "Technical Foul",
+          "text": "Brandon Miller technical foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:49",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Kyshawn George personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:06",
+          "team": "30",
+          "type": "Offensive Foul",
+          "text": "Dennis Schroder offensive foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:06",
+          "team": "30",
+          "type": "Offensive Foul Turnover",
+          "text": "Dennis Schroder offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "6:27",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Naz Reid shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:04",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Dennis Schroder personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:25",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Brandon Miller personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:17",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Tre Johnson personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:49",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Grayson Allen shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "2:56",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Brandon Miller shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:36",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Sion James personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "48.7",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Liam McNeeley shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "31.4",
+          "team": "27",
+          "type": "Shooting Foul",
+          "text": "Bilal Coulibaly shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "11:14",
+          "team": "27",
+          "type": "Flagrant Foul Type 1",
+          "text": "Trae Young flagrant foul type 1"
+        },
+        {
+          "period": 4,
+          "clock": "8:35",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Dennis Schroder personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:28",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Ryan Kalkbrenner personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:58",
+          "team": "30",
+          "type": "Shooting Foul",
+          "text": "Dennis Schroder shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "3:56",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Dennis Schroder personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:54",
+          "team": "27",
+          "type": "Shooting Foul",
+          "text": "Bilal Coulibaly shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:54",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Anthony Davis personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "1:26",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "PJ Hall personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "54.6",
+          "team": "30",
+          "type": "Personal Foul",
+          "text": "Christian Anderson personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "48.9",
+          "team": "27",
+          "type": "Personal Foul",
+          "text": "Bub Carrington personal foul"
+        }
+      ]
+    },
+    {
+      "id": "401909278",
+      "teams": {
+        "4": {
+          "observed_fga": 94,
+          "official_fga": 92,
+          "delta": 2,
+          "same_clock_fouled_shots": 0,
+          "foul_delta": 1
+        },
+        "2": {
+          "foul_delta": 1
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "9:11",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Norman Powell personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "9:02",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Matas Buzelis shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:57",
+          "team": "4",
+          "type": "Offensive Foul",
+          "text": "Jalen Smith offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "7:57",
+          "team": "4",
+          "type": "Offensive Foul Turnover",
+          "text": "Jalen Smith offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "7:34",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jordan Walsh shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:52",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jordan Walsh shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:36",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Norman Powell shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:21",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Payton Pritchard shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:17",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Noa Essengue shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:48",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Noa Essengue shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:08",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jayson Tatum shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:38",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Leonard Miller shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:26",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Leonard Miller shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:40",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Mitchell Robinson shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:34",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Matas Buzelis shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:42",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Derrick White shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "7:47",
+          "team": "2",
+          "type": "Personal Foul",
+          "text": "Payton Pritchard personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "6:30",
+          "team": "4",
+          "type": "Offensive Foul",
+          "text": "Tobe Awaka offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "6:30",
+          "team": "4",
+          "type": "Offensive Foul Turnover",
+          "text": "Tobe Awaka offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "5:56",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Sam Hauser shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:14",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Luka Garza shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "4:46",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Caleb Wilson personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:58",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jayson Tatum shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:45",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Jalen Smith shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:29",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jayson Tatum shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "11:44",
+          "team": "2",
+          "type": "Personal Foul",
+          "text": "Jordan Walsh personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:23",
+          "team": "4",
+          "type": "Loose Ball Foul",
+          "text": "Matas Buzelis loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:56",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Paul George shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "7:36",
+          "team": "2",
+          "type": "Loose Ball Foul",
+          "text": "Jordan Walsh loose ball foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:44",
+          "team": "2",
+          "type": "Personal Foul",
+          "text": "Neemias Queta personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "6:15",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Isaac Okoro shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:21",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Mitchell Robinson shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:53",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Payton Pritchard shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:34",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Isaac Okoro personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:32",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Caleb Wilson personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:16",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Buddy Hield personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "2:17",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Leonard Miller shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "1:58",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Matas Buzelis shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "11:17",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Caleb Wilson personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:44",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Jalen Smith personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:43",
+          "team": "2",
+          "type": "Offensive Foul",
+          "text": "Paul George offensive foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:43",
+          "team": "2",
+          "type": "Offensive Foul Turnover",
+          "text": "Paul George offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "10:03",
+          "team": "4",
+          "type": "Loose Ball Foul",
+          "text": "Jalen Smith loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:42",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Norman Powell personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:42",
+          "team": "4",
+          "type": "Technical Foul",
+          "text": "Jalen Smith technical foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:30",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Jayson Tatum shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:25",
+          "team": "4",
+          "type": "Personal Foul",
+          "text": "Caleb Wilson personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:24",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Josh Giddey shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:19",
+          "team": "2",
+          "type": "Personal Take Foul",
+          "text": "Payton Pritchard personal take foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:52",
+          "team": "4",
+          "type": "Shooting Foul",
+          "text": "Isaac Okoro shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:29",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Luka Garza shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "6:02",
+          "team": "2",
+          "type": "Shooting Foul",
+          "text": "Payton Pritchard shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:01",
+          "team": "2",
+          "type": "Offensive Foul",
+          "text": "Jayson Tatum offensive foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:01",
+          "team": "2",
+          "type": "Offensive Foul Turnover",
+          "text": "Jayson Tatum offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "5:01",
+          "team": "2",
+          "type": "Technical Foul",
+          "text": "Jayson Tatum technical foul"
+        }
+      ]
+    },
+    {
+      "id": "401909281",
+      "teams": {
+        "19": {
+          "observed_fga": 75,
+          "official_fga": 74,
+          "delta": 1,
+          "same_clock_fouled_shots": 0,
+          "foul_delta": -1
+        },
+        "28": {
+          "foul_delta": -2
+        }
+      },
+      "shots_near_fouls": [],
+      "fouls": [
+        {
+          "period": 1,
+          "clock": "10:09",
+          "team": "28",
+          "type": "Loose Ball Foul",
+          "text": "Jakob Poeltl loose ball foul"
+        },
+        {
+          "period": 1,
+          "clock": "9:43",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Jakob Poeltl shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:59",
+          "team": "28",
+          "type": "Offensive Foul",
+          "text": "Collin Murray-Boyles offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:59",
+          "team": "28",
+          "type": "Offensive Foul Turnover",
+          "text": "Collin Murray-Boyles offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "5:59",
+          "team": "28",
+          "type": "Double Technical Foul",
+          "text": "Double technical foul: RJ Barrett and Desmond Bane"
+        },
+        {
+          "period": 1,
+          "clock": "5:55",
+          "team": "19",
+          "type": "Offensive Foul",
+          "text": "Tristan da Silva offensive foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:55",
+          "team": "19",
+          "type": "Offensive Foul Turnover",
+          "text": "Tristan da Silva offensive foul turnover"
+        },
+        {
+          "period": 1,
+          "clock": "5:43",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Goga Bitadze personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "5:31",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Ja'Kobe Walter personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:51",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Jamal Cain shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:37",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Collin Murray-Boyles personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "4:26",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Ja'Kobe Walter shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "3:06",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Tristan da Silva shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:43",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Jamal Cain shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "2:07",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Tristan da Silva shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "1:08",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jamison Battle personal foul"
+        },
+        {
+          "period": 1,
+          "clock": "56.0",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Jamal Cain shooting foul"
+        },
+        {
+          "period": 1,
+          "clock": "36.7",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Scottie Barnes shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "10:47",
+          "team": "28",
+          "type": "Loose Ball Foul",
+          "text": "RJ Barrett loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "9:43",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Franz Wagner shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:24",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Ja'Kobe Walter personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:20",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Allen Graves personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "8:16",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Allen Graves shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "5:08",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Scottie Barnes shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "4:26",
+          "team": "28",
+          "type": "Loose Ball Foul",
+          "text": "Collin Murray-Boyles loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:45",
+          "team": "19",
+          "type": "Loose Ball Foul",
+          "text": "Desmond Bane loose ball foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:19",
+          "team": "19",
+          "type": "Offensive Foul",
+          "text": "Desmond Bane offensive foul"
+        },
+        {
+          "period": 2,
+          "clock": "3:19",
+          "team": "19",
+          "type": "Offensive Foul Turnover",
+          "text": "Desmond Bane offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "2:57",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jakob Poeltl personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "2:22",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jamal Shead personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:57",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jamal Shead personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "1:13",
+          "team": "19",
+          "type": "Offensive Foul Turnover",
+          "text": "Franz Wagner offensive foul turnover"
+        },
+        {
+          "period": 2,
+          "clock": "47.9",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "RJ Barrett personal foul"
+        },
+        {
+          "period": 2,
+          "clock": "9.0",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Scottie Barnes shooting foul"
+        },
+        {
+          "period": 2,
+          "clock": "3.2",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Anthony Black personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "10:46",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Immanuel Quickley personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:24",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Anthony Black personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "9:20",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Desmond Bane personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "8:04",
+          "team": "28",
+          "type": "Offensive Foul Turnover",
+          "text": "RJ Barrett offensive foul turnover"
+        },
+        {
+          "period": 3,
+          "clock": "5:44",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Tristan da Silva personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "5:10",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jakob Poeltl personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "4:33",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Jamal Cain shooting foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:55",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jamal Shead personal foul"
+        },
+        {
+          "period": 3,
+          "clock": "3:31",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Jamison Battle personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "10:44",
+          "team": "19",
+          "type": "Personal Foul",
+          "text": "Wendell Carter Jr. personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:30",
+          "team": "19",
+          "type": "Offensive Foul",
+          "text": "Desmond Bane offensive foul"
+        },
+        {
+          "period": 4,
+          "clock": "9:30",
+          "team": "19",
+          "type": "Offensive Foul Turnover",
+          "text": "Desmond Bane offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "8:53",
+          "team": "28",
+          "type": "Personal Foul",
+          "text": "Scottie Barnes personal foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:53",
+          "team": "19",
+          "type": "Offensive Foul",
+          "text": "Desmond Bane offensive foul"
+        },
+        {
+          "period": 4,
+          "clock": "8:53",
+          "team": "19",
+          "type": "Offensive Foul Turnover",
+          "text": "Desmond Bane offensive foul turnover"
+        },
+        {
+          "period": 4,
+          "clock": "8:26",
+          "team": "19",
+          "type": "Double Personal Foul",
+          "text": "Wendell Carter Jr. double personal foul (Jakob Poeltl draws the foul)"
+        },
+        {
+          "period": 4,
+          "clock": "7:41",
+          "team": "28",
+          "type": "Loose Ball Foul",
+          "text": "Collin Murray-Boyles loose ball foul"
+        },
+        {
+          "period": 4,
+          "clock": "7:17",
+          "team": "19",
+          "type": "Shooting Foul",
+          "text": "Franz Wagner shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "5:53",
+          "team": "28",
+          "type": "Shooting Foul",
+          "text": "Jamal Shead shooting foul"
+        },
+        {
+          "period": 4,
+          "clock": "2:33",
+          "team": "28",
+          "type": "Offensive Foul Turnover",
+          "text": "RJ Barrett offensive foul turnover"
+        }
+      ]
+    }
+  ]
+}
