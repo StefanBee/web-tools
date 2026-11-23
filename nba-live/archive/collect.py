@@ -214,7 +214,8 @@ def event_stats(play: dict) -> dict[str, int]:
         'ftm': int(free and made), 'fta': int(free),
         'reb': int(bool(primary) and bool(re.search(r'\brebound\b', typ, re.I))),
         'to': int(turnover),
-        'pf': int(bool(re.search(r'\bfoul\b', typ, re.I)) and not turnover),
+        'pf': int(bool(re.search(r'\bfoul\b', typ, re.I)) and not turnover
+                  and not re.search(r'\btechnical\b', typ, re.I)),
         'ast': int(bool(secondary) and shot and made and bool(re.search(r'\bassists?\b', txt, re.I))),
         'stl': int(bool(secondary) and turnover and bool(re.search(r'\bsteals?\b', txt, re.I))),
         'blk': int(bool(secondary) and shot and not made and bool(re.search(r'\bblocks?\b', txt, re.I))),

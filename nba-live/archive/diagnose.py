@@ -52,6 +52,23 @@ for game_id in sorted({r['game_id'] for r in db.execute(
         if candidate:summary['teams_with_possible_fouled_shots']+=1
         example['teams'][t]={'observed_fga':diff['observed'],'official_fga':diff['official'],'delta':diff['observed']-diff['official'],
                              'same_clock_fouled_shots':candidate}
+    if len(samples)<2:
+        example['shot_details']=[]
+        for i,p in enumerate(plays):
+            team=str((p.get('team') or {}).get('id') or '')
+            if team not in problems or p.get('shootingPlay') is not True or p.get('pointsAttempted')!=3:
+                continue
+            neighbors=[]
+            for j in range(max(0,i-2),min(len(plays),i+4)):
+                if i==j:continue
+                q=plays[j]
+                neighbors.append(dict(offset=j-i,type=event_type(q),text=q.get('text'),
+                                      team=(q.get('team') or {}).get('id'),
+                                      clock=(q.get('clock') or {}).get('displayValue')))
+            example['shot_details'].append(dict(team=team,player=(p.get('participants') or [{}])[0].get('athlete',{}).get('id'),
+                period=(p.get('period') or {}).get('number'),clock=(p.get('clock') or {}).get('displayValue'),
+                text=p.get('text'),type=event_type(p),made=bool(p.get('scoringPlay')),
+                neighbors=neighbors))
     if len(samples)<8:
         for p in plays:
             kind=event_type(p)
