@@ -1,116 +1,116 @@
 {
   "season": "2026-27",
   "parser_version": "structured-2026-11-23-v2-heaves-fouls",
-  "updated_at": "2026-11-23T22:52:58+00:00",
-  "games_archived": 248,
-  "games_reprocessed": 248,
-  "games_validated": 248,
-  "games_with_mismatches": 81,
-  "games_without_mismatches": 167,
-  "team_metric_mismatches": 86,
-  "player_metric_mismatches": 242,
+  "updated_at": "2026-11-24T21:28:42+00:00",
+  "games_archived": 258,
+  "games_reprocessed": 258,
+  "games_validated": 258,
+  "games_with_mismatches": 83,
+  "games_without_mismatches": 175,
+  "team_metric_mismatches": 88,
+  "player_metric_mismatches": 244,
   "metric_reconciliation": {
     "team": {
       "ast": {
-        "matched": 493,
+        "matched": 513,
         "mismatch": 3
       },
       "blk": {
-        "matched": 479,
-        "mismatch": 17
+        "matched": 497,
+        "mismatch": 19
       },
       "fga": {
-        "matched": 480,
+        "matched": 500,
         "mismatch": 16
       },
       "fgm": {
-        "matched": 495,
+        "matched": 515,
         "mismatch": 1
       },
       "fta": {
-        "matched": 496,
+        "matched": 516,
         "mismatch": 0
       },
       "ftm": {
-        "matched": 496,
+        "matched": 516,
         "mismatch": 0
       },
       "pf": {
-        "matched": 486,
+        "matched": 506,
         "mismatch": 10
       },
       "reb": {
-        "matched": 482,
+        "matched": 502,
         "mismatch": 14
       },
       "stl": {
-        "matched": 488,
+        "matched": 508,
         "mismatch": 8
       },
       "to": {
-        "matched": 487,
+        "matched": 507,
         "mismatch": 9
       },
       "tpa": {
-        "matched": 488,
+        "matched": 508,
         "mismatch": 8
       },
       "tpm": {
-        "matched": 496,
+        "matched": 516,
         "mismatch": 0
       }
     },
     "player": {
       "ast": {
-        "matched": 5513,
+        "matched": 5740,
         "mismatch": 33
       },
       "blk": {
-        "matched": 5529,
-        "mismatch": 17
+        "matched": 5754,
+        "mismatch": 19
       },
       "fga": {
-        "matched": 5519,
+        "matched": 5746,
         "mismatch": 27
       },
       "fgm": {
-        "matched": 5543,
+        "matched": 5770,
         "mismatch": 3
       },
       "fta": {
-        "matched": 5542,
+        "matched": 5769,
         "mismatch": 4
       },
       "ftm": {
-        "matched": 5544,
+        "matched": 5771,
         "mismatch": 2
       },
       "pf": {
-        "matched": 5531,
+        "matched": 5758,
         "mismatch": 15
       },
       "pts": {
-        "matched": 5541,
+        "matched": 5768,
         "mismatch": 5
       },
       "reb": {
-        "matched": 5490,
+        "matched": 5717,
         "mismatch": 56
       },
       "stl": {
-        "matched": 5502,
+        "matched": 5729,
         "mismatch": 44
       },
       "to": {
-        "matched": 5520,
+        "matched": 5747,
         "mismatch": 26
       },
       "tpa": {
-        "matched": 5536,
+        "matched": 5763,
         "mismatch": 10
       },
       "tpm": {
-        "matched": 5546,
+        "matched": 5773,
         "mismatch": 0
       }
     }
@@ -2741,6 +2741,38 @@
       "metric": "to",
       "official": 16,
       "observed": 15
+    },
+    {
+      "game_id": "401910036",
+      "scope": "player",
+      "entity_id": "4433287",
+      "metric": "blk",
+      "official": 3,
+      "observed": 2
+    },
+    {
+      "game_id": "401910036",
+      "scope": "team",
+      "entity_id": "30",
+      "metric": "blk",
+      "official": 8,
+      "observed": 7
+    },
+    {
+      "game_id": "401910037",
+      "scope": "player",
+      "entity_id": "4683678",
+      "metric": "blk",
+      "official": 1,
+      "observed": 0
+    },
+    {
+      "game_id": "401910037",
+      "scope": "team",
+      "entity_id": "22",
+      "metric": "blk",
+      "official": 6,
+      "observed": 5
     }
   ],
   "note": "A matching full-game total does not prove every per-period split is correct; live ESPN feed can be corrected."
