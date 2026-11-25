@@ -1,116 +1,116 @@
 {
   "season": "2026-27",
   "parser_version": "structured-2026-11-23-v2-heaves-fouls",
-  "updated_at": "2026-11-24T21:28:42+00:00",
-  "games_archived": 258,
-  "games_reprocessed": 258,
-  "games_validated": 258,
+  "updated_at": "2026-11-25T20:37:50+00:00",
+  "games_archived": 261,
+  "games_reprocessed": 261,
+  "games_validated": 261,
   "games_with_mismatches": 83,
-  "games_without_mismatches": 175,
+  "games_without_mismatches": 178,
   "team_metric_mismatches": 88,
   "player_metric_mismatches": 244,
   "metric_reconciliation": {
     "team": {
       "ast": {
-        "matched": 513,
+        "matched": 519,
         "mismatch": 3
       },
       "blk": {
-        "matched": 497,
+        "matched": 503,
         "mismatch": 19
       },
       "fga": {
-        "matched": 500,
+        "matched": 506,
         "mismatch": 16
       },
       "fgm": {
-        "matched": 515,
+        "matched": 521,
         "mismatch": 1
       },
       "fta": {
-        "matched": 516,
+        "matched": 522,
         "mismatch": 0
       },
       "ftm": {
-        "matched": 516,
+        "matched": 522,
         "mismatch": 0
       },
       "pf": {
-        "matched": 506,
+        "matched": 512,
         "mismatch": 10
       },
       "reb": {
-        "matched": 502,
+        "matched": 508,
         "mismatch": 14
       },
       "stl": {
-        "matched": 508,
+        "matched": 514,
         "mismatch": 8
       },
       "to": {
-        "matched": 507,
+        "matched": 513,
         "mismatch": 9
       },
       "tpa": {
-        "matched": 508,
+        "matched": 514,
         "mismatch": 8
       },
       "tpm": {
-        "matched": 516,
+        "matched": 522,
         "mismatch": 0
       }
     },
     "player": {
       "ast": {
-        "matched": 5740,
+        "matched": 5810,
         "mismatch": 33
       },
       "blk": {
-        "matched": 5754,
+        "matched": 5824,
         "mismatch": 19
       },
       "fga": {
-        "matched": 5746,
+        "matched": 5816,
         "mismatch": 27
       },
       "fgm": {
-        "matched": 5770,
+        "matched": 5840,
         "mismatch": 3
       },
       "fta": {
-        "matched": 5769,
+        "matched": 5839,
         "mismatch": 4
       },
       "ftm": {
-        "matched": 5771,
+        "matched": 5841,
         "mismatch": 2
       },
       "pf": {
-        "matched": 5758,
+        "matched": 5828,
         "mismatch": 15
       },
       "pts": {
-        "matched": 5768,
+        "matched": 5838,
         "mismatch": 5
       },
       "reb": {
-        "matched": 5717,
+        "matched": 5787,
         "mismatch": 56
       },
       "stl": {
-        "matched": 5729,
+        "matched": 5799,
         "mismatch": 44
       },
       "to": {
-        "matched": 5747,
+        "matched": 5817,
         "mismatch": 26
       },
       "tpa": {
-        "matched": 5763,
+        "matched": 5833,
         "mismatch": 10
       },
       "tpm": {
-        "matched": 5773,
+        "matched": 5843,
         "mismatch": 0
       }
     }

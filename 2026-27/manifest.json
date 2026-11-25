@@ -1,16 +1,16 @@
 {
   "season": "2026-27",
-  "updated_at": "2026-11-24T21:28:30+00:00",
-  "games": 258,
-  "team_periods": 2094,
-  "newly_archived": 10,
-  "unchanged": 22,
+  "updated_at": "2026-11-25T20:37:41+00:00",
+  "games": 261,
+  "team_periods": 2118,
+  "newly_archived": 3,
+  "unchanged": 23,
   "pending_games": 0,
   "scoreboard_errors": 0,
   "note": "Period stats other than score are estimates reconstructed from ESPN plays; raw source retained.",
   "validation": {
     "parser_version": "structured-2026-11-23-v2-heaves-fouls",
-    "games_validated": 258,
+    "games_validated": 261,
     "games_with_mismatches": 83,
     "team_metric_mismatches": 88,
     "player_metric_mismatches": 244
