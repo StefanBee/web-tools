@@ -82,7 +82,7 @@ test('play by a player outside the inferred five reveals an incomplete rotation'
  assert.equal(setup()(events,'p0',1),null);
 });
 test('popup includes a clearly qualified MIN tile',()=>{
- assert.match(script,/\\['MIN',mins===null\\?'—':mins,'min'\\]/);
+ assert.ok(script.includes("['MIN',mins===null?'—':mins,'min']"));
  assert.match(script,/Estimated from starting lineups and timed ESPN substitutions/);
- assert.match(script,/Quarter \\+\\/− is not available reliably/);
+ assert.ok(script.includes('Quarter +/− is not available reliably.'));
 });
