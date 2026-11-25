@@ -729,8 +729,8 @@ function derivePlays(raw,g,period){
  return {teams:teams,teamPlays:teamPlays,count:count};
 }
 
-/* The summary already carries player-labelled events and scoring plays.
-   Quarter minutes and +/− are intentionally omitted: these need rotations. */
+/* The summary carries player-labelled events and scoring plays.
+   Quarter minutes are computed separately from rotations. */
 function clockRemaining(clock){
  var str=String((clock&&clock.displayValue)||clock||'').trim(),parts=str.split(':');
  if(parts.length!==2||!parts.every(function(p){return /^\d+(?:\.\d+)?$/.test(p)}))return null;
@@ -741,6 +741,79 @@ function gameElapsed(period,clock){
  if(period<1||remaining===null||remaining<0||remaining>length)return null;
  return (period<=4?(period-1)*720:2880+(period-5)*300)+(length-remaining);
 }
+
+/* Compute playing time from period clocks and substitutions; never from
+   shot counts. Incomplete starters or rotations yield unavailable minutes. */
+function playerPeriodMinutes(raw,g,side,playerId,selected){
+ var team=g&&g[side],roster=state.players[side]||[],id=String(playerId);
+ if(!team||!Number.isInteger(selected)||selected<1||!roster.some(function(p){return p.id===id&&!p.dnp}))return null;
+ var starters=roster.filter(function(p){return p.starter&&!p.dnp&&p.id});
+ if(starters.length!==5||new Set(starters.map(function(p){return p.id})).size!==5)return null;
+ var known=new Set(roster.map(function(p){return p.id})),active=new Set(starters.map(function(p){return p.id}));
+ var plays=allPlays(raw),status=g.status||{},gamePeriod=Number(status.period||0);
+ for(var period=1;period<=selected;period++){
+  var events=plays.filter(function(p){return readPeriod(p)===period});
+  if(!events.length)return null;
+  var length=period<=4?720:300;
+  var ended=events.some(function(p){return /end (?:of (?:the )?)?(?:period|quarter)/i.test(playType(p))});
+  var full=ended||(!!((status.type||{}).completed)&&gamePeriod===period);
+  var remaining=clockRemaining(status.displayClock);
+  var limit=full?length:period===gamePeriod&&remaining!==null?length-remaining:null;
+  if(limit===null||limit<0||limit>length||period<selected&&!full)return null;
+  var cursor=0,last=length,observed=false,seconds=0,seen=new Set();
+  for(var i=0;i<events.length;i++){
+   var event=events[i],clock=clockRemaining(event.clock),type=playType(event),description=String(event.text||'');
+   var substitution=/substitut|enters\s+(?:the\s+)?game\s+for/i.test(type+' '+description);
+   var eventTeam=String((event.team||{}).id||event.teamId||'');
+   var ownSub=substitution&&eventTeam===team.id;
+   if(clock===null){if(ownSub)return null;continue}
+   if(clock<0||clock>length||clock>last+0.1)return null;
+   var elapsed=length-clock;
+   if(elapsed>limit+0.1)return null;
+   last=clock;observed=true;
+   if(active.has(id))seconds+=elapsed-cursor;
+   cursor=elapsed;
+   if(ownSub){
+    var persons=event.participants||[];
+    var incoming=String(((persons[0]||{}).athlete||{}).id||'');
+    var outgoing=String(((persons[1]||{}).athlete||{}).id||'');
+    // Skip a partial ESPN duplicate only when a complete substitution
+    // for the same incoming player follows at the same clock.
+    if(!incoming||!outgoing){
+     var duplicate=false;
+     for(var nextIndex=i+1;nextIndex<Math.min(events.length,i+4);nextIndex++){
+      var next=events[nextIndex],people=next.participants||[];
+      if(clockRemaining(next.clock)!==clock)break;
+      if(String((next.team||{}).id||next.teamId||'')===team.id&&
+         String(((people[0]||{}).athlete||{}).id||'')===incoming&&
+         String(((people[1]||{}).athlete||{}).id||'')){duplicate=true;break}
+     }
+     if(duplicate&&incoming)continue;
+     return null;
+    }
+    if(!known.has(incoming)||!known.has(outgoing))return null;
+    var token=period+':'+clock+':'+incoming+':'+outgoing;
+    if(seen.has(token))continue;
+    seen.add(token);
+    if(active.has(incoming)||!active.has(outgoing))return null;
+    active.delete(outgoing);active.add(incoming);
+    if(active.size!==5)return null;
+   }else if(eventTeam===team.id&&(event.shootingPlay===true||/\b(?:rebound|turnover)\b/i.test(type))){
+    var actor=String(((((event.participants||[])[0]||{}).athlete)||{}).id||'');
+    if(actor&&known.has(actor)&&!active.has(actor))return null;
+   }
+  }
+  if(!observed||cursor>limit)return null;
+  if(active.has(id))seconds+=limit-cursor;
+  if(period===selected){
+   if(seconds<0||seconds>length+0.1||!Number.isFinite(seconds))return null;
+   var rounded=Math.round(seconds);
+   return Math.floor(rounded/60)+':'+String(rounded%60).padStart(2,'0');
+  }
+ }
+ return null;
+}
+
 /* Player quarter numbers use the same typed events as the team table.
    In ESPN, participants[0] is the shooter/rebounder/turnover actor and
    participants[1] identifies the assister, stealer or blocker. */
@@ -846,12 +919,13 @@ function renderInspector(){
   $('inspector-body').innerHTML='<div class="inspector-empty">Quarter play-by-play is unavailable. No stats have been guessed.</div>';
   return;
  }
- var s=res.stats,items=[['PTS',s.pts,'pts'],['REB',s.reb,'reb'],['AST',s.ast,'ast'],['3PT',s.tpm+'/'+s.tpa,'three'],
+ var s=res.stats,mins=playerPeriodMinutes(state.raw||{},g,context.side,player.id,selected);
+ var items=[['MIN',mins===null?'—':mins,'min'],['PTS',s.pts,'pts'],['REB',s.reb,'reb'],['AST',s.ast,'ast'],['3PT',s.tpm+'/'+s.tpa,'three'],
   ['FG',s.fgm+'/'+s.fga,'fg'],['FT',s.ftm+'/'+s.fta,'ft'],['STL',s.stl,'stl'],['TOV',s.to,'to'],['BLK',s.blk,'blk']];
  $('inspector-body').innerHTML='<div class="inspector-grid">'+items.map(function(item){
-  var mismatch=res.verified[item[2]]===false;
-  return '<div class="inspector-stat"><div class="inspector-key">'+esc(item[0])+(mismatch?' <span class="approximate" title="Play events do not match the official player box score">≈</span>':'')+'</div><div class="inspector-value">'+esc(item[1])+'</div></div>';
- }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. Quarter minutes and +/− are not available reliably.</div>';
+  var mismatch=res.verified[item[2]]===false,estimated=item[2]==='min'&&mins!==null;
+  return '<div class="inspector-stat"><div class="inspector-key">'+esc(item[0])+(estimated?' <span class="approximate" title="Estimated from starting lineups and timed ESPN substitutions">≈</span>':mismatch?' <span class="approximate" title="Play events do not match the official player box score">≈</span>':'')+'</div><div class="inspector-value">'+esc(item[1])+'</div></div>';
+ }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. MIN is estimated from starters, timed ESPN substitutions and the game clock; — means unavailable. Quarter +/− is not available reliably.</div>';
 }
 function openInspector(side,id){
  state.pendingOT=0;

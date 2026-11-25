@@ -41,7 +41,7 @@ function setup(){
   'const {state,game,currentPeriod,periodChoices,allPlayers,$,periodLabel,esc,playType,readPeriod,allPlays}=env;',
   'function focusRegion(){}',
   section('function madeAttempts(', '/* The summary already carries'),
-  section('function playerPeriodTotals(', 'function scoringRun('),
+  section('function clockRemaining(', 'function scoringRun('),
   section('function renderInspector(){', '/* Reconstruct the live five'),
   'return {openInspector,selectInspectorPeriod,renderInspector};'
  ].join('\n');
