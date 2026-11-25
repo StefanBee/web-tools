@@ -732,7 +732,19 @@ function derivePlays(raw,g,period){
 /* The summary already carries player-labelled events and scoring plays.
    Quarter minutes are computed separately from rotations. */
 function clockRemaining(clock){
- var str=String((clock&&clock.displayValue)||clock||'').trim(),parts=str.split(':');
+ // ESPN exposes either clock.displayValue ("8:45"), clock.value
+ // (seconds remaining), or occasionally a plain numeric value.
+ if(clock==null)return null;
+ if(typeof clock==='object'){
+  if(clock.displayValue!=null&&String(clock.displayValue).trim()!==''){
+   var display=clockRemaining(clock.displayValue);
+   if(display!==null)return display;
+  }
+  return clock.value!=null?clockRemaining(clock.value):null;
+ }
+ if(typeof clock==='number')return Number.isFinite(clock)?clock:null;
+ var str=String(clock).trim(),parts=str.split(':');
+ if(parts.length===1)return /^\d+(?:\.\d+)?$/.test(str)?Number(str):null;
  if(parts.length!==2||!parts.every(function(p){return /^\d+(?:\.\d+)?$/.test(p)}))return null;
  return Number(parts[0])*60+Number(parts[1]);
 }
@@ -761,6 +773,13 @@ function playerPeriodSeconds(raw,g,side,playerId,selected){
  if(activePeriod&&selected>activePeriod)return null;
  var plays=allPlays(raw).filter(function(p){return readPeriod(p)===selected});
  if(!plays.length)return null;
+ // Recalculate from all available history, rather than relying on
+ // the selected/current quarter. ESPN may deliver an out-of-order correction.
+ plays=plays.map(function(p,index){return {play:p,index:index}}).sort(function(a,b){
+  var x=clockRemaining(a.play.clock),y=clockRemaining(b.play.clock);
+  if(x!==null&&y!==null&&x!==y)return y-x;
+  return a.index-b.index;
+ }).map(function(x){return x.play});
  var full=selected<activePeriod||!!((status.type||{}).completed)||
   plays.some(function(p){return /end (?:of (?:the )?)?(?:period|quarter)/i.test(playType(p))});
  var remaining=clockRemaining(status.displayClock);
@@ -779,7 +798,7 @@ function playerPeriodSeconds(raw,g,side,playerId,selected){
  var entries=[],dedupe=new Set(),unresolved=[];
  plays.forEach(function(p,index){
   var clock=clockRemaining(p.clock),elapsed=clock===null?null:length-clock;
-  if(elapsed!==null&&(elapsed<0||elapsed>length)){unresolved.push(true);return}
+  if(elapsed!==null&&(elapsed<0||elapsed>length)){elapsed=null}
   var type=playType(p),description=String(p.text||'');
   var isSub=/substitut|enters\s+(?:the\s+)?game\s+for/i.test(type+' '+description);
   var teamID=String((p.team||{}).id||p.teamId||'');
@@ -807,7 +826,7 @@ function playerPeriodSeconds(raw,g,side,playerId,selected){
   if(elapsed===null)return;
   // This is positive on-court evidence, not a box-score inference.
   // Skip bench technicals and events where participants aren't players.
-  var courtAction=p.shootingPlay===true||/\b(?:rebound|turnover|assist|steal|block|jumpball|jump ball|free throw)\b/i.test(type);
+  var courtAction=p.shootingPlay===true||/\b(?:rebound|turnover|assist|steal|block|jumpball|jump ball|free throw|foul|violation)\b/i.test(type);
   if(!courtAction||/\btechnical\b/i.test(type+' '+description))return;
   var participants=p.participants||[];
   if(participants.some(function(_,i){return participant(p,i)===id}))
@@ -816,9 +835,13 @@ function playerPeriodSeconds(raw,g,side,playerId,selected){
  // A partial substitution is harmless only when ESPN also supplied the
  // complete duplicate at the same clock and with the same incoming player.
  if(unresolved.some(function(x){
-  if(x===true)return true;
-  return !x.incoming||x.time===null||
-   !Array.from(dedupe).some(function(key){return key.startsWith(x.time+':'+x.incoming+':')});
+  // An incomplete event for another player should not erase this
+  // player's historical minutes. If the affected player is unknown,
+  // preserve the dash because they could have entered or exited.
+  if(x.time===null)return !x.incoming||x.incoming===id||x.outgoing===id;
+  var replaced=x.incoming&&Array.from(dedupe).some(function(key){return key.startsWith(x.time+':'+x.incoming+':')});
+  if(replaced)return false;
+  return !x.incoming||x.incoming===id||x.outgoing===id;
  }))return null;
  entries.sort(function(a,b){return a.time-b.time||a.index-b.index});
  if(!full){
@@ -992,12 +1015,14 @@ function renderInspector(){
   return;
  }
  var s=res.stats,mins=playerPeriodMinutes(state.raw||{},g,context.side,player.id,selected);
+ var timed=allPlays(state.raw||{}).some(function(p){return readPeriod(p)===selected&&clockRemaining(p.clock)!==null});
+ var minNote=mins===null?(timed?'ESPN substitutions or playing-time evidence are incomplete for this period.':'ESPN has no usable play-clock times for this period.'):'Estimated from ESPN substitutions and on-court evidence.';
  var items=[['MIN',mins===null?'—':mins,'min'],['PTS',s.pts,'pts'],['REB',s.reb,'reb'],['AST',s.ast,'ast'],['3PT',s.tpm+'/'+s.tpa,'three'],
   ['FG',s.fgm+'/'+s.fga,'fg'],['FT',s.ftm+'/'+s.fta,'ft'],['STL',s.stl,'stl'],['TOV',s.to,'to'],['BLK',s.blk,'blk']];
  $('inspector-body').innerHTML='<div class="inspector-grid">'+items.map(function(item){
   var mismatch=res.verified[item[2]]===false,estimated=item[2]==='min'&&mins!==null;
   return '<div class="inspector-stat"><div class="inspector-key">'+esc(item[0])+(estimated?' <span class="approximate" title="Estimated from starting lineups and timed ESPN substitutions">≈</span>':mismatch?' <span class="approximate" title="Play events do not match the official player box score">≈</span>':'')+'</div><div class="inspector-value">'+esc(item[1])+'</div></div>';
- }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. MIN is estimated from ESPN on-court events, timed substitutions and the game clock; — means uncertain or unavailable. Quarter +/− is not available reliably.</div>';
+ }).join('')+'</div><div class="inspector-note">From ESPN athlete IDs, shot values and participants. ≈ means the complete play timeline does not reconcile with this player\'s official box score. The live feed can lag. MIN: '+esc(minNote)+' Quarter +/− is not available reliably.</div>';
 }
 function openInspector(side,id){
  state.pendingOT=0;
