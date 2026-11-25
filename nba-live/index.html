@@ -729,7 +729,7 @@ function derivePlays(raw,g,period){
  return {teams:teams,teamPlays:teamPlays,count:count};
 }
 
-/* The summary carries player-labelled events and scoring plays.
+/* The summary already carries player-labelled events and scoring plays.
    Quarter minutes are computed separately from rotations. */
 function clockRemaining(clock){
  var str=String((clock&&clock.displayValue)||clock||'').trim(),parts=str.split(':');
