@@ -57,6 +57,14 @@ The same page now adapts to a narrow phone screen without changing the desktop l
 - All existing keyboard shortcuts are retained for desktop or a hardware keyboard.
 
 
+## Standings command
+
+- Search **rankings** or **standings** using the / or Ctrl+K command palette.
+- Both conferences appear side-by-side in one compact popup: 15 teams each, full team names, W/L/GB/L10, with horizontal rules after ranks 6 and 10.
+- Data comes from one on-demand ESPN standings request, cached for 15 minutes. Live NBA box-score polling remains unchanged.
+- On very narrow phones, swipe horizontally to preserve readable full team names. Short viewports may scroll vertically.
+- Esc, Close, or tapping outside closes the popup.
+
 ## Schedule command
 
 - The **`all`** command (alias **`all-q`**) in the palette switches Team Statistics to **ALL** (the whole game). It is placed first in results for quick selection; `q1`, `q2`, `current`, etc. still work.

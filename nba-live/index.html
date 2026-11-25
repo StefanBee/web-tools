@@ -127,6 +127,45 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
 .schedule-status{min-height:25px;padding:6px 13px;font-size:10px;color:var(--muted)}
 .schedule-status.error{color:var(--red)}
 
+
+/* Compact, full-name, two-conference standings. */
+.standings{width:min(980px,100%);max-height:calc(100dvh - 18px);display:flex;flex-direction:column}
+.standings-head{padding:9px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.standings-title{font-size:12px;font-weight:850;letter-spacing:.07em;color:var(--yellow)}
+.standings-subtitle{font-size:10px;color:var(--muted);margin-top:2px}
+.standings-body{overflow:auto;min-height:0;overscroll-behavior:contain}
+.standings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:7px 11px 5px}
+.standings-conf{min-width:0}
+.standings-conf h3{font-size:10px;letter-spacing:.06em;color:var(--yellow);margin:0 0 5px;font-weight:850}
+.standings-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10.5px;font-variant-numeric:tabular-nums}
+.standings-table th{height:21px;background:var(--raised);color:var(--muted);font-size:9px;font-weight:750;text-align:right}
+.standings-table td{height:20px;border-bottom:1px solid #38332f;text-align:right;white-space:nowrap}
+.standings-table th:first-child,.standings-table td:first-child{width:22px;text-align:center;color:var(--muted)}
+.standings-table th:nth-child(2),.standings-table td:nth-child(2){text-align:left;padding-left:3px}
+.standings-table td:nth-child(2){font-weight:700;white-space:nowrap}
+.standings-table th:nth-child(3),.standings-table th:nth-child(4),.standings-table td:nth-child(3),.standings-table td:nth-child(4){width:26px}
+.standings-table th:nth-child(5),.standings-table td:nth-child(5){width:35px}
+.standings-table th:nth-child(6),.standings-table td:nth-child(6){width:45px;padding-right:3px}
+.standings-table tbody tr:hover{background:#3c3836}
+.standings-table tbody tr.cut td{border-bottom:1px solid #928374}
+.standings-status{padding:7px 12px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+.standings-status.error{color:var(--red)}
+@media(max-width:750px){
+ .standings-head{padding:7px 8px}
+ .standings-grid{gap:6px;padding:5px 6px}
+ .standings-table{font:9px/1.2 "Arial Narrow","Liberation Sans Narrow",Arial,sans-serif}
+ .standings-table th{height:19px;font-size:8px}
+ .standings-table td{height:19px}
+ .standings-table th:first-child,.standings-table td:first-child{width:14px}
+ .standings-table th:nth-child(3),.standings-table th:nth-child(4),.standings-table td:nth-child(3),.standings-table td:nth-child(4){width:18px}
+ .standings-table th:nth-child(5),.standings-table td:nth-child(5){width:26px}
+ .standings-table th:nth-child(6),.standings-table td:nth-child(6){width:31px}
+ .standings-conf h3{font-size:9px}
+}
+@media(max-width:390px){
+ .standings-grid{min-width:620px}
+ .standings-table{font-size:10px}
+}
 @media(min-width:1120px){.app{padding:14px 20px 24px}.data td{height:30px}.score{font-size:36px}}
 /* Mobile controls are absent from the desktop layout. */
 .mobile-tabs,.mobile-search,.mobile-help,.palette-close{display:none}
@@ -293,6 +332,16 @@ kbd{border:1px solid var(--line);border-radius:4px;padding:1px 4px;background:va
     <div class="palette-help">j / ↓ newer · k / ↑ older · Enter view · Esc close · Tap outside to dismiss</div>
   </div>
 </div>
+<div id="standings-overlay" class="overlay" hidden>
+  <div class="palette standings" role="dialog" aria-modal="true" aria-label="NBA conference standings">
+    <div class="standings-head">
+      <div><div class="standings-title">NBA STANDINGS</div><div class="standings-subtitle">Regular season · 15 per conference</div></div>
+      <button id="standings-close" class="inspector-exit" type="button">✕ Close</button>
+    </div>
+    <div id="standings-body" class="standings-body" aria-live="polite"></div>
+    <div id="standings-status" class="standings-status">ESPN conference standings · Esc close</div>
+  </div>
+</div>
 <div id="palette-overlay" class="overlay" hidden>
   <div class="palette" role="dialog" aria-modal="true" aria-label="Search players, games and actions">
     <div class="search-row">
@@ -319,6 +368,7 @@ var state={
  lastSync:0,error:'',paletteOpen:false,inspector:null,paletteItems:[],paletteIndex:0,pendingG:0,pendingOT:0,fetching:false,serial:0,mobileView:'both',onCourt:{away:new Set(),home:new Set()}
 };
 var schedule={open:false,initialized:false,serial:0,busy:false,selected:'',moved:false,error:'',games:new Map(),weeks:new Map(),older:-1,newer:2};
+var standings={open:false,busy:false,error:'',data:null,updated:0,serial:0};
 function $(id){return document.getElementById(id)}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function number(v){var n=Number(String(v==null?'':v).replace(/[^0-9.+-]/g,''));return Number.isFinite(n)?n:0}
@@ -1321,11 +1371,116 @@ function viewScheduledGame(){
  selectGame(g.id);
 }
 
+
+/* ESPN standings are requested only when the popup opens, then cached for 15m. */
+function standingsMetric(stats,names){
+ var keys=names.map(function(x){return x.toLowerCase().replace(/[^a-z0-9]/g,'')});
+ for(var i=0;i<stats.length;i++){
+  var s=stats[i]||{};
+  if([s.name,s.abbreviation,s.displayName,s.shortDisplayName].some(function(n){
+   return keys.includes(String(n||'').toLowerCase().replace(/[^a-z0-9]/g,''));
+  })){
+   var v=s.displayValue!=null?s.displayValue:s.value;
+   if(v!=null&&v!=='')return String(v);
+  }
+ }
+ return '';
+}
+function parseStandings(raw){
+ var grouped={};
+ function walk(node){
+  var label=String(node.name||node.displayName||'').toLowerCase();
+  var side=label.includes('western')?'West':label.includes('eastern')?'East':'';
+  var entries=((node.standings||{}).entries||[]);
+  if(side&&entries.length){
+   var rows=entries.map(function(entry){
+    var t=entry.team||{},s=entry.stats||[];
+    var w=standingsMetric(s,['wins']),l=standingsMetric(s,['losses']);
+    var seed=standingsMetric(s,['playoffSeed','conferenceRank','rank']);
+    var pct=standingsMetric(s,['winPercent','winPct','winningPercentage']);
+    var last=standingsMetric(s,['lastTen','lastTenGames','last10','lastTenRecord','recordLast10','L10']);
+    if(!t.displayName||w===''||l===''||!Number.isFinite(Number(w))||!Number.isFinite(Number(l)))
+     throw Error('Incomplete team standings');
+    return {name:String(t.displayName),w:w,l:l,
+     gb:standingsMetric(s,['gamesBehind','gamesBack','gb']),
+     l10:/^\d+[-–]\d+$/.test(last)?last:'—',
+     rank:seed!==''&&Number.isInteger(Number(seed))&&Number(seed)>0?Number(seed):0,
+     pct:pct!==''&&Number.isFinite(Number(pct))?Number(pct):Number(w)/(Number(w)+Number(l)||1)};
+   });
+   rows.sort(function(a,b){
+    if(a.rank&&b.rank)return a.rank-b.rank;
+    return b.pct-a.pct||Number(b.w)-Number(a.w)||Number(a.l)-Number(b.l)||a.name.localeCompare(b.name);
+   });
+   var leader=rows[0];
+   rows.forEach(function(row,i){
+    if(row.gb===''||row.gb==='-'){
+     var behind=(Number(leader.w)-Number(row.w)+Number(row.l)-Number(leader.l))/2;
+     row.gb=i===0?'—':Number.isFinite(behind)&&behind>=0?String(behind):'—';
+    }
+   });
+   grouped[side]=rows;
+  }
+  (node.children||[]).forEach(walk);
+ }
+ walk(raw||{});
+ if(!grouped.West||!grouped.East||grouped.West.length!==15||grouped.East.length!==15)
+  throw Error('Incomplete conference standings');
+ return grouped;
+}
+function standingsTable(side){
+ var rows=standings.data?standings.data[side]:[];
+ var heading=side==='West'?'WESTERN CONFERENCE':'EASTERN CONFERENCE';
+ return '<section class="standings-conf"><h3>'+heading+'</h3><table class="standings-table" aria-label="'+heading+'">'
+  +'<thead><tr><th>#</th><th>TEAM</th><th>W</th><th>L</th><th>GB</th><th>L10</th></tr></thead><tbody>'
+  +rows.map(function(r,i){return '<tr'+(i===5||i===9?' class="cut"':'')+'>'
+   +'<td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+esc(r.w)+'</td><td>'+esc(r.l)
+   +'</td><td>'+esc(r.gb)+'</td><td>'+esc(r.l10)+'</td></tr>'}).join('')
+  +'</tbody></table></section>';
+}
+function drawStandings(){
+ if(!standings.open)return;
+ $('standings-body').innerHTML=standings.data
+  ?'<div class="standings-grid">'+standingsTable('West')+standingsTable('East')+'</div>'
+  :'<div class="no-data">Loading conference standings…</div>';
+ $('standings-status').textContent=standings.busy?'Updating ESPN standings…':standings.error||
+  (standings.updated?'ESPN · Cached at '+new Date(standings.updated).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})+' · Esc close':'ESPN conference standings');
+ $('standings-status').classList.toggle('error',!!standings.error);
+}
+async function loadStandings(){
+ var serial=++standings.serial;
+ standings.busy=true;standings.error='';drawStandings();
+ try{
+  var data=parseStandings(await get('https://site.api.espn.com/apis/v2/sports/basketball/nba/standings'));
+  if(serial!==standings.serial)return;
+  standings.data=data;standings.updated=Date.now();
+ }catch(_){
+  if(serial!==standings.serial)return;
+  standings.error=standings.data?'ESPN refresh failed · showing cached standings':'Could not load ESPN standings. Close and reopen to retry.';
+ }finally{
+  if(serial===standings.serial){standings.busy=false;drawStandings()}
+ }
+}
+function openStandings(){
+ if(standings.open)return;
+ standings.open=true;
+ $('standings-overlay').hidden=false;
+ $('palette-input').blur();
+ drawStandings();
+ $('standings-close').focus({preventScroll:true});
+ if(!standings.updated||Date.now()-standings.updated>15*60*1000)loadStandings();
+}
+function closeStandings(){
+ if(!standings.open)return;
+ standings.open=false;standings.serial++;
+ $('standings-overlay').hidden=true;focusRegion(state.active,false);
+}
+
 function paletteActions(){
  var actions=[
   {label:'All quarters · ALL',sub:'Team statistics · live full game · all-q',kind:'PERIOD',run:function(){periodSelect('ALL')}},
   {label:'Current quarter',sub:'Team statistics · current period · follow live game',kind:'PERIOD',run:function(){periodSelect('CURRENT')}},
-  {label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule}
+  {label:'Schedule',sub:'NBA games · local tipoffs · final scores',kind:'COMMAND',run:openSchedule},
+  {label:'Rankings · NBA standings',sub:'Eastern and Western conferences · W L GB L10 · standings',kind:'COMMAND',run:openStandings}
  ];
  state.games.forEach(function(g){actions.push({label:gameLabel(g),sub:gameShort(g),kind:'GAME',run:function(){selectGame(g.id)}})});
  ['away','home'].forEach(function(side){
@@ -1371,7 +1526,12 @@ function paletteRun(index){
 document.addEventListener('keydown',function(e){
  var ctrl=e.ctrlKey||e.metaKey;
  // Keep the OT prefix in Team Statistics or a player inspector, never in other controls.
- if(schedule.open||state.paletteOpen||ctrl||e.altKey||e.shiftKey||e.key==='Tab'||e.key==='Escape'||(!state.inspector&&state.active!=='teams'))state.pendingOT=0;
+ if(schedule.open||standings.open||state.paletteOpen||ctrl||e.altKey||e.shiftKey||e.key==='Tab'||e.key==='Escape'||(!state.inspector&&state.active!=='teams'))state.pendingOT=0;
+ if(standings.open){
+  if(e.key==='Escape'){e.preventDefault();closeStandings();return}
+  if(e.key==='Tab'){e.preventDefault();$('standings-close').focus({preventScroll:true})}
+  return;
+ }
  if(schedule.open){
   if(e.key==='Escape'){e.preventDefault();closeSchedule();return}
   if(e.key==='j'||e.key==='ArrowDown'){e.preventDefault();moveSchedule(1);return}
@@ -1487,6 +1647,8 @@ document.querySelectorAll('.data').forEach(function(table){
 $('palette-input').addEventListener('input',function(){state.paletteIndex=0;drawPalette()});
 $('palette-results').addEventListener('click',function(e){var node=e.target.closest('[data-index]');if(node)paletteRun(Number(node.dataset.index))});
 $('palette-overlay').addEventListener('click',function(e){if(e.target===$('palette-overlay'))closePalette()});
+$('standings-close').addEventListener('click',closeStandings);
+$('standings-overlay').addEventListener('click',function(e){if(e.target===$('standings-overlay'))closeStandings()});
 $('schedule-close').addEventListener('click',closeSchedule);
 $('schedule-older').addEventListener('click',function(){moveSchedule(-1)});
 $('schedule-newer').addEventListener('click',function(){moveSchedule(1)});
