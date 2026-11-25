@@ -63,7 +63,8 @@ test('render produces 30 compact rows and every full team name',()=>{
  standings.data=app.parseStandings(fixture());
  app.drawStandings();
  const output=$('standings-body').innerHTML;
- assert.equal((output.match(/<td>\d+<\/td><td>/g)||[]).length,30);
+ const teamBodies=output.split('<tbody>').slice(1).map(x=>x.split('</tbody>')[0]).join('');
+ assert.equal((teamBodies.match(/<tr(?: class="cut")?>/g)||[]).length,30);
  assert.match(output,/Minnesota Timberwolves/);
  assert.match(output,/Philadelphia 76ers/);
  assert.match(output,/WESTERN CONFERENCE/);
