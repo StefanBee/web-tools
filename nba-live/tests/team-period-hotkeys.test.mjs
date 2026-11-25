@@ -19,8 +19,10 @@ function setup(){
  class HTMLSelectElement {}
  const state={active:'teams',period:'3',followCurrent:true,inspector:null,paletteOpen:false};
  const schedule={open:false};
+ const standings={open:false};
  const document={addEventListener(type,listener){if(type==='keydown')keydown=listener}};
- const env={document,state,schedule,HTMLInputElement,HTMLSelectElement,
+ const env={document,state,schedule,standings,HTMLInputElement,HTMLSelectElement,
+  closeStandings(){},
   currentPeriod(){return current},periodChoices(){return Array.from({length:maxPeriod},(_,i)=>String(i+1)).concat(['ALL'])},paintPeriods(){},renderTables(){},focusRegion(){},scrollToRegion(){},
   selectInspectorPeriod(n){if(n>=1&&n<=maxPeriod){inspectorKeys.push(n);if(state.inspector){state.inspector.period=n;state.inspector.followCurrent=false}}},closeInspector(){},openPalette(){},closePalette(){},
   closeSchedule(){},moveSchedule(){},viewScheduledGame(){},paletteRun(){},drawPalette(){},
@@ -31,7 +33,7 @@ function setup(){
  const keys=section("document.addEventListener('keydown',function(e){","$('game-picker').addEventListener");
  new Function('env','const {'+Object.keys(env).join(',')+'}=env;\n'+logic+'\n'+keys)(env);
  assert.equal(typeof keydown,'function');
- return {state,schedule,inspectorKeys,Input:HTMLInputElement,
+ return {state,schedule,standings,inspectorKeys,Input:HTMLInputElement,
   setCurrent(quarter){current=quarter},
   setMaxPeriod(period){maxPeriod=period},
   key(key,overrides={}){
@@ -184,3 +186,13 @@ test('popup overtime prefix expires or cancels on other keys',()=>{
  assert.equal(app.state.pendingOT,0);
 });
 
+
+test('rankings popup takes keyboard precedence and Escape closes it',()=>{
+ const app=setup();
+ app.standings.open=true;
+ assert.equal(app.key('1'),false);
+ assert.equal(app.state.period,'3','standings must not trigger team Q1 shortcut');
+ assert.equal(app.key('o'),false);
+ assert.equal(app.state.pendingOT,0);
+ assert.equal(app.key('Escape'),true);
+});
