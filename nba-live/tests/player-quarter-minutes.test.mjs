@@ -48,12 +48,12 @@ test('Q1 starter plays eight minutes and bench replacement four',()=>{
  assert.equal(calc(events,'p0',1),'8:00');
  assert.equal(calc(events,'b',1),'4:00');
 });
-test('each quarter resets the counter and the lineup carries over',()=>{
+test('each quarter resets independently; a period with no player evidence is unknown',()=>{
  const calc=setup(),events=plays();
  assert.equal(calc(events,'p0',2),'7:00');
  assert.equal(calc(events,'b',2),'5:00');
- assert.equal(calc(events,'p0',3),'12:00');
- assert.equal(calc(events,'b',3),'0:00');
+ assert.equal(calc(events,'p0',3),null);
+ assert.equal(calc(events,'b',3),null);
 });
 test('overtime uses five-minute periods',()=>{
  const calc=setup(),events=plays();
@@ -66,19 +66,19 @@ test('live quarter uses the running game clock, not the full twelve minutes',()=
  const g=game();g.status={period:1,displayClock:'1:00',type:{state:'in'}};
  assert.equal(calc(events,'p0',1,g),'7:00');
 });
-test('missing starting five, event clock or substitution athlete produces unavailable minutes',()=>{
+test('missing starters can be inferred, but missing timing or identity remains unavailable',()=>{
  const events=plays();
- assert.equal(setup(starters.slice(0,4).concat(bench))(events,'p0',1),null);
+ assert.equal(setup(starters.slice(0,4).concat(bench))(events,'p0',1),'8:00');
  const noClock=plays();noClock[1].clock=null;
  assert.equal(setup()(noClock,'p0',1),null);
  const missingSub=plays();missingSub[1].participants=[];
  assert.equal(setup()(missingSub,'p0',1),null);
 });
-test('play by a player outside the inferred five reveals an incomplete rotation',()=>{
+test('activity by a player after they were subbed out reveals an incomplete rotation',()=>{
  const events=plays();
- const shot=event(1,'11:00','Jump Shot','b');
+ const shot=event(1,'5:00','Jump Shot','p0');
  shot.shootingPlay=true;
- events.splice(1,0,shot);
+ events.splice(2,0,shot);
  assert.equal(setup()(events,'p0',1),null);
 });
 test('popup includes a clearly qualified MIN tile',()=>{
