@@ -90,6 +90,6 @@ test('real official starter flags support a player with no play events',()=>{
  assert.equal(mins({plays:events},status(),'away','b',1),'0:00');
 });
 test('minutes remain marked as estimates in the inspector',()=>{
- assert.match(script,/MIN is estimated from ESPN on-court events, timed substitutions and the game clock/);
+ assert.match(script,/Estimated from ESPN substitutions and on-court evidence/);
  assert.match(script,/Estimated from starting lineups and timed ESPN substitutions/);
 });
