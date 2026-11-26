@@ -1,116 +1,116 @@
 {
   "season": "2026-27",
   "parser_version": "structured-2026-11-23-v2-heaves-fouls",
-  "updated_at": "2026-11-25T20:37:50+00:00",
-  "games_archived": 261,
-  "games_reprocessed": 261,
-  "games_validated": 261,
-  "games_with_mismatches": 83,
-  "games_without_mismatches": 178,
+  "updated_at": "2026-11-26T20:29:48+00:00",
+  "games_archived": 270,
+  "games_reprocessed": 270,
+  "games_validated": 270,
+  "games_with_mismatches": 84,
+  "games_without_mismatches": 186,
   "team_metric_mismatches": 88,
-  "player_metric_mismatches": 244,
+  "player_metric_mismatches": 246,
   "metric_reconciliation": {
     "team": {
       "ast": {
-        "matched": 519,
+        "matched": 537,
         "mismatch": 3
       },
       "blk": {
-        "matched": 503,
+        "matched": 521,
         "mismatch": 19
       },
       "fga": {
-        "matched": 506,
+        "matched": 524,
         "mismatch": 16
       },
       "fgm": {
-        "matched": 521,
+        "matched": 539,
         "mismatch": 1
       },
       "fta": {
-        "matched": 522,
+        "matched": 540,
         "mismatch": 0
       },
       "ftm": {
-        "matched": 522,
+        "matched": 540,
         "mismatch": 0
       },
       "pf": {
-        "matched": 512,
+        "matched": 530,
         "mismatch": 10
       },
       "reb": {
-        "matched": 508,
+        "matched": 526,
         "mismatch": 14
       },
       "stl": {
-        "matched": 514,
+        "matched": 532,
         "mismatch": 8
       },
       "to": {
-        "matched": 513,
+        "matched": 531,
         "mismatch": 9
       },
       "tpa": {
-        "matched": 514,
+        "matched": 532,
         "mismatch": 8
       },
       "tpm": {
-        "matched": 522,
+        "matched": 540,
         "mismatch": 0
       }
     },
     "player": {
       "ast": {
-        "matched": 5810,
+        "matched": 6002,
         "mismatch": 33
       },
       "blk": {
-        "matched": 5824,
+        "matched": 6016,
         "mismatch": 19
       },
       "fga": {
-        "matched": 5816,
+        "matched": 6008,
         "mismatch": 27
       },
       "fgm": {
-        "matched": 5840,
+        "matched": 6032,
         "mismatch": 3
       },
       "fta": {
-        "matched": 5839,
+        "matched": 6031,
         "mismatch": 4
       },
       "ftm": {
-        "matched": 5841,
+        "matched": 6033,
         "mismatch": 2
       },
       "pf": {
-        "matched": 5828,
+        "matched": 6020,
         "mismatch": 15
       },
       "pts": {
-        "matched": 5838,
+        "matched": 6030,
         "mismatch": 5
       },
       "reb": {
-        "matched": 5787,
+        "matched": 5979,
         "mismatch": 56
       },
       "stl": {
-        "matched": 5799,
-        "mismatch": 44
+        "matched": 5989,
+        "mismatch": 46
       },
       "to": {
-        "matched": 5817,
+        "matched": 6009,
         "mismatch": 26
       },
       "tpa": {
-        "matched": 5833,
+        "matched": 6025,
         "mismatch": 10
       },
       "tpm": {
-        "matched": 5843,
+        "matched": 6035,
         "mismatch": 0
       }
     }
@@ -677,6 +677,22 @@
       "metric": "stl",
       "official": 6,
       "observed": 5
+    },
+    {
+      "game_id": "401909322",
+      "scope": "player",
+      "entity_id": "4432194",
+      "metric": "stl",
+      "official": 4,
+      "observed": 3
+    },
+    {
+      "game_id": "401909322",
+      "scope": "player",
+      "entity_id": "4702177",
+      "metric": "stl",
+      "official": 1,
+      "observed": 2
     },
     {
       "game_id": "401909834",
