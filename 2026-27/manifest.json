@@ -1,10 +1,10 @@
 {
   "season": "2026-27",
-  "updated_at": "2026-11-26T20:29:37+00:00",
+  "updated_at": "2026-11-27T20:15:34+00:00",
   "games": 270,
   "team_periods": 2190,
-  "newly_archived": 9,
-  "unchanged": 20,
+  "newly_archived": 0,
+  "unchanged": 22,
   "pending_games": 0,
   "scoreboard_errors": 0,
   "note": "Period stats other than score are estimates reconstructed from ESPN plays; raw source retained.",
